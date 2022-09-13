@@ -33,11 +33,4 @@ def set_environment():
 
 
 if __name__ == '__main__':
-    set_environment()
-
-    app = QApplication(sys.argv)
-    parent = QWidget()
-    icon = QIcon(os.path.join(os.getenv('DJED_ROOT'), 'src', 'utils', 'resources', 'icons', 'djed.png'))
-    tray = DjedTray(icon, parent)
-
-    sys.exit(app.exec_())
+    print("Starting Djed")

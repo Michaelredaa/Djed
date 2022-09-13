@@ -138,6 +138,10 @@ class FileManager():
             os.makedirs(self.user_documents())
             self.write_json(json_path, data)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c64ce83 (adding the asset browser and utils from old structure)
         user_data = self.read_json(json_path)
         if key in user_data:
             global_data = self.get_cfg(key)
@@ -158,6 +162,10 @@ class FileManager():
             self.set_user_json(**{key: value})
             return value
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c64ce83 (adding the asset browser and utils from old structure)
     @error(name=__name__)
     def list_dirs(self, directory):
         return [x for x in os.listdir(directory) if os.path.isdir(os.path.join(directory, x))]
@@ -195,6 +203,10 @@ class FileManager():
             sgs.append(sg)
         return list(set(sgs))
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c64ce83 (adding the asset browser and utils from old structure)
     @error(name=__name__)
     def ck_tex(self, texture_name):
         texture_types = self.get_cfg("texture_types")

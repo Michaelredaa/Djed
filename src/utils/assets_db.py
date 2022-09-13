@@ -82,7 +82,11 @@ class Connect():
 
 class AssetsDB(Connect):
 
+<<<<<<< HEAD
     def __init__(self, db_file=None):
+=======
+    def __init__(self, db_file):
+>>>>>>> c64ce83 (adding the asset browser and utils from old structure)
         super(AssetsDB, self).__init__(db_file)
         self.create_default_tables()
 
