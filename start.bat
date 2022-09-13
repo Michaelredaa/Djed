@@ -1,0 +1,1 @@
+SETX -m DJED_ROOT %~dp0
