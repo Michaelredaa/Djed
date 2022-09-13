@@ -106,6 +106,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print(("-" * 20) + "\nStart of code...\n" + ("-" * 20))
+    
     main()
-    print(("-" * 20) + "\nEnd of code.\n" + ("-" * 20))
+    

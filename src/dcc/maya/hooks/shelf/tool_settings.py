@@ -9,8 +9,6 @@ Documentation:
 import subprocess
 import sys
 import os
-import importlib
-import traceback
 from pathlib import Path
 
 from PySide2.QtCore import *
@@ -32,20 +30,14 @@ from utils.file_manager import FileManager
 from utils.assets_db import AssetsDB
 from utils.dialogs import browse_dirs, message
 
-from dcc.maya.api.cmds import Maya
+from dcc.maya.api.cmds import Maya, maya_main_window
+import dcc.linker.to_spp as spp
 
-
-from dcc.maya.shelf.ui import (
+from dcc.maya.hooks.shelf.ui import (
     Ui_ToolSettings,
     Completer,
     ClickedLabel
 )
-
-
-
-from dcc.Maya.spp_to_maya import SppMaya
-from dcc.Clarisse.Clarisse_Functions import Clarisse
-from dcc.Maya.Renderer import Arnold
 
 
 db = AssetsDB()
@@ -57,10 +49,11 @@ ScreenWidth = SizeObject.width()
 Tokens = ["$selection", "$project"]
 
 
+
 # ---------------------------------
-class UsualFunctions(QMainWindow, Ui_ToolSettings):
+class ToolSettings(QMainWindow, Ui_ToolSettings):
     def __init__(self, parent=None, preset_name=None):
-        super(UsualFunctions, self).__init__(parent)
+        super(ToolSettings, self).__init__(parent)
         self.setupUi(self)
 
         self.presets_name = preset_name
@@ -68,8 +61,7 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
         self.setMinimumSize(ScreenHeight * 0.3, ScreenHeight * 0.1)
 
         self.fm = FileManager()
-        self.lk = Linker()
-        self.ma = CMaya("")
+        self.ma = Maya()
 
         self.maya_cfg = self.fm.get_cfg("maya")
 
@@ -85,7 +77,7 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
         self.setWindowTitle(title)
 
     def set_icon(self, icon):
-        self.setWindowIcon(QIcon(os.path.join(Icons, icon)))
+        self.setWindowIcon(QIcon(str(Icons.joinpath(icon))))
 
     def _startup(self):
         self._connectEvents()
@@ -115,7 +107,7 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
         self.le_dir = QLineEdit()
         self.setCompleter(self.le_dir)
         self.pb_browse = QPushButton("")
-        self.pb_browse.setIcon(QIcon(os.path.join(Icons, "folder.png")))
+        self.pb_browse.setIcon(QIcon(Icons.joinpath('folder.png').as_posix()))
         self.pb_browse.setIconSize(QSize(20, 20))
         self.pb_browse.setFlat(True)
 
@@ -238,6 +230,8 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
             export_dir = tokens_text.replace("$project", self.ma.get_project_dir())
 
         export_root = self.ma.get_file_path()
+        if not export_root:
+            return
         for i in range(export_dir.count("../")):
             export_root = os.path.dirname(export_root)
 
@@ -247,7 +241,7 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
         return export_dir
 
     def setCompleter(self, lineedit):
-        # lineEdit complation
+        # lineEdit completion
         completeModel = QStringListModel()
         completeModel.setStringList(Tokens)
         completer = Completer()
@@ -255,7 +249,7 @@ class UsualFunctions(QMainWindow, Ui_ToolSettings):
         lineedit.setCompleter(completer)
 
 
-class ExportSettings(UsualFunctions):
+class ExportSettings(ToolSettings):
     def __init__(self, parent=None):
         super(ExportSettings, self).__init__(parent, preset_name="export_preset")
         self.setupUi(self)
@@ -326,8 +320,6 @@ class ExportSettings(UsualFunctions):
             self.switch_text = self.le_dir.text()
 
     def onApply(self):
-        renderer = Arnold()
-        ma_fn = CMaya(renderer)
         extensions = []
         if self.cb_obj.isChecked(): extensions.append("obj")
         if self.cb_fbx.isChecked(): extensions.append("fbx")
@@ -335,51 +327,15 @@ class ExportSettings(UsualFunctions):
         if self.cb_usd.isChecked(): extensions.append("usd")
 
         export_path = self.le_dir.text()
-        export_meshs = ma_fn.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
-
-    # def onBrowse(self):
-    #     le_text = self.le_dir.text()
-    #     le_tex = self.convert_text_tokens(le_text)
-    #
-    #     if not le_tex:
-    #         le_tex = QDir.rootPath()
-    #     self.fm.make_dirs(le_tex)
-    #
-    #     new_dir = browse_dirs(self, "Select export directory", le_tex)
-    #     if new_dir:
-    #         self.le_dir.setText(new_dir)
-
-    # def onRecent(self):
-    #     maya_user_cfg = self.fm.get_user_json("maya")
-    #     if not maya_user_cfg:
-    #         return
-    #     preset = maya_user_cfg.get("export_preset")
-    #     if not preset:
-    #         return
-    #     self.recent = preset.get("recent_files")
-    #     exist_actions = [x.text() for x in self.menuRecent.findChildren(QAction)]
-    #     action_1 = self.menuRecent.addAction(">>")
-    #
-    #     action_1.triggered.connect(lambda: self.onSubRecent(0))
-    #
-    # def onSubRecent(self, n):
-    #     print("recent")
-    #     # if self.RecentFiles is None:
-    #     #     return
-    #     # try:
-    #     #     mov_path = self.recent[n]
-    #     # except:
-    #     #     return
-    #     # if os.path.isfile(mov_path):
-    #     #     subprocess.Popen('explorer "{}"'.format(mov_path))
+        export_meshs = self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
 
 
-class Maya2SppSettings(UsualFunctions):
+
+class Maya2SppSettings(ToolSettings):
     def __init__(self, parent=None):
         super(Maya2SppSettings, self).__init__(parent, preset_name="maya_spp_presets")
         self.setupUi(self)
 
-        self.lk = Linker()
         self.set_title("Open selection in Substance Painter Setting")
         self.set_icon("sendSubstace.png")
 
@@ -450,10 +406,17 @@ class Maya2SppSettings(UsualFunctions):
 
     def onApply(self):
         cfg = self.get_presets()
+
+        instance = {}
+        instance['name'] = name
+        instance['data'] = {'mesh_path': mesh_path, 'cfg': cfg}
+
+        spp.process(instance)
         self.lk.to_substance(cfg=cfg)
 
 
-class Maya2ClsSettings(UsualFunctions):
+
+class Maya2ClsSettings(ToolSettings):
     def __init__(self, parent=None):
         super(Maya2ClsSettings, self).__init__(parent, preset_name="maya_clarisse_presets")
         self.setupUi(self)
@@ -639,7 +602,6 @@ class Maya2ClsSettings(UsualFunctions):
         else:
             return
 
-        self.ma = CMaya(renderer)
         mayaData = self.ma.send_to_clarisse()
         asset_name = self.ma.selection()[0]
         if mayaData:
@@ -669,7 +631,7 @@ class Maya2ClsSettings(UsualFunctions):
         pass
 
 
-class CreateMtlTexs(UsualFunctions):
+class CreateMtlTexs(ToolSettings):
     def __init__(self, parent=None):
         super(CreateMtlTexs, self).__init__(parent, preset_name="create_mtl_tex_presets")
         self.setupUi(self)

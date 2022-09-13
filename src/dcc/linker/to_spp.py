@@ -4,16 +4,19 @@ Documentation:
 """
 import os
 import time
+from pathlib import Path
 
-from PyQt5.QtWidgets import QMessageBox
+DJED_ROOT = Path(os.getenv('DJED_ROOT'))
+
+from PySide2.QtWidgets import QMessageBox
 
 from utils.spp_remote import RemotePainter
 from utils.dialogs import message
 from utils.sys_process import is_process_running, execute_commmand
 from utils.file_manager import FileManager
 
-
 fm = FileManager()
+
 
 def connect_spp():
     """
@@ -37,6 +40,19 @@ def process(instance):
     colorspace = data.get("colorspace", "aces")
     sgs = data.get('data')
 
+    mesh_path = data.get('mesh_path', '')
+    cfg = data.get('cfg', {})
+
+    spp_exe = Path(fm.get_cfg('spp')['spp_exe']).parent
+
+    if not spp_exe:
+        message(None, 'Error', 'Please configure the substance painter executable first.')
+        return
+
+    args = [str(spp_exe), '--enable-remote-scripting']
+    execute_commmand(*args)
+
+    wait_until(open_spp_file, 90, period=0.25, mesh_path=mesh_path, cfg=cfg)
 
 
 def wait_until(somepredicate, timeout, period=0.25, **kwargs):
@@ -46,9 +62,11 @@ def wait_until(somepredicate, timeout, period=0.25, **kwargs):
         time.sleep(period)
     return False
 
+
 def open_spp_file(mesh_path, project_path=None, cfg=None, *args):
-    spp_exe = os.path.basename(fm.get_cfg('spp')['spp_exe'])
-    if is_process_running(spp_exe):
+    spp_exe = Path(fm.get_cfg('spp')['spp_exe']).parent
+
+    if is_process_running(str(spp_exe)):
         sp = connect_spp()
 
         if sp:
@@ -59,13 +77,13 @@ def open_spp_file(mesh_path, project_path=None, cfg=None, *args):
             cmd += 'from dcc.spp.api.pipeline import create_project'
             cmd += f'create_project(mesh_file={mesh_path}, project_path={project_path}, cfg={cfg})'
 
-
             try:
                 result = eval(sp.execScript(cmd, 'python'))
             except NameError:
                 pass
 
             return True
+
 
 def update_spp(mesh_path, current_sbp_path=None, udim=True):
     sp = connect_spp()
@@ -75,7 +93,7 @@ def update_spp(mesh_path, current_sbp_path=None, udim=True):
     else:
         message(None, 'Error', 'Can not get the current session of substance painter.')
 
-    update_mesh_file = os.path.join(DJED_ROOT, "Scripts/dcc/Substance/api/update_mesh.py")
+    update_mesh_file = DJED_ROOT.joinpath('Scripts/dcc/Substance/api/update_mesh.py')
 
     print(current_sbp_path)
     data = {'path': mesh_path}
@@ -89,57 +107,35 @@ def update_spp(mesh_path, current_sbp_path=None, udim=True):
 
     sp.execScript(cmd_text, 'python')
 
-    @error(name=__name__)
-    def to_substance(self, cfg=None):
-        asset_name = self.ma.selection()[0]
 
-        mesh_path = self.ma.export_selection(asset_dir=cfg["export_root"], export_type=["obj"], message=False)["obj"]
-        del cfg["export_root"]
+# TODO
+def update_substance(self, mesh_path, current_sbp_path=None, udim=True):
+    sp = self.substance_connect()
 
-        substance_exe = unquote(self.fm.get_cfg('spp')['spp_exe'])
+    if (not current_sbp_path) and sp:
+        current_sbp_path = eval(sp.execScript('substance_painter.project.file_path()', 'python'))
+    else:
+        QMessageBox(None, 'Error', 'Can not get the current session of substance painter.')
 
-        if substance_exe:
-            args = [substance_exe, '--enable-remote-scripting']
-            self.execute_commmand(*args)
+    update_mesh_file = DJED_ROOT.joinpath('Scripts/dcc/Substance/api/update_mesh.py')
 
-            self.wait_until(self.open_spp_file, 90, period=0.25, mesh_path=mesh_path, cfg=cfg)
+    print(current_sbp_path)
+    data = {'path': mesh_path}
 
-        else:
-            QMessageBox(None, 'Error', 'Please configure the substance painter executable first.')
+    cmd_text = "print('## Djed Tools ##')\n"
+    cmd_text += "import sys\n"
+    cmd_text += f"data={data}\n"
+    cmd_text += f"sys.argv = [data, ]\n"
+    cmd_text += f"with open(r'{update_mesh_file}', 'r') as f:\n"
+    cmd_text += "\texec(f.read())\n"
 
-    @error(name=__name__)
-    def update_substance(self, mesh_path, current_sbp_path=None, udim=True):
-        sp = self.substance_connect()
-
-        if (not current_sbp_path) and sp:
-            current_sbp_path = eval(sp.execScript('substance_painter.project.file_path()', 'python'))
-        else:
-            QMessageBox(None, 'Error', 'Can not get the current session of substance painter.')
-
-        update_mesh_file = os.path.join(DJED_ROOT, "Scripts/dcc/Substance/api/update_mesh.py")
-
-        print(current_sbp_path)
-        data = {'path': mesh_path}
-
-        cmd_text = "print('## Djed Tools ##')\n"
-        cmd_text += "import sys\n"
-        cmd_text += f"data={data}\n"
-        cmd_text += f"sys.argv = [data, ]\n"
-        cmd_text += f"with open(r'{update_mesh_file}', 'r') as f:\n"
-        cmd_text += "\texec(f.read())\n"
-
-        sp.execScript(cmd_text, 'python')
+    sp.execScript(cmd_text, 'python')
 
 
 # Main function
 def main():
     pass
 
-
-if __name__ == '__main__':
-    print(('-' * 20) + '\nStart of code...\n' + ('-' * 20))
-    main()
-    print(('-' * 20) + '\nEnd of code.\n' + ('-' * 20))
 
 if __name__ == '__main__':
     print(__name__)

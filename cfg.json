@@ -1,0 +1,124 @@
+{
+  "maya": {
+    "export_root": "../Export/$selection",
+    "command_port": 4436,
+    "maya_exe": "C:/Program Files/Autodesk/Maya2022/bin/maya.exe",
+    "export_preset": {
+      "export_root": "../Export/$selection",
+      "obj": false,
+      "fbx": false,
+      "abc": true,
+      "usd": false
+
+    },
+    "maya_spp_presets": {
+      "export_root": "../Export/$selection",
+      "default_texture_resolution": 1024,
+      "normal_map_format": "OpenGl",
+      "tangent_space_mode": "PerVertex",
+      "project_workflow": "TextureSetPerUVTile",
+      "import_cameras": false
+    },
+
+    "maya_clarisse_presets": {
+      "port_num": 55000,
+      "geo_type": "Alembic Reference",
+      "mtls_from": "Arnold",
+      "mtls_to": "Autodesk Standard Surface",
+      "colorspace": "aces"
+    },
+    "create_mtl_tex_presets":
+    {
+      "tex_dir": "$project/Texture",
+      "renderer": "Arnold",
+      "mtls": "All",
+      "colorspace": "aces",
+      "udim": true
+
+    }
+
+  },
+  "spp": {
+    "spp_exe": "C:/Program Files/Allegorithmic/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
+    "save_dir": "../../../sur/substance/$asset_name",
+    "export_preset": {
+      "preset": "Arnold (AiStandard)",
+      "format": "png",
+      "path": "../../../sur/Textures/$version"
+    }
+
+  },
+  "clarisse":{
+    "clarisse_exe": "C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe",
+    "command_port": 55000,
+    "asset_root": "build://project/Assets/$assetName",
+    "material_root": "../Mtls",
+    "texture_root": "../Mtls/Texs",
+    "utils_root": "../Mtls/Texs"
+},
+
+
+  "renderer": {
+    "arnold": {
+      "basecolor": ".baseColor",
+      "roughness": ".specularRoughness",
+      "metallic": ".metalness",
+      "normal": ".normalCamera",
+      "height": ".displacementShader",
+      "sss": ".subsurface",
+      "opacity": ".opacity"
+    },
+    "MaterialPhysicalAutodeskStandardSurface": {
+      "basecolor": "base_color",
+      "roughness": "specular_roughness",
+      "metallic": "metalness",
+      "normal": "normal_input",
+      "height": "base_weight",
+      "sss": "subsurface_weight",
+      "opacity": "opacity"
+    }
+  },
+
+
+
+
+
+
+  "maya_export_root": "../../../sur/substance/$selection",
+  "texture_export_root": "$project/Texture",
+  "maya_port": 4436,
+  "clarisse_port": 55000,
+  "maya_exe": "C:/Program Files/Autodesk/Maya2022/bin/maya.exe",
+  "clarisse_exe": "C:/Program Files/Isotropix/Clarisse 5.0/Clarisse/clarisse.exe",
+  "texture_extensions": ["exr", "png", "jpg", "jpeg", "tif"],
+  "hdr": ["exr", "hdri", "hdr"],
+
+  "colorspace": {
+    "aces_raw": "Utility - Raw",
+    "aces_color_hdr": "Utility - Linear - sRGB",
+    "aces_color_ldr": "Utility - sRGB - Texture",
+    "srgb": "sRGB",
+    "raw": "Raw"
+  },
+  "texture_types": {
+    "basecolor": ["(?i)base.*color", "(?i)diffuse", "(?i)albedo"],
+    "roughness": ["(?i)roughness", "(?i)glossinss"],
+    "metallic": ["(?i)metallic", "(?i)metalness"],
+    "normal": ["(?i)normal"],
+    "height": ["(?i)height", "(?i)bump", "(?i)displacement"],
+    "sss": ["(?i)scattering"],
+    "opacity": ["(?i)opacity"]
+  },
+  "texture_types_new": {
+    "basecolor": {"regx": ["(?i)base.*color", "(?i)diffuse", "(?i)albedo"], "type": "color"},
+    "roughness": {"regx": ["(?i)roughness", "(?i)glossinss"], "type": "float"},
+    "metallic": {"regx": ["(?i)metallic", "(?i)metalness"], "type": "float"},
+    "normal": {"regx": ["(?i)normal"], "type": "vector"},
+    "height": {"regx": ["(?i)height", "(?i)bump", "(?i)displacement"], "type": "float"},
+    "sss": {"regx": ["(?i)scattering"], "type": "float"},
+    "opacity": {"regx": ["(?i)opacity"], "type": "color"}
+  }
+
+
+
+}

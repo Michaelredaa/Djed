@@ -68,12 +68,12 @@ class FileManager():
         return self.read_json(settings_path)
 
     def get_spp_export_presets(self):
-        export_preset = os.path.join(self.user_documents(), "spp_export_prsets.json")
+        export_preset = os.path.join(self.user_documents, "spp_export_prsets.json")
         if os.path.isfile(export_preset):
             return self.read_json(export_preset)
 
     def set_spp_export_presets(self, data):
-        export_preset = os.path.join(self.user_documents(), "spp_export_prsets.json")
+        export_preset = os.path.join(self.user_documents, "spp_export_prsets.json")
         self.write_json(export_preset, data)
 
     @error(name=__name__)
@@ -106,20 +106,24 @@ class FileManager():
         with open(json_path, 'w') as f:
             return json.dump(data, f, indent=4)
 
+    @property
     @error(name=__name__)
     def user_documents(self):
-        user_dir = os.path.join(os.environ['USERPROFILE'], 'Documents', "Djed")
-        self.make_dirs(user_dir)
+        user_dir = Path.home().joinpath('Documents', 'Djed')
+        user_dir.mkdir(parents=True, exist_ok=True)
         return user_dir
 
+    @property
     @error(name=__name__)
     def user_db(self):
-        return os.path.join(self.user_documents(), "assets.db")
+        return self.user_documents.joinpath('assets.db')
 
     @error(name=__name__)
     def set_user_json(self, **kwargs):
-        json_path = os.path.join(self.user_documents(), "Djed.json").replace("\\", "/")
-        if os.path.exists(json_path):
+        # json_path = os.path.join(self.user_documents(), "Djed.json").replace("\\", "/")
+        json_path = self.user_documents.joinpath("Djed.json")
+
+        if json_path.is_file():
             data = self.read_json(json_path)
         else:
             data = {}
@@ -130,18 +134,15 @@ class FileManager():
 
     @error(name=__name__)
     def get_user_json(self, key, key1=None):
-        json_path = os.path.join(self.user_documents(), "Djed.json").replace("\\", "/")
+        # json_path = os.path.join(self.user_documents(), "Djed.json").replace("\\", "/")
+        json_path = self.user_documents.joinpath("Djed.json")
 
         data = {}
 
-        if not os.path.exists(json_path):
-            os.makedirs(self.user_documents())
+        if not json_path.is_file():
+            self.user_documents.mkdir(parents=True, exist_ok=True)
             self.write_json(json_path, data)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c64ce83 (adding the asset browser and utils from old structure)
         user_data = self.read_json(json_path)
         if key in user_data:
             global_data = self.get_cfg(key)
@@ -162,10 +163,6 @@ class FileManager():
             self.set_user_json(**{key: value})
             return value
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c64ce83 (adding the asset browser and utils from old structure)
     @error(name=__name__)
     def list_dirs(self, directory):
         return [x for x in os.listdir(directory) if os.path.isdir(os.path.join(directory, x))]
@@ -203,10 +200,10 @@ class FileManager():
             sgs.append(sg)
         return list(set(sgs))
 
-<<<<<<< HEAD
-=======
 
->>>>>>> c64ce83 (adding the asset browser and utils from old structure)
+
+
+
     @error(name=__name__)
     def ck_tex(self, texture_name):
         texture_types = self.get_cfg("texture_types")
@@ -307,6 +304,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print(("-" * 20) + "\nStart of code...\n" + ("-" * 20))
+    
     main()
-    print(("-" * 20) + "\nEnd of code.\n" + ("-" * 20))
+    
