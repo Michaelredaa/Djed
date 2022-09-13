@@ -2,10 +2,14 @@
 """
 Documentation:
 """
-
+import os
+import sys
 from pathlib import Path
-from PySide2 import *
 
+from PySide2.QtWidgets import *
+from PySide2.QtGui import *
+
+from utils.startup.system_tray import DjedTray
 
 def set_environment():
     from ctypes import windll
@@ -30,4 +34,10 @@ def set_environment():
 
 if __name__ == '__main__':
     set_environment()
-    print("Starting Djed")
+
+    app = QApplication(sys.argv)
+    parent = QWidget()
+    icon = QIcon(os.path.join(os.getenv('DJED_ROOT'), 'src', 'utils', 'resources', 'icons', 'djed.png'))
+    tray = DjedTray(icon, parent)
+
+    sys.exit(app.exec_())
