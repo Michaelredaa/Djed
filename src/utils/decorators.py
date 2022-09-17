@@ -105,13 +105,13 @@ def debug(func=None):
         return func(*args, **kwargs, function_name=function_name)
     return wrapper
 
+def func():
+    print('five')
+
 # Main function
 def main():
-    @error(name=__name__)
-    def foo(a=12, b=25):
-        print(a/0)
+    debug(func)
 
-    foo()
 
 
 if __name__ == '__main__':

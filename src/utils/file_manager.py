@@ -15,7 +15,6 @@ from pathlib import Path
 DJED_ROOT = os.getenv('DJED_ROOT')
 utils_path = os.path.join(DJED_ROOT, 'src')
 
-
 sysPaths = [DJED_ROOT, utils_path]
 
 for sysPath in sysPaths:
@@ -25,11 +24,34 @@ for sysPath in sysPaths:
 from utils.decorators import error
 from utils.dialogs import message
 
+
 # ---------------------------------
 
 class FileManager():
     def __init__(self):
         self.root = os.getenv("DJED_ROOT")
+
+    def resolve_path(self, source_path, **kwargs):
+        """
+        To resolve the given paths like relative path and $project
+        :param source_path: the unresolved path
+        :param kwargs: args to resolve with
+        :return: resolved path
+        """
+
+        relatives_to = kwargs.get('relatives_to', '')
+
+        resolved_path = Path(relatives_to)
+
+        if source_path.count("../") > 0:
+            resolved_path = resolved_path.parents[source_path.count("../") - 1]
+            resolved_path = resolved_path.joinpath(source_path.rsplit("../", 1)[-1])
+
+        variables = kwargs.get('variables', {})
+        for var in variables:
+            resolved_path = str(resolved_path).replace(var, variables.get(var))
+
+        return resolved_path
 
     @error(name=__name__)
     def get_ssp_settings(self):
@@ -38,7 +60,7 @@ class FileManager():
         :return:
         """
 
-        settings_path = os.path.join(self.root, "Scripts", "dcc", "Substance",  "plugins", "substance_settings.json")
+        settings_path = os.path.join(self.root, "Scripts", "dcc", "Substance", "plugins", "substance_settings.json")
         if not os.path.isfile(settings_path):
             message(None, "Error", "Can not get substance settings file.")
             return
@@ -80,7 +102,7 @@ class FileManager():
             return json.load(f)
 
     @error(name=__name__)
-    def write_json(self, json_path,  data):
+    def write_json(self, json_path, data):
         with open(json_path, 'w') as f:
             return json.dump(data, f, indent=4)
 
@@ -116,7 +138,6 @@ class FileManager():
             os.makedirs(self.user_documents())
             self.write_json(json_path, data)
 
-
         user_data = self.read_json(json_path)
         if key in user_data:
             global_data = self.get_cfg(key)
@@ -136,7 +157,6 @@ class FileManager():
             value = self.get_cfg(key)
             self.set_user_json(**{key: value})
             return value
-
 
     @error(name=__name__)
     def list_dirs(self, directory):
@@ -175,7 +195,6 @@ class FileManager():
             sgs.append(sg)
         return list(set(sgs))
 
-
     @error(name=__name__)
     def ck_tex(self, texture_name):
         texture_types = self.get_cfg("texture_types")
@@ -202,7 +221,7 @@ class FileManager():
         if len(all_versions) < 1:
             version = prefix + "1".zfill(padding)
         else:
-            all_versions = [x for x in all_versions if re.search(prefix+"\d+", x)]
+            all_versions = [x for x in all_versions if re.search(prefix + "\d+", x)]
             if len(all_versions) <= 1:
                 version = prefix + "1".zfill(padding)
             else:
@@ -243,7 +262,7 @@ class FileManager():
         file_name = file_path.name
 
         try:
-            v = re.findall(prefix+"\d+", file_name)
+            v = re.findall(prefix + "\d+", file_name)
             v = re.findall("\d+", v[0])[0]
             vpluse = str(int(v) + 1).zfill(len(v))
             version_name = re.sub(v, vpluse, file_name)
@@ -253,10 +272,18 @@ class FileManager():
 
         return file_path.parent.joinpath(version_name)
 
+    def open_in_expoler(self, path):
+        path = Path(str(path))
+
+        if path.is_file():
+            subprocess.Popen(f'explorer /select,"{path}"')
+
+        elif path.is_dir():
+            subprocess.Popen(f'explorer "{path}"')
+
     def dict_depth(self, dictionary):
         if isinstance(dictionary, dict):
-            return 1 + (max(map(self.dict_depth, dictionary.values()))if dictionary else 0)
-
+            return 1 + (max(map(self.dict_depth, dictionary.values())) if dictionary else 0)
         return 0
 
 
@@ -264,7 +291,7 @@ class FileManager():
 def main():
     pass
     fm = FileManager()
-    print(fm.version_file_up(r"D:\3D\working\projects\Generic\03_Workflow\Assets\tv_table\Export\New folder\Textures\foo_v0001.txt"))
+    print(fm.resolve_path('../../foo', relatives_to='c:/users/michael'))
 
 
 if __name__ == '__main__':
