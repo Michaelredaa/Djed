@@ -10,6 +10,7 @@ import sys
 import os
 import re
 import json
+from pathlib import Path
 
 DJED_ROOT = os.getenv('DJED_ROOT')
 utils_path = os.path.join(DJED_ROOT, 'src')
@@ -232,6 +233,25 @@ class FileManager():
                 ret_path = os.path.join(path, up_version)
         return ret_path.replace("\\", "/")
 
+    @error(name=__name__)
+    def version_file_up(self, file_path, prefix='v'):
+
+        file_path = Path(str(file_path))
+
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        file_name = file_path.name
+
+        try:
+            v = re.findall(prefix+"\d+", file_name)
+            v = re.findall("\d+", v[0])[0]
+            vpluse = str(int(v) + 1).zfill(len(v))
+            version_name = re.sub(v, vpluse, file_name)
+        except:
+            spp_name, ext = file_name.split('.')
+            version_name = spp_name + "_v0001." + ext
+
+        return file_path.parent.joinpath(version_name)
 
     def dict_depth(self, dictionary):
         if isinstance(dictionary, dict):
@@ -242,8 +262,9 @@ class FileManager():
 
 # Main function
 def main():
+    pass
     fm = FileManager()
-    print(fm.version_up(r"D:\3D\working\projects\Generic\03_Workflow\Assets\tv_table\Scenefiles\sur\Textures"))
+    print(fm.version_file_up(r"D:\3D\working\projects\Generic\03_Workflow\Assets\tv_table\Export\New folder\Textures\foo_v0001.txt"))
 
 
 if __name__ == '__main__':
