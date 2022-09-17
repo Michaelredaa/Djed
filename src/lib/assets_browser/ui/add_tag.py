@@ -9,10 +9,9 @@
 ################################################################################
 
 from PySide2.QtCore import *
-from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from lib.assets_browser.promoted_widgets import LineEdit
+from lib.assets_browser.ui.promoted_widgets import LineEdit
 
 class Ui_addTagWidget(object):
     def setupUi(self, addTagWidget):

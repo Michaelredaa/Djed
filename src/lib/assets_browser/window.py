@@ -19,19 +19,18 @@ from utils.file_manager import FileManager
 from utils.dialogs import browse_files
 from utils.open_ports import OpenSocket
 from utils import clarisse_net as ix
-from utils.resources.style_rc import *
 
-from lib.assets_browser.promoted_widgets import  ItemRoles, WScreenShot
+from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
 
 
 # ---------------------------------
 # Variables
-db_file = FileManager().user_db()
-db = AssetsDB(db_file)
 
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-Icons = DJED_ROOT.joinpath("utils", "resources", "icons")
+db = AssetsDB()
+
+DJED_ROOT = Path(os.getenv('DJED_ROOT'))
+Icons = DJED_ROOT.joinpath('src', 'utils', 'resources', 'icons')
 
 
 # ---------------------------------

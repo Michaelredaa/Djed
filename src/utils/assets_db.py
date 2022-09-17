@@ -50,7 +50,9 @@ def connect(db_file):
 class Connect():
     db_file = None
 
-    def __init__(self, db_file):
+    def __init__(self, db_file=None):
+        if db_file is None:
+            db_file = FileManager().user_db()
         Connect.db_file = db_file
 
     def db(query_func):
@@ -80,7 +82,7 @@ class Connect():
 
 class AssetsDB(Connect):
 
-    def __init__(self, db_file):
+    def __init__(self, db_file=None):
         super(AssetsDB, self).__init__(db_file)
         self.create_default_tables()
 
