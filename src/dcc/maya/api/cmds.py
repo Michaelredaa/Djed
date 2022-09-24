@@ -75,14 +75,6 @@ class Maya():
         self.renameDuplicates()
         self.load_all_plugins()
 
-    @error(name=__name__)
-    def get_bridge_cfg(self):
-        cfg_path = os.path.join(self.root, "Scripts", "dcc", "Maya", "maya_clarisse.json")
-        if not os.path.isfile(cfg_path):
-            message(None, "Error", "Unable to get the configuration data file between maya and clarisse")
-            return
-        with open(cfg_path) as f:
-            return json.load(f)
 
     @error(name=__name__)
     def load_plugin(self, plugin_name="AbcExport.mll"):
@@ -448,109 +440,70 @@ class Maya():
         return sgs
 
     @error(name=__name__)
-    def get_selection_shading_data(self):
+    def get_asset_data(self, node):
         """
         To gather all selection data meshes, attributes, materials, textures,
+        :param node: Transform node of asset
         :return:
         """
 
-        maya_cls = self.get_bridge_cfg()
-        if not maya_cls:
-            return
-
-        arnold_std_surface = True
-        # arnold to autodesk standard surface
-        if arnold_std_surface:
-            mtl_data = maya_cls["aistd:adstd"]
-        else:
-            mtl_data = ""
-
-        Data = {}
-        # Get the selection
-        selections = cmds.ls(sl=1)
-        for selection in selections:
-            # Get all selection shapes
-            shapes = self.list_all_dag_meshes(selection, shape=True, fullPath=True, type=om.MFn.kMesh)
-            for shapeNode in shapes:
-                # Get each shape shadingEngine
-                sgs = cmds.listConnections(shapeNode, s=0, d=1, type="shadingEngine")
-                if not sgs:
+        data = {}
+        # Get all selection shapes
+        shapes = self.list_all_dag_meshes(node, shape=True, fullPath=True, type=om.MFn.kMesh)
+        for shapeNode in shapes:
+            # Get each shape shadingEngine
+            sgs = cmds.listConnections(shapeNode, s=0, d=1, type="shadingEngine")
+            if not sgs:
+                continue
+            for sg in sgs:
+                if (sg in data) or (sg == 'initialShadingGroup'):
                     continue
-                for sg in sgs:
-                    if sg in Data:
-                        continue
 
-                    Data[sg] = {
-                        "materials": {},
-                        "displacements": {},
-                        "meshes": {}
-                    }
-                    # list of meshes
-                    meshes = self.list_all_DG_nodes(sg, om.MFn.kMesh, om.MItDependencyGraph.kUpstream)
-                    Data[sg]["meshes"]["shape"] = [x.rsplit("|")[-1] for x in meshes]
+                data[sg] = {
+                    "materials": {},
+                    "displacements": {},
+                    "meshes": {}
+                }
+                # list of meshes
+                meshes = self.list_all_DG_nodes(sg, om.MFn.kMesh, om.MItDependencyGraph.kUpstream)
+                data[sg]["meshes"]["shape"] = meshes
 
-                    # Get displacement
-                    displacements = self.get_materials_from_sg(sg, "displacement")
+                # Get displacement
+                displacements = self.get_materials_from_sg(sg, "displacement")
+                attrs = {}
+                if displacements:
+                    displace = displacements[0]
+                    _type = cmds.nodeType(displace)
+                    tex = self.get_texs_from_mtl(displace, {"displacementShader": ""})
+                else:
+                    # if there is map connected directly in shading group
+                    displace = "displacement_"
+                    _type = "displacementShader"
+                    tex = self.get_texs_from_mtl(sg, {"displacement": ""})
+                    # if not tex:
+                    #     # if there is map connected directly in shading group
+                    #     tex = self.get_texs_from_mtl(sg, {"displacement": ""})
+                if tex:
+                    data[sg]["displacements"][displace] = {}
+                    data[sg]["displacements"][displace]["type"] = _type
+                    data[sg]["displacements"][displace]["texs"] = tex
+                    data[sg]["displacements"][displace]["attrs"] = attrs
+
+                # Get materials
+                mtls = self.get_materials_from_sg(sg)
+                for mtl in mtls:
+                    data[sg]["materials"][mtl] = {}
+                    data[sg]["materials"][mtl]["type"] = cmds.nodeType(mtl)
                     attrs = {}
-                    if displacements:
-                        displace = displacements[0]
-                        _type = cmds.nodeType(displace)
-                        tex = self.get_texs_from_mtl(displace, {"displacementShader": ""})
-                    else:
-                        # if there is map connected directly in shading group
-                        displace = "displacement_"
-                        _type = "displacementShader"
-                        tex = self.get_texs_from_mtl(sg, {"displacement": ""})
-                        # if not tex:
-                        #     # if there is map connected directly in shading group
-                        #     tex = self.get_texs_from_mtl(sg, {"displacement": ""})
-                    if tex:
-                        Data[sg]["displacements"][displace] = {}
-                        Data[sg]["displacements"][displace]["type"] = _type
-                        Data[sg]["displacements"][displace]["texs"] = tex
-                        Data[sg]["displacements"][displace]["attrs"] = attrs
+                    for attr, value in self.get_attrs(mtl, default_values=False).items():
+                        attrs[attr] = value
 
-                    # Get materials
-                    mtls = self.get_materials_from_sg(sg)
-                    for mtl in mtls:
-                        Data[sg]["materials"][mtl] = {}
-                        Data[sg]["materials"][mtl]["type"] = cmds.nodeType(mtl)
-                        attrs = {}
-                        for attr in mtl_data.keys():
-                            if attr in cmds.listAttr(mtl):
-                                if not cmds.listConnections(mtl + "." + attr):
-                                    attrs[attr] = cmds.getAttr(mtl + "." + attr)
+                    texs = self.get_texs_from_mtl(mtl)
+                    data[sg]["materials"][mtl]["attrs"] = attrs
+                    data[sg]["materials"][mtl]["texs"] = texs
 
-                        texs = self.get_texs_from_mtl(mtl, mtl_data)
-                        Data[sg]["materials"][mtl]["attrs"] = attrs
-                        Data[sg]["materials"][mtl]["texs"] = texs
+        return data
 
-        return Data
-
-    @error(name=__name__)
-    def send_to_clarisse(self, asset_name=None):
-
-        # get selection
-        selection = self.selection()
-        if asset_name is None:
-            if not selection:
-                message(None, "waring", "you should select at last one object")
-                return
-            if not (cmds.nodeType(selection[0]) == "transform"):
-                return
-            asset_name = selection[0]
-
-        cmds.select(selection, r=1)
-        self.export_selection(asset_dir=None, asset_name=asset_name, export_type=["abc"], message=False)
-        cmds.select(selection, r=1)
-        return self.get_selection_shading_data()
-
-    """    @error(name=__name__)
-        def send_to_maya(self, **kwargs):
-            port = self.fm.get_cfg("maya_port")
-            socket = OpenSocket(host='127.0.0.1', port=port)
-            with open(spp_maya_path, 'r') as f:
-                socket.send(f.read().replace("$$**kwargs$$", str(kwargs)))"""
 
     @error(name=__name__)
     def export_selection(self, asset_dir=None, asset_name=None, export_type=["abc"], _message=True):
@@ -822,8 +775,43 @@ class Maya():
 
         return mtls
 
+    def get_attrs(self, node_name, default_values=False, connected=False):
+        """
+        To get the attributes that have default values or not have default values base on default_attr value
+        :param node_name: (str) the node name
+        :param default_values: (bool) return the attrs that have default values
+        :param connected: (bool) return the connected attributes
+        :return: dict of attrs with its values
+        """
+
+        attrs = {}
+        mtl_selectionList = om.MSelectionList()
+        mtl_selectionList.add(node_name)
+        mtl_mObject = mtl_selectionList.getDependNode(0)
+
+        mtl_fn = om.MFnDependencyNode(mtl_mObject)
+
+        for i in range(mtl_fn.attributeCount()):
+            m_attr = mtl_fn.attribute(i)
+            attr_fn = om.MFnAttribute(m_attr)
+            plug = mtl_fn.findPlug(m_attr, False)
+
+            if connected and plug.isDestination:
+                attrs[attr_fn.name] = ''
+            else:
+                if attr_fn.storable and attr_fn.connectable and (not plug.isChild):
+                    if default_values and plug.isDefaultValue():
+                        if plug.isDefaultValue():
+                            attrs[attr_fn.name] = cmds.getAttr(plug.name())
+                    else:
+                        if not plug.isDefaultValue():
+                            attrs[attr_fn.name] = cmds.getAttr(plug.name())
+        return attrs
+
+
+
     @error(name=__name__)
-    def get_texs_from_mtl(self, mtlNode, mtl_data):
+    def get_texs_from_mtl(self, mtlNode, mtl_data=None):
         """
         To get the nodes that finally plugs in material node.
         :param mtlNode:(str) the material node name
@@ -843,7 +831,12 @@ class Maya():
         type_file = om.MFn.kFileTexture
         search_direction = om.MItDependencyGraph.kUpstream
 
-        output_files = list(mtl_data.keys())
+
+        if mtl_data is None:
+            output_files = self.get_attrs(mtlNode, connected=True)
+        else:
+            output_files = list(mtl_data.keys())
+
 
         mtl_selectionList = om.MSelectionList()
         mtl_selectionList.add(mtlNode)
@@ -900,7 +893,7 @@ class Maya():
                             # print("attribute: ", attr, attr in output_files)
                             if attr in output_files:
                                 # print("attribute: ", attr)
-                                if not attr in tex_node_dict["plugs"]:
+                                if attr not in tex_node_dict["plugs"]:
                                     tex_node_dict["plugs"].append(attr)
 
                                 fileTexture_data_dict[tex_fn.name()] = tex_node_dict
@@ -1112,6 +1105,11 @@ class Maya():
         cmds.delete(shape_node, ch=1)
 
         # cmds.makeIdentity(shape_node, a=1, n=1, r=1, s=1, t=1)
+
+
+    def get_file_colorspace(self):
+        return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)
+
 
     def assignMaterial(self, n="newMtl#", objects=None, new=True):
         """
