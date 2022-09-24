@@ -35,9 +35,9 @@ from dcc.maya.api.cmds import maya_main_window
 def main():
     es = ExportSettings(parent=maya_main_window())
     if len(sys.argv) > 1:
-        es.onApply()
-    else:
         es.show()
+    else:
+        es.onApply()
 
 
 if __name__ == '__main__':

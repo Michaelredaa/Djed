@@ -31,6 +31,7 @@ from utils.assets_db import AssetsDB
 from utils.dialogs import browse_dirs, message
 
 from dcc.maya.api.cmds import Maya, maya_main_window
+from dcc.clarisse.api.cmds import Clarisse
 import dcc.linker.to_spp as spp
 
 from dcc.maya.hooks.shelf.ui import (
@@ -406,13 +407,19 @@ class Maya2SppSettings(ToolSettings):
 
     def onApply(self):
         cfg = self.get_presets()
-
         instance = {}
-        instance['name'] = name
+        asset_name = self.ma.selection()[0]
+        mesh_path = self.ma.export_selection(
+            asset_dir=self.le_dir.text(),
+            asset_name=asset_name,
+            export_type=["obj", "abc"],
+            _message=False
+        )["obj"]
+
+        instance['name'] = asset_name
         instance['data'] = {'mesh_path': mesh_path, 'cfg': cfg}
 
         spp.process(instance)
-        self.lk.to_substance(cfg=cfg)
 
 
 

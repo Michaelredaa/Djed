@@ -650,14 +650,14 @@ class Maya():
                 return
 
             print("[Geometry Exported]: ", export_path + "." + ext)
-        if message:
+        if _message:
             info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
 
-        maya_file_path = self.get_file_path()
-        if maya_file_path:
-            self.fm.set_user_json(last_object_path=export_paths,
-                                  last_maya_path=maya_file_path
-                                  )
+        # maya_file_path = self.get_file_path()
+        # if maya_file_path:
+        #     self.fm.set_user_json(last_object_path=export_paths,
+        #                           last_maya_path=maya_file_path
+        #                           )
             return export_paths
 
     @error(name=__name__)

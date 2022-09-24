@@ -27,6 +27,11 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+import importlib
+from dcc.maya.hooks.shelf import tool_settings
+importlib.reload(tool_settings)
+
+
 from dcc.maya.hooks.shelf.tool_settings import Maya2SppSettings
 from dcc.maya.api.cmds import maya_main_window
 

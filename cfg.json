@@ -39,7 +39,7 @@
 
   },
   "spp": {
-    "spp_exe": "C:/Program Files/Allegorithmic/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
+    "spp_exe": "C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
     "save_dir": "../../../sur/substance/$asset_name",
     "export_preset": {
       "preset": "Arnold (AiStandard)",

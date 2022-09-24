@@ -25,4 +25,4 @@ def execute_commmand(*args):
     subprocess.Popen(args)
 
 if __name__ == '__main__':
-    print(__name__)
+    print(is_process_running("Adobe Substance 3D Painter.exe"))

@@ -34,7 +34,6 @@ from dcc.linker import update_spp
 def main():
     ma_fn = Maya()
     mesh_path = ma_fn.export_selection(export_type=["obj", "abc"], message=False)["obj"]
-
     instance = {'name': '', 'data': {'mesh_path': mesh_path}}
 
     update_spp.process(instance)
