@@ -6,7 +6,7 @@ Documentation:
 
 # ---------------------------------
 # import libraries
-import importlib
+from importlib.machinery import SourceFileLoader
 import sys, os
 from collections import OrderedDict
 from pathlib import Path
@@ -45,7 +45,7 @@ def delete_self():
 
 
 def create_self():
-    if os.path.isdir(modules):
+    if modules.is_dir():
 
         # Delete old shelf
         try:
@@ -74,17 +74,17 @@ def create_self():
 
                 cmd_text = "## Djed Tools ##\n\n"
                 cmd_text += "import sys\n"
-                cmd_text += f"sys.argv = [r'{script_file}']\n"
-                cmd_text += f"with open(r'{script_file}', 'r') as f:\n"
+                cmd_text += f"sys.argv = [r'{script_file.as_posix()}']\n"
+                cmd_text += f"with open(r'{script_file.as_posix()}', 'r') as f:\n"
                 cmd_text += "\texec(f.read())\n"
 
                 dc_cmd = "## Djed Tools ##\n\n"
                 dc_cmd += "import sys\n"
-                dc_cmd += f"sys.argv = [r'{script_file}', 'double']\n"
-                dc_cmd += f"with open(r'{script_file}', 'r') as f:\n"
+                dc_cmd += f"sys.argv = [r'{script_file.as_posix()}', 'double']\n"
+                dc_cmd += f"with open(r'{script_file.as_posix()}', 'r') as f:\n"
                 dc_cmd += "\texec(f.read())\n"
 
-                mod = importlib.import_module(_btn)
+                mod = SourceFileLoader(_btn, script_file.as_posix()).load_module()
 
                 btn_info = {
                     "parent": shelf_name,

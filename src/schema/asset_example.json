@@ -1,0 +1,261 @@
+{
+    "family": "asset",
+    "name": "tv_table",
+    "file_color_space": "ACES - ACEScg",
+    "renderer": "arnold",
+    "geo_paths": {
+        "obj": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/mod/Modeling/Export/tv_table/tv_table_v0034.obj",
+        "abc": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/mod/Modeling/Export/tv_table/tv_table_v0034.abc"
+    },
+    "asset_data": {
+        "tvBodySG": {
+            "materials": {
+                "tvBodyMTL": {
+                    "type": "aiStandardSurface",
+                    "attrs": {
+                        "normalCamera": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "baseColor": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "specularRoughness": 1.0,
+                        "metalness": 1.0
+                    },
+                    "texs": {}
+                }
+            },
+            "displacements": {},
+            "meshes": {
+                "shape": [
+                    "|tv_table|W_slice24|W_sliceShape24",
+                    "|tv_table|W_slice23|W_sliceShape23",
+                    "|tv_table|W_slice22|W_sliceShape22",
+                    "|tv_table|W_slice21|W_sliceShape21",
+                    "|tv_table|W_slice20|W_sliceShape20",
+                    "|tv_table|W_slice19|W_sliceShape19",
+                    "|tv_table|W_slice18|W_sliceShape18",
+                    "|tv_table|W_slice17|W_sliceShape17",
+                    "|tv_table|W_slice16|W_sliceShape16",
+                    "|tv_table|W_slice15|W_sliceShape15",
+                    "|tv_table|W_slice14|W_sliceShape14",
+                    "|tv_table|W_slice13|W_sliceShape13",
+                    "|tv_table|W_slice12|W_sliceShape12",
+                    "|tv_table|W_slice11|W_sliceShape11",
+                    "|tv_table|W_slice10|W_sliceShape10",
+                    "|tv_table|W_slice9|W_sliceShape9",
+                    "|tv_table|W_slice8|W_sliceShape8",
+                    "|tv_table|W_slice7|W_sliceShape7",
+                    "|tv_table|W_slice6|W_sliceShape6",
+                    "|tv_table|W_slice5|W_sliceShape5",
+                    "|tv_table|W_slice4|W_sliceShape4",
+                    "|tv_table|W_slice3|W_sliceShape3",
+                    "|tv_table|W_slice2|W_sliceShape2",
+                    "|tv_table|W_slice1|W_sliceShape1",
+                    "|tv_table|polySurface197|polySurfaceShape210",
+                    "|tv_table|polySurface198|polySurfaceShape211",
+                    "|tv_table|polySurface107|polySurfaceShape109",
+                    "|tv_table|plan|planShape",
+                    "|tv_table|M_plan|M_planShape",
+                    "|tv_table|slider7|sliderShape7",
+                    "|tv_table|slider6|sliderShape6",
+                    "|tv_table|slider5|sliderShape5",
+                    "|tv_table|slider4|sliderShape4",
+                    "|tv_table|slider3|sliderShape3",
+                    "|tv_table|slider2|sliderShape2",
+                    "|tv_table|Button10|ButtonShape10",
+                    "|tv_table|Button9|ButtonShape9",
+                    "|tv_table|Button8|ButtonShape8",
+                    "|tv_table|Button7|ButtonShape7",
+                    "|tv_table|Button6|ButtonShape6",
+                    "|tv_table|Button5|ButtonShape5",
+                    "|tv_table|Button4|ButtonShape4",
+                    "|tv_table|Button3|ButtonShape3",
+                    "|tv_table|Button2|ButtonShape2",
+                    "|tv_table|Button1|ButtonShape1",
+                    "|tv_table|rubber|rubberShape",
+                    "|tv_table|Satalite|SataliteShape",
+                    "|tv_table|leg2|legShape2",
+                    "|tv_table|leg1|legShape1"
+                ]
+            }
+        },
+        "tvScreenSG": {
+            "materials": {
+                "tvScreenMTL": {
+                    "type": "aiStandardSurface",
+                    "attrs": {
+                        "normalCamera": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "baseColor": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "specular": 0.4000000059604645,
+                        "specularColor": [
+                            [
+                                0.5290322303771973,
+                                0.5290322303771973,
+                                0.5290322303771973
+                            ]
+                        ],
+                        "specularRoughness": 0.0,
+                        "metalness": 1.0
+                    },
+                    "texs": {}
+                }
+            },
+            "displacements": {},
+            "meshes": {
+                "shape": [
+                    "|tv_table|screen|screenShape"
+                ]
+            }
+        },
+        "tableSG": {
+            "materials": {
+                "tableMTL": {
+                    "type": "aiStandardSurface",
+                    "attrs": {
+                        "normalCamera": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "baseColor": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "specularRoughness": 0.0,
+                        "metalness": 1.0
+                    },
+                    "texs": {}
+                }
+            },
+            "displacements": {},
+            "meshes": {
+                "shape": [
+                    "|tv_table|pCube2|pCubeShape2",
+                    "|tv_table|pCube1|pCubeShape1",
+                    "|tv_table|pCube5|pCubeShape5",
+                    "|tv_table|pCube6|pCubeShape6",
+                    "|tv_table|pCube7|pCubeShape7"
+                ]
+            }
+        },
+        "tvAntinaSG": {
+            "materials": {
+                "tvAntinaMTL": {
+                    "type": "aiStandardSurface",
+                    "attrs": {
+                        "normalCamera": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "baseColor": [
+                            [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        ],
+                        "specularRoughness": 1.0,
+                        "metalness": 1.0
+                    },
+                    "texs": {
+                        "tv_table_v0008_tvBodySG_Normal_1": {
+                            "plugs": [
+                                "normalCamera"
+                            ],
+                            "filepath": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0022/tv_table_v0008_tvBodySG_Normal.1001.png",
+                            "colorspace": "ACES - ACES2065-1",
+                            "type": "file"
+                        },
+                        "tv_table_v0008_tvBodySG_Roughness_1": {
+                            "plugs": [
+                                "specularRoughness"
+                            ],
+                            "filepath": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0022/tv_table_v0008_tvBodySG_Roughness.1001.png",
+                            "colorspace": "ACES - ACES2065-1",
+                            "type": "file"
+                        },
+                        "tv_table_v0008_tvBodySG_Metalness_1": {
+                            "plugs": [
+                                "metalness"
+                            ],
+                            "filepath": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0022/tv_table_v0008_tvBodySG_Metalness.1001.png",
+                            "colorspace": "ACES - ACES2065-1",
+                            "type": "file"
+                        },
+                        "tv_table_v0008_tvBodySG_BaseColor_1": {
+                            "plugs": [
+                                "baseColor"
+                            ],
+                            "filepath": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0022/tv_table_v0008_tvBodySG_BaseColor.1001.png",
+                            "colorspace": "ACES - ACES2065-1",
+                            "type": "file"
+                        }
+                    }
+                }
+            },
+            "displacements": {
+                "SAT_displacementShader1": {
+                    "type": "displacementShader",
+                    "texs": {
+                        "tv_table_v0008_tvBodySG_Height_1": {
+                            "plugs": [
+                                "displacementShader"
+                            ],
+                            "filepath": "D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0022/tv_table_v0008_tvBodySG_Height.1001.png",
+                            "colorspace": "ACES - ACES2065-1",
+                            "type": "file"
+                        }
+                    },
+                    "attrs": {}
+                }
+            },
+            "meshes": {
+                "shape": [
+                    "|tv_table|L_ball|L_ballShape",
+                    "|tv_table|L_stand|L_standShape",
+                    "|tv_table|R_ball|R_ballShape",
+                    "|tv_table|R_stand|R_standShape",
+                    "|tv_table|Sat_stand_leg5|Sat_stand_legShape5",
+                    "|tv_table|Sat_stand_leg4|Sat_stand_legShape4",
+                    "|tv_table|Sat_stand_leg3|Sat_stand_legShape3",
+                    "|tv_table|Sat_stand_leg2|Sat_stand_legShape2",
+                    "|tv_table|Sat_stand_leg1|Sat_stand_legShape1",
+                    "|tv_table|Sat_stand|Sat_standShape",
+                    "|tv_table|SAT_L|SAT_LShape",
+                    "|tv_table|SAT_R|SAT_RShape",
+                    "|tv_table|circle15|circle15Shape",
+                    "|tv_table|circle16|circle16Shape"
+                ]
+            }
+        }
+    }
+}

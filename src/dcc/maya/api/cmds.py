@@ -72,7 +72,7 @@ class Maya():
 
     @error(name=__name__)
     def startup(self):
-        self.renameDuplicates()
+        # self.renameDuplicates()
         self.load_all_plugins()
 
 
@@ -611,7 +611,7 @@ class Maya():
         #     self.fm.set_user_json(last_object_path=export_paths,
         #                           last_maya_path=maya_file_path
         #                           )
-            return export_paths
+        return export_paths
 
     @error(name=__name__)
     def import_geo(self, geo_path):
@@ -1108,7 +1108,7 @@ class Maya():
 
 
     def get_file_colorspace(self):
-        return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)
+        return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)[0]
 
 
     def assignMaterial(self, n="newMtl#", objects=None, new=True):

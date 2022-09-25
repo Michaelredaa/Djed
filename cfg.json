@@ -54,7 +54,56 @@
     "asset_root": "build://project/Assets/$assetName",
     "material_root": "../Mtls",
     "texture_root": "../Mtls/Texs",
-    "utils_root": "../Mtls/Texs"
+    "utils_root": "../Mtls/Texs",
+    "renderer": {
+      "surface": {
+        "disney": {
+          "base": "base_multiply",
+          "baseColor": "base_color",
+          "metalness": "metallic",
+          "normalCamera": "normal_input",
+          "specular": "specular",
+          "specularRoughness": "roughness",
+          "transmission": "transmission",
+          "specularColor": "specular_color",
+          "transmissionColor": "transmission_color",
+          "subsurface": "subsurface",
+          "subsurfaceColor": "subsurface_color",
+          "subsurfaceRadius": "subsurface_radius",
+          "coat": "clear_coat",
+          "sheen": "sheen",
+          "sheenColor": "sheen_color",
+          "emission": "emission",
+          "emissionColor": "emission_color",
+          "opacity": "opacity"
+        },
+        "standardSurface": {
+          "base": "base_weight",
+          "baseColor": "base_color",
+          "metalness": "metalness",
+          "normalCamera": "normal_input",
+          "specular": "specular_weight",
+          "specularRoughness": "specular_roughness",
+          "transmission": "transmission_weight",
+          "specularColor": "specular_color",
+          "transmissionColor": "transmission_color",
+          "subsurface": "subsurface_weight",
+          "subsurfaceColor": "subsurface_color",
+          "subsurfaceRadius": "subsurface_radius",
+          "coat": "coat_weight",
+          "sheen": "sheen_weight",
+          "sheenColor": "sheen_color",
+          "emission": "emission_weight",
+          "emissionColor": "emission_color",
+          "opacity": "opacity"
+        }
+      },
+      "utils": {
+        "normal_map": "TextureNormalMap",
+        "texture_file": ""
+      }
+    }
+
 },
 
 

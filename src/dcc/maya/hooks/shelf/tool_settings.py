@@ -31,7 +31,8 @@ from utils.assets_db import AssetsDB
 from utils.dialogs import browse_dirs, message
 
 from dcc.maya.api.cmds import Maya, maya_main_window
-from dcc.clarisse.api.cmds import Clarisse
+from dcc.maya.api import renderer
+from dcc.linker import to_clarisse
 import dcc.linker.to_spp as spp
 
 from dcc.maya.hooks.shelf.ui import (
@@ -522,7 +523,6 @@ class Maya2ClsSettings(ToolSettings):
 
     def startup(self):
         self.port_connected = False
-        self.cls = Clarisse()
 
         self.onConnect()
 
@@ -537,13 +537,13 @@ class Maya2ClsSettings(ToolSettings):
 
         subprocess.Popen(f'"{cls_exe}" -flavor ifx')
 
-        if self.lk.wait_until(self.cls.connect, 60):
+        if self.lk.wait_until(to_clarisse.connect, 60):
             self.onConnect()
 
     def onConnect(self):
         if self.lk.checkIfProcessRunning("clarisse"):
             if not self.port_connected:
-                port = self.cls.connect()
+                port = to_clarisse.connect()
                 if port:
                     self.connection.setStyleSheet("border-radius: 5px; background: green;")
                     port.run('ix.log_info("Djed Tools Ready");ix.log_info("*"*100)')
@@ -581,7 +581,7 @@ class Maya2ClsSettings(ToolSettings):
 
     def onApply(self):
         if self.lk.checkIfProcessRunning("clarisse"):
-            if not self.cls.connect():
+            if not to_clarisse.connect():
                 message(self, "Error",
                                 f'Make sure enable port at "{self.le_port_num.text()}"\n in clarisse: Edit>>Preferences under "Command Port" side tap.')
                 return
@@ -600,7 +600,7 @@ class Maya2ClsSettings(ToolSettings):
 
         mtl_conversion = []
         if mtl_from == "Arnold":
-            renderer = Arnold()
+            active_renderer = renderer.arnold
             mtl_conversion.append("aistd")
         else:
             return
@@ -612,7 +612,7 @@ class Maya2ClsSettings(ToolSettings):
         mayaData = self.ma.send_to_clarisse()
         asset_name = self.ma.selection()[0]
         if mayaData:
-            clrs = Clarisse()
+            clrs = to_clarisse
             clrs.set_port_num(port_num)
             try:
                 clrs.connect()
@@ -767,7 +767,7 @@ class CreateMtlTexs(ToolSettings):
         tex_dir = self.convert_text_tokens(self.le_dir.text())
 
         if rend_name == "Arnold":
-            renderer = Arnold()
+            active_renderer = renderer.arnold
         else:
             return
 
@@ -783,7 +783,7 @@ class CreateMtlTexs(ToolSettings):
         else:
             colorspace = "srgb"
 
-        sp = SppMaya(renderer)
+        sp = SppMaya(active_renderer)
         sp.send_Maya(tex_dir, sgs=sgs, colorspace=colorspace)
 
 
