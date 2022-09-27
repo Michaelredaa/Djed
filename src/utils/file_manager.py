@@ -200,10 +200,6 @@ class FileManager():
             sgs.append(sg)
         return list(set(sgs))
 
-
-
-
-
     @error(name=__name__)
     def ck_tex(self, texture_name):
         texture_types = self.get_cfg("texture_types")
@@ -295,6 +291,26 @@ class FileManager():
             return 1 + (max(map(self.dict_depth, dictionary.values())) if dictionary else 0)
         return 0
 
+    def material_conversion(self, from_host, from_renderer, to_host, to_renderer):
+
+        cfg = self.get_cfg('renderer')
+        plugs = cfg.get('plugs')
+        nodes = cfg.get('nodes')
+
+        plugs_dict = {
+            plugs[plug_name].get(from_host).get(from_renderer).get('name'):
+                plugs[plug_name].get(to_host).get(to_renderer)
+            for plug_name in plugs
+        }
+
+        nodes_dict = {
+            nodes[node_name].get(from_host).get(from_renderer).get('name'):
+                nodes[node_name].get(to_host).get(to_renderer)
+            for node_name in nodes
+        }
+
+        return {"plugs": plugs_dict, "nodes": nodes_dict}
+
 
 # Main function
 def main():
@@ -304,6 +320,4 @@ def main():
 
 
 if __name__ == '__main__':
-    
     main()
-    

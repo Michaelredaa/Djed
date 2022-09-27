@@ -35,6 +35,35 @@
       "colorspace": "aces",
       "udim": true
 
+    },
+    "renderer": {
+      "surface": {
+        "arnold":{
+          "base": "base",
+          "baseColor": "baseColor",
+          "metalness": "metalness",
+          "normalCamera": "normalCamera",
+          "specular": "specular",
+          "specularRoughness": "specularRoughness",
+          "transmission": "transmission",
+          "specularColor": "specularColor",
+          "transmissionColor": "transmissionColor",
+          "subsurface": "subsurface",
+          "subsurfaceColor": "subsurfaceColor",
+          "subsurfaceRadius": "subsurfaceRadius",
+          "coat": "coat",
+          "sheen": "sheen",
+          "sheenColor": "sheenColor",
+          "emission": "emission",
+          "emissionColor": "emissionColor",
+          "opacity": "opacity"
+        }
+      },
+        "utils": {
+          "normal_map": "TextureNormalMap",
+          "texture_file": ""
+      }
+
     }
 
   },
@@ -100,14 +129,433 @@
       },
       "utils": {
         "normal_map": "TextureNormalMap",
-        "texture_file": ""
+        "file": ""
       }
     }
 
 },
 
-
   "renderer": {
+
+    "nodes": {
+      "standardSurface": {
+        "maya": {
+          "arnold": {
+            "name":"aiStandardSurface",
+            "plugs": []
+            }
+        },
+        "clarisse":{
+          "standardSurface": {
+              "name": "MaterialPhysicalAutodeskStandardSurface",
+              "plugs": []
+            },
+          "disney": {
+              "name": "",
+              "plugs": []
+            }
+        }
+      },
+      "file": {
+        "maya": {
+          "arnold": {
+            "name":"file",
+            "plugs": []
+          }
+        },
+        "clarisse":{
+          "standardSurface": {
+            "name": "",
+            "plugs": []
+          }
+        }
+      }
+    },
+
+    "plugs": {
+      "base": {
+        "maya": {
+          "arnold": {
+            "name": "base",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "base_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "base_multiply",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "baseColor": {
+        "maya": {
+          "arnold": {
+            "name": "baseColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "base_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "base_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "metalness": {
+        "maya": {
+          "arnold": {
+            "name": "metalness",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "metalness",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "metallic",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "normalCamera": {
+        "maya": {
+          "arnold": {
+            "name": "normalCamera",
+            "type": "vector3",
+            "inBetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "normal_input",
+            "type": "vector3",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "normal_input",
+            "type": "vector3",
+            "inBetween": []
+          }
+        }
+    },
+      "specular": {
+        "maya": {
+          "arnold": {
+            "name": "specular",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "specular_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "specular",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "specularRoughness": {
+        "maya": {
+          "arnold": {
+            "name": "specularRoughness",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "specular_roughness",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "roughness",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "transmission": {
+        "maya": {
+          "arnold": {
+            "name": "transmission",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "transmission_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "transmission",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "specularColor": {
+        "maya": {
+          "arnold": {
+            "name": "specularColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "specular_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "specular_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "transmissionColor": {
+        "maya": {
+          "arnold": {
+            "name": "transmissionColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "transmission_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "transmission_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "subsurface": {
+        "maya": {
+          "arnold": {
+            "name": "subsurface",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "subsurface_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "subsurface",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "subsurfaceColor": {
+        "maya": {
+          "arnold": {
+            "name": "subsurfaceColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "subsurface_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "subsurface_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "subsurfaceRadius": {
+        "maya": {
+          "arnold": {
+            "name": "subsurfaceRadius",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "subsurface_radius",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "subsurface_radius",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "coat": {
+        "maya": {
+          "arnold": {
+            "name": "coat",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "coat_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "clear_coat",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "sheen": {
+        "maya": {
+          "arnold": {
+            "name": "sheen",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "sheen_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "sheen",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "sheenColor": {
+        "maya": {
+          "arnold": {
+            "name": "sheenColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "sheen_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "sheen_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "emission": {
+        "maya": {
+          "arnold": {
+            "name": "emission",
+            "type": "float",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "emission_weight",
+            "type": "float",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "emission",
+            "type": "float",
+            "inBetween": []
+          }
+        }
+    },
+      "emissionColor": {
+        "maya": {
+          "arnold": {
+            "name": "emissionColor",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "emission_color",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "emission_color",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    },
+      "opacity": {
+        "maya": {
+          "arnold": {
+            "name": "opacity",
+            "type": "color",
+            "inBetween": []
+          }
+        },
+        "clarisse": {
+          "standardSurface": {
+            "name": "opacity",
+            "type": "color",
+            "inBetween": []
+          },
+          "disney": {
+            "name": "opacity",
+            "type": "color",
+            "inBetween": []
+          }
+        }
+    }
+    }
+  },
+
+
+  "renderer_": {
     "arnold": {
       "basecolor": ".baseColor",
       "roughness": ".specularRoughness",

@@ -1108,7 +1108,7 @@ class Maya():
 
 
     def get_file_colorspace(self):
-        return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)[0]
+        return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)
 
 
     def assignMaterial(self, n="newMtl#", objects=None, new=True):

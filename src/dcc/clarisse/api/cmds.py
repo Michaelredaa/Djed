@@ -130,50 +130,59 @@ class Clarisse:
         else:
             self.working_geo_type = "abc_ref"
 
+
+    def create_ref(self, cntx, name, path):
+        if not ix.item_exists(f'{cntx}/{name}_ref'):
+            ref_cntx = ix.cmds.CreateCustomContext(name + "_ref", "Reference", "", str(cntx))
+        else:
+            ref_cntx = ix.get_item(f'{cntx}/{name}_ref')
+        if not ref_cntx:
+            raise "Can not load asset as a reference"
+        ix.cmds.SetReferenceFilenames([ix.get_item(str(ref_cntx))], [1, 0], [path])
+        return ref_cntx
+
+    def abc_bundle(self, cntx, name, path):
+        bundle_item = ix.cmds.CreateObject(name + "_bndl", "GeometryBundleAlembic", "Global", str(cntx))
+        if not bundle_item:
+            raise "Can not load asset as a abc bundle"
+        ix.cmds.SetValues([str(bundle_item) + ".filename[0]"], [str(path)])
+        return bundle_item
+    def usd_bundle(self, cntx, name, path):
+        bundle_item = ix.cmds.CreateObject(name + "_bndl", "GeometryBundleUsd", "Global", str(cntx))
+        if not bundle_item:
+            raise "Can not load asset as a abc bundle"
+        ix.cmds.SetUsdBundleFilename([str(bundle_item) + ".filename[0]"], [str(path)])
+        return bundle_item
+
     @error(name=__name__)
-    def import_geo(self, geo_path, name=None, context="build://project", geo_type='abc_ref', update_existence=True):
-        mesh_path = unquote(geo_path)
+    def import_geo(self, geo_path, asset_name=None, context="build://project", geo_type='abc_ref', update_existence=True):
+        geo_path = unquote(geo_path)
+
+        _types = {
+            'abc_ref': self.create_ref,
+            'usd_ref': self.create_ref,
+            'abc_bundle': self.abc_bundle,
+            'usd_bundle': self.usd_bundle
+        }
 
         geo_cntx = self.create_context(context)
-        if name is None:
-            name = os.path.basename(mesh_path).rsplit('.', 1)[-1]
+        if asset_name is None:
+            asset_name = os.path.basename(geo_path).rsplit('.', 1)[-1]
 
-        # create abc reference
-        abc_ref_cntx = ix.cmds.CreateCustomContext(name + "_abc_ref", "Reference", "", str(geo_cntx))
-        ix.cmds.SetReferenceFilenames([ix.get_item(str(abc_ref_cntx))], [1, 0], [mesh_path])
-        # abc_ref_cntx = ix.cmds.CreateFileReference(str(geo_cntx), [mesh_path])
+        geo_item = _types[geo_type](geo_cntx, asset_name, geo_path)
+
 
         ix.application.check_for_events()
 
-        # create abc bunble
-        abc_bundle_cntx = ix.cmds.CreateObject(name + "_abc_bndl", "GeometryBundleAlembic", "Global", str(geo_cntx))
-        ix.cmds.SetValues([str(abc_bundle_cntx) + ".filename[0]"], [str(mesh_path)])
-
         # create combiner
-        abc_cmb = self.create_node(name + "_abc_geo", "SceneObjectCombiner", str(geo_cntx))
-        ix.cmds.AddValues([str(abc_cmb) + ".objects"], [abc_bundle_cntx])
+        # cmbr = self.create_node(asset_name + "_geo", "SceneObjectCombiner", str(geo_cntx))
+        # ix.cmds.AddValues([str(cmbr) + ".objects"], [geo_item])
 
         # set scale
 
         ix.application.check_for_events()
 
-        # get shapes
-        shapes = self.get_objects_by_type('GeometryAbcMesh', str(abc_ref_cntx))
-        mesh_data = {"abc_ref": str(abc_ref_cntx), "abc_bundle": str(abc_bundle_cntx), "mtls": {}}
-        for shape in shapes:
-            path = str(shape).replace(str(abc_ref_cntx), "")
-            mtls = self.get_property(shape, 'materialBinding')
-            if not mtls:
-                continue
-            mtls = mtls.split(';')
-            for mtl in mtls:
-                if mtl not in mesh_data["mtls"]:
-                    mesh_data["mtls"][mtl] = []
-                mesh_data["mtls"][mtl].append((shape, path))
-
-        # disable the reference
-        ix.cmds.DisableItems([str(abc_ref_cntx)], True)
-        return mesh_data
+        return 'cmbr'
 
     @error(name=__name__)
     def import_texture(self, tex_path, cntx, udim=None, colorspace='aces', color=False):

@@ -54,6 +54,7 @@ class CreateAsset(pyblish.api.ContextPlugin):
             family="asset",
             file_color_space=ma.get_file_colorspace(),
             renderer=ma.get_renderer(),
+            host="maya",
             geo_paths=geo_paths,
             asset_data=ma.get_asset_data(asset_name)
         )

@@ -69,7 +69,8 @@ def connect(ip='localhost', port_num=None):
 
         port = ix.ClarisseNet(ip, port_num)
         return port
-    except:
+    except Exception as e:
+        print(e)
         pass
     return
 
@@ -100,33 +101,24 @@ def connect(ip='localhost', port_num=None):
     #     port.run(cmd)
 
 
-class CreateAsset(pyblish.api.ContextPlugin):
-    label = "Get current asset info"
-    order = pyblish.api.CollectorOrder
-
-
-    def process(self, context):
-        context.create_instance(name="foo", a='a', b=['f'])
 
 if __name__ == '__main__':
     port = connect()
-    pyblish.api.register_plugin(CreateAsset)
 
-    instance = pyblish.util.collect()[0]
-    kwargs = instance.data()
+    data ={'family': 'asset', 'name': 'chair', 'file_color_space': ['ACEScg', 'ACES2065-1', 'scene-linear Rec.709-sRGB', 'scene-linear DCI-P3 D65', 'scene-linear Rec.2020'], 'renderer': 'arnold', 'host': 'maya', 'geo_paths': {'obj': 'C:/Users/michael/Documents/projects/dummy/scenes/Export/chair/chair_v0019.obj', 'abc': 'C:/Users/michael/Documents/projects/dummy/scenes/Export/chair/chair_v0019.abc'}, 'asset_data': {'chairSG': {'materials': {'chairMTL': {'type': 'aiStandardSurface', 'attrs': {'baseColor': [(0.0, 0.0, 0.0)], 'specularRoughness': 1.0}, 'texs': {'ukjneb3bw_2K_Albedo_1': {'plugs': ['baseColor'], 'filepath': 'C:/Users/michael/Documents/Quixel_assets/Downloaded/3d/interior_furniture_ukjneb3bw/ukjneb3bw_2K_Albedo.jpg', 'colorspace': 'sRGB', 'type': 'file'}, 'ukjneb3bw_2K_Normal_LOD1_1': {'plugs': ['normalCamera'], 'filepath': 'C:/Users/michael/Documents/Quixel_assets/Downloaded/3d/interior_furniture_ukjneb3bw/ukjneb3bw_2K_Normal_LOD1.jpg', 'colorspace': 'sRGB', 'type': 'file'}, 'ukjneb3bw_2K_Roughness_1': {'plugs': ['specularRoughness'], 'filepath': 'C:/Users/michael/Documents/Quixel_assets/Downloaded/3d/interior_furniture_ukjneb3bw/ukjneb3bw_2K_Roughness.jpg', 'colorspace': 'sRGB', 'type': 'file'}}}}, 'displacements': {}, 'meshes': {'shape': ['|chair|chair1|chair1Shape']}}}}
+    data["geo_type"] = "abc_ref"
     x = f'''
-import pyblish.api
+import sys
+import os
+sys.path.append(os.getenv("DJED_ROOT")+"/src")
+sys.argv[0] = {data}
+from dcc.clarisse.plugins import load_asset
 
-context = pyblish.api.Context()
-instanceA = context.create_instance(**{kwargs})
+import importlib
+importlib.reload(load_asset)
 
-class LoadAsset(pyblish.api.InstancePlugin):
-    order = pyblish.api.ExtractorOrder
+load_asset.main()
 
-    def process(self, instance):
-        print(instance.data)
-
-print(LoadAsset().process(instanceA))
     '''
 
 
