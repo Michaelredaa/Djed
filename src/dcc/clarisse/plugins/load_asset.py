@@ -3,7 +3,6 @@
 Documentation:
 """
 
-
 # ---------------------------------
 # Import Libraries
 import os
@@ -19,16 +18,13 @@ for sysPath in sysPaths:
 
 site.addsitedir(DJED_ROOT.joinpath('venv', 'python39', 'Lib', 'site-packages').as_posix())
 
-
 ##########################
 import importlib
 import dcc.clarisse.api.cmds
 import utils.file_manager
 
+importlib.reload(dcc.clarisse.api.cmds)
 importlib.reload(utils.file_manager)
-
-
-
 
 import pyblish.api
 
@@ -48,6 +44,7 @@ def create_instance(data):
     context = pyblish.api.Context()
     instance = context.create_instance(**data)
     return instance
+
 
 class LoadAsset(pyblish.api.InstancePlugin):
     label = "import and set the asset"
@@ -69,25 +66,23 @@ class LoadAsset(pyblish.api.InstancePlugin):
         to_renderer = data.get('to_renderer', 'standardSurface')
 
         geo_paths = data.get('geo_paths')
-        geo_type = data.get('geo_type', 'abc_ref')
 
-        if geo_type in ['abc_ref', 'abc_bundle']:
+        # get the geometry types
+        geo_type = data.get('geo_type', 'abc_ref')
+        if 'abc' in geo_type:
             geo_path = geo_paths.get('abc')
+        elif 'usd' in geo_type:
+            geo_path = geo_paths.get('usd')
         else:
             return
 
-
-        # create contexts
+        # create main contexts
         mtl_ctx = self.fm.get_user_json('clarisse', 'material_root')
         tex_ctx = self.fm.get_user_json('clarisse', 'texture_root')
         utils_ctx = self.fm.get_user_json('clarisse', 'utils_root')
 
         # root
         root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
-        # if ix.item_exists(root_ctx):
-        #     ix.ix.log_error(f"[Djed] Asset already exists at: '{root_ctx}'")
-        #     return
-
         root_ctx = self.cl.create_context(root_ctx)
 
         geo_ctx = self.cl.create_context(root_ctx + "/geo")
@@ -98,35 +93,45 @@ class LoadAsset(pyblish.api.InstancePlugin):
         # import geometry
         geo_item = self.cl.import_geo(geo_path, asset_name, context=str(geo_ctx), geo_type=geo_type)
 
+        # get asset data
         asset_data = data.get('asset_data')
 
-
+        # convert material data to clarisse engines
         material_conversion = self.fm.material_conversion(source_host, source_renderer, "clarisse", to_renderer)
         plugs_conversion = material_conversion.get('plugs')
         nodes_conversion = material_conversion.get('nodes')
 
-        # materials
+        # materials data
         for sg in asset_data:
+            # materials
             materials = asset_data.get(sg, {}).get('materials', {})
 
+            material_items = []
+            displacement_items = []
             for mtl in materials:
                 from_renderer = materials[mtl].get('type')
 
                 mtl_type = nodes_conversion.get(from_renderer).get('name')
 
                 # create material
-                mtl_node = self.cl.create_node(mtl, mtl_type, cntx=mtl_ctx)
+                mtl_item = self.cl.create_node(mtl, mtl_type, cntx=mtl_ctx)
+                material_items.append(mtl_item)
 
+                # attributes
                 attrs = materials[mtl].get('attrs')
+                for attr in attrs:
+                    try:
+                        to_attr = plugs_conversion.get(attr).get('name')
+                        value = attrs.get(attr)
+                        ix.cmds.SetValues([f'{mtl_item}.{to_attr}'], [f'{value}'])
+                    except:
+                        pass
+
+                # create textures
                 textures = materials[mtl].get('texs')
-                print(textures)
-                for tex in textures:
-                    print(tex)
-                    plug_name = textures[tex].get('plugs')[0]
-                    tex_type = textures[tex].get('type')
-                    tex_path = textures[tex].get('filepath')
-                    udim = textures[tex].get('filepath')
-                    colorspace = ""
+                for tex, tex_dict in textures.items():
+                    plug_name = tex_dict.get('plugs')[0]
+                    tex_type = tex_dict.get('type')
 
                     to_plug = plugs_conversion.get(plug_name)
 
@@ -134,162 +139,111 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         continue
 
                     # create_ texture
-                    tex_node = self.cl.import_texture(tex_path, tex_ctx, udim, colorspace, to_plug.get('type')=='color')
-                    tex_attr = mtl_node.get_attribute(to_plug.get('name'))
+                    tex_item = self.cl.import_texture(
+                        tex_dict.get('filepath'),
+                        tex_ctx,
+                        tex_dict.get('udim'),
+                        tex_dict.get('colorspace'),
+                        False
+                    )
 
-                    connected_node = tex_node
+                    tex_attr = mtl_item.get_attribute(to_plug.get('name'))
+
+                    connected_item = tex_item
 
                     for inbetween_dict in to_plug.get("inBetween"):
-                        inbetween_node_name = mtl+inbetween_dict.get('name')
+                        inbetween_node_name = mtl + inbetween_dict.get('name')
+                        inbetween_item = self.cl.create_node(inbetween_node_name, inbetween_dict.get('type'),
+                                                             cntx=utils_ctx)
+                        if not inbetween_item:
+                            inbetween_item = ix.get_item(str(utils_ctx) + "/" + inbetween_node_name)
 
-                        inbetween_node = self.cl.create_node(inbetween_node_name, inbetween_dict.get('type'), cntx=utils_ctx)
-                        if not inbetween_node:
-                            inbetween_node = ix.get_item(str(utils_ctx) + "/" + inbetween_node_name)
+                        inbetween_node_attr = inbetween_item.get_attribute(inbetween_dict.get('inplug'))
+                        ix.cmds.SetTexture([str(inbetween_node_attr)], str(connected_item))
+                        connected_item = inbetween_item
 
-                        inbetween_node_attr = inbetween_node.get_attribute(inbetween_dict.get('inplug'))
-                        ix.cmds.SetTexture([str(inbetween_node_attr)], str(connected_node))
-                        connected_node = inbetween_node
+                    ix.cmds.SetTexture([str(tex_attr)], str(connected_item))
 
-                    ix.cmds.SetTexture([str(tex_attr)], str(connected_node))
-
-
-
-
-
-            if len(materials) == 1:
-                # >default
-                ...
-
-            else:
-                ...
-
-
-
-
-
-
-        # bundle_sgs = self.cl.get_shading_group(geo_item)
-        # # shape path from bundle
-        # for sg in sgs:
-        #     index = sgs.get(sg)
-        #     for shape in shapes:
-        #         if re.search(shape, sg):
-        #             ix.cmds.SetValues([str(abc_bundle) + f".materials[{index}]"], [str(mtl_node)])
+            displacements = asset_data.get(sg, {}).get('displacements', {})
+            for displacement in displacements:
+                displacement_item = self.cl.create_node(displacement, material_type='Displacement', cntx=mtl_ctx)
+                if not displacement_item:
+                    displacement_item = ix.get_item(f'{mtl_ctx}/{displacement}')
+                displacement_items.append(displacement_item)
+                for tex_name, tex_dict in displacements[displacement].get('texs', {}).items():
+                    tex_item = self.cl.import_texture(
+                        tex_dict.get('filepath'),
+                      tex_ctx,
+                      tex_dict.get('udim'),
+                      tex_dict.get('colorspace'),
+                      False
+                      )
+                    displacement_item.attrs.front_value = str(tex_item)
 
 
 
-# ---------------------------------
-# Variables
-
-
-# ---------------------------------
-# Start Here
-class AssetLoader():
-
-    def __init__(self):
-        self.fm = FileManager()
-
-        self.working_colorspace = 'aces'
-
-        self.material_conversion('aistd', 'adstd')
-        self.geo_type("Alembic Reference")
-
-        self.asset_name = "assetName"
-
-    def process(self, instance):
-        asset_name = instance.get('name')
-        data = instance.get('data')
-
-        colorspace = data.get('colorspace', 'aces')
-        source_renderer = data.get('source_renderer')
-        dist_renderer = data.get('dist_renderer', 'standardSurface')
-
-        # get mesh
-        geo_type = data.get('geo_type')
-        mesh_files = data.get('mesh_files')
-
-        usd_path = mesh_files.get('usd_geo_file', '')
-
-
-        if geo_type == 'abc_ref':
-            geo_path = mesh_files.get('abc_file', '')
-        elif geo_type == 'abc_bundle':
-            geo_path = mesh_files.get('abc_file', '')
-        elif geo_type == 'usd_ref':
-            geo_path = mesh_files.get('usd_geo_file', '')
-        elif geo_type == 'usd_bundle':
-            geo_path = mesh_files.get('usd_geo_file', '')
-
-
-
-
-
-
-
-
-
-
-
-
-    def set_colorspace(self, node, path):
-        """
-        To set the colorspace to node
-        :param node:
-        :return:
-        """
-        if not node:
-            return
-
-        color = self.fm.ck_tex(os.path.basename(path)) == "baseColor"
-        # colorspace
-        hdr = self.fm.get_cfg('hdr')
-        if self.working_colorspace == 'aces':
-            cs_h = self.fm.get_cfg('colorspace')['aces_color_hdr']
-            cs_l = self.fm.get_cfg('colorspace')['aces_color_ldr']
-            cs_r = self.fm.get_cfg('colorspace')['aces_raw']
-
-            if color:
-                if path.rsplit('.', 1)[-1] in hdr:
-                    node.attrs.file_color_space[0] = cs_h
+            # assign materials
+            # - reference
+            if "ref" in geo_type:
+                if 'abc' in geo_type:
+                    clarisse_geo_type = 'GeometryAbcMesh'
+                elif 'usd' in geo_type:
+                    clarisse_geo_type = 'GeometryUsdMesh'
                 else:
-                    node.attrs.file_color_space[0] = cs_l
-            else:
-                node.attrs.file_color_space[0] = cs_r
+                    continue
 
-        else:
-            cs_h = self.fm.get_cfg('colorspace')['srgb']
-            cs_r = self.fm.get_cfg('colorspace')['raw']
+                shape_items = self.cl.get_objects_by_type(clarisse_geo_type, str(geo_item))
 
-            if color:
-                node.attrs.file_color_space[0] = cs_h
-            else:
-                node.attrs.file_color_space[0] = cs_r
+                for mesh_shape_path in asset_data.get(sg, {}).get('meshes', {}).get('shape', {}):
+                    for shape_item in shape_items:
+                        shape_item_sgs = self.cl.get_shading_group(shape_item)
 
-    def material_conversion(self, _from, _to):
-        '''
-        convert from material type of dcc to clarisse material type
-        :param _from: # aiStandardSurface
-        :param _to: # MaterialPhysicalAutodeskStandardSurface
-        :return:
-        '''
-        self.working_mtl_conversion = [_from, _to]
+                        shape_item_name = str(shape_item.get_name())
+                        if mesh_shape_path.endswith(shape_item_name):
 
-    def set_material(self, mtl=None):
-        if mtl:
-            return mtl
-        else:
-            return 'MaterialPhysicalAutodeskStandardSurface'
+                            for shape_item_sg, index in shape_item_sgs.items():
+                                shape_sg = shape_item_sg.split('>')[-1]
+
+                                if (shape_sg == sg) or (shape_sg == 'default'):
+                                    ix.cmds.SetValues(
+                                        [str(shape_item) + f".materials[{index}]"],
+                                        [str(material_items[0])])
+                                    if displacement_items:
+                                        ix.cmds.SetValues(
+                                            [str(shape_item) + f".displacements[{index}]"],
+                                            [str(displacement_items[0])])
+
+            # - bundle
+            elif "bundle" in geo_type:
+                bundle_sgs = self.cl.get_shading_group(geo_item)
+
+                for mesh_shape in asset_data.get(sg, {}).get('meshes', {}).get('shape', {}):
+                    for shape_item_path, index in bundle_sgs.items():
+                        shape_sg = shape_item_path.split('>')[-1]
+                        if (shape_sg == sg) or (shape_sg == 'default'):
+                            clarisse_path_pattern = shape_item_path.split('>')[0].split('/', 2)[-1]
+
+                            # source data pattern
+                            source_path_pattern = mesh_shape.split('|')
+                            source_path_pattern.pop(-2)
+                            source_path_pattern = '/'.join(source_path_pattern)
+
+                            # assign material
+                            if clarisse_path_pattern in source_path_pattern:
+                                ix.cmds.SetValues([str(geo_item) + f".materials[{index}]"], [str(material_items[0])])
+
+                            if displacement_items:
+                                ix.cmds.SetValues(
+                                    [str(geo_item) + f".displacements[{index}]"],
+                                    [str(displacement_items[0])])
 
 
 # Main Function
 def main():
     import sys
-    import pyblish.api
 
     data = sys.argv[0]
-
-    context = pyblish.api.Context()
-    instance = context.create_instance(**data)
+    instance = create_instance(data)
 
     LoadAsset().process(instance)
 

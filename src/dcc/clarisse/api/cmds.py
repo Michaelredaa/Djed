@@ -64,12 +64,12 @@ class Clarisse:
     def create_node(self, name='_MTL#', material_type='', cntx='cntx'):
 
         cntx_path = self.create_context(cntx)
-        node_path = ix.item_exists(cntx_path + '/' + name)
+        node_path = ix.item_exists(f'{cntx_path}/{name}')
         if not node_path:
             node_path = ix.cmds.CreateObject(str(name), material_type, 'Global', str(cntx_path))
             return node_path
         else:
-            return False
+            return ix.get_item(f'{cntx_path}/{name}')
 
     @error(name=__name__)
     def assign_material(self, objects, mtl_name):
@@ -83,7 +83,7 @@ class Clarisse:
             obj_item = ix.get_item(obj)
             obj_item.attrs.materials = mtl_name
 
-            return True
+        return True
 
     @error(name=__name__)
     def get_property(self, geometryShape, prop_name):
@@ -147,6 +147,7 @@ class Clarisse:
             raise "Can not load asset as a abc bundle"
         ix.cmds.SetValues([str(bundle_item) + ".filename[0]"], [str(path)])
         return bundle_item
+
     def usd_bundle(self, cntx, name, path):
         bundle_item = ix.cmds.CreateObject(name + "_bndl", "GeometryBundleUsd", "Global", str(cntx))
         if not bundle_item:
@@ -182,7 +183,7 @@ class Clarisse:
 
         ix.application.check_for_events()
 
-        return 'cmbr'
+        return geo_item
 
     @error(name=__name__)
     def import_texture(self, tex_path, cntx, udim=None, colorspace='aces', color=False):
@@ -197,7 +198,7 @@ class Clarisse:
         tex_node = self.create_node(tex_name, 'TextureStreamedMapFile', cntx)
 
         # Check UDIM
-        if udim:
+        if (udim is not None) and (udim != 1):
             tex_path = re.sub('\.\d+\.', '.<UDIM>.', tex_path)
 
         if not tex_node:
