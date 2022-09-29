@@ -18,6 +18,7 @@ import maya.OpenMayaUI as omui
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 import maya.mel as mel
+from maya.app.general import fileTexturePathResolver
 
 # QT
 from PySide2.QtWidgets import QMessageBox, QWidget
@@ -475,14 +476,18 @@ class Maya():
                     displace = displacements[0]
                     _type = cmds.nodeType(displace)
                     tex = self.get_texs_from_mtl(displace, {"displacementShader": ""})
+
+                    for attr, value in self.get_attrs(displace, default_values=False).items():
+                        attrs[attr] = value
+
                 else:
                     # if there is map connected directly in shading group
                     displace = "displacement_"
                     _type = "displacementShader"
                     tex = self.get_texs_from_mtl(sg, {"displacement": ""})
-                    # if not tex:
-                    #     # if there is map connected directly in shading group
-                    #     tex = self.get_texs_from_mtl(sg, {"displacement": ""})
+
+
+
                 if tex:
                     data[sg]["displacements"][displace] = {}
                     data[sg]["displacements"][displace]["type"] = _type
@@ -862,13 +867,16 @@ class Maya():
 
         # Get file nodes plugs
         for tex_node in text_fileNodes:
-            tex_node_dict = {"plugs": [], "filepath": None, "colorspace": None, "type": None}
+            tex_node_dict = {"plugs": [], "filepath": None, "colorspace": None, "type": None, "udim": None}
 
             tex_fn = om.MFnDependencyNode(tex_node)
-            file_path = tex_fn.findPlug("fileTextureName", False).asString().replace("<UDIM>", "1001")
+            file_path = tex_fn.findPlug("fileTextureName", False).asString()
+            udim = len(fileTexturePathResolver.findAllFilesForPattern(file_path))
+            file_path = file_path.replace("<UDIM>", "1001")
             colorspace = tex_fn.findPlug("colorSpace", False).asString()
 
             tex_node_dict["type"] = cmds.nodeType(tex_fn.name())
+            tex_node_dict["udim"] = udim
 
             tex_node_dict["filepath"] = file_path
             tex_node_dict["colorspace"] = colorspace
