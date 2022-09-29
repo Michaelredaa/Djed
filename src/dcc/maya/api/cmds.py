@@ -871,7 +871,7 @@ class Maya():
 
             tex_fn = om.MFnDependencyNode(tex_node)
             file_path = tex_fn.findPlug("fileTextureName", False).asString()
-            udim = len(fileTexturePathResolver.findAllFilesForPattern(file_path))
+            udim = len(fileTexturePathResolver.findAllFilesForPattern(file_path, cmds.currentTime()))
             file_path = file_path.replace("<UDIM>", "1001")
             colorspace = tex_fn.findPlug("colorSpace", False).asString()
 
