@@ -27,16 +27,26 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from dcc.maya.api.cmds import Maya
-from dcc.linker import update_spp
+from dcc.linker.to_spp import to_spp
 
 
 # Main function
 def main():
-    ma_fn = Maya()
-    mesh_path = ma_fn.export_selection(export_type=["obj", "abc"], message=False)["obj"]
-    instance = {'name': '', 'data': {'mesh_path': mesh_path}}
+    ma = Maya()
+    asset_name = ma.selection()[0]
+    mesh_path = ma.export_selection(
+        asset_name=asset_name,
+        export_type=["obj", "abc"],
+        _message=False
+    )["obj"]
+    instance = {}
+    instance['name'] = asset_name
+    instance['family'] = 'asset'
+    instance['host'] = 'spp'
+    instance['mesh_path'] = mesh_path
 
-    update_spp.process(instance)
+    to_spp(instance)
+
 
 
 if __name__ == '__main__':
