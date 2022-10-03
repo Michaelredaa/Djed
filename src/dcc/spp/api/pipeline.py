@@ -15,22 +15,22 @@ for sysPath in sysPaths:
 from utils.dialogs import message
 from utils.file_manager import FileManager
 
-import substance_painter as sp
+import substance_painter
 from substance_painter.exception import ProjectError, ResourceNotFoundError, ServiceNotFoundError
 
 # ---------------------------------
 
 
 Settings = {
-    "OpenGL": sp.project.NormalMapFormat.OpenGL,
-    "DirectX": sp.project.NormalMapFormat.DirectX,
+    "OpenGL": substance_painter.project.NormalMapFormat.OpenGL,
+    "DirectX": substance_painter.project.NormalMapFormat.DirectX,
     # ProjectWorkflow
-    "Default": sp.project.ProjectWorkflow.Default,
-    "TextureSetPerUVTile": sp.project.ProjectWorkflow.TextureSetPerUVTile,  # legacy
-    "UVTile": sp.project.ProjectWorkflow.UVTile,  # Set per material containing multiple UV
+    "Default": substance_painter.project.ProjectWorkflow.Default,
+    "TextureSetPerUVTile": substance_painter.project.ProjectWorkflow.TextureSetPerUVTile,  # legacy
+    "UVTile": substance_painter.project.ProjectWorkflow.UVTile,  # Set per material containing multiple UV
     # Tangent space
-    "PerVertex": sp.project.TangentSpace.PerVertex,
-    "PerFragment": sp.project.TangentSpace.PerFragment,
+    "PerVertex": substance_painter.project.TangentSpace.PerVertex,
+    "PerFragment": substance_painter.project.TangentSpace.PerFragment,
     "default_texture_resolution": 1024
 
 }
@@ -48,11 +48,11 @@ fm = FileManager()
 
 
 def info(msg):
-    sp.logging.log(sp.logging.INFO, "Djed", msg)
+    substance_painter.logging.log(substance_painter.logging.INFO, "Djed", msg)
 
 
 def error_(msg):
-    sp.logging.log(sp.logging.ERROR, "Djed", msg)
+    substance_painter.logging.log(substance_painter.logging.ERROR, "Djed", msg)
 
 
 class JS:
@@ -61,7 +61,7 @@ class JS:
 
     def exe(self, cmd):
         try:
-            result = sp.js.evaluate(cmd)
+            result = substance_painter.js.evaluate(cmd)
             return result
         except RuntimeError:
             info(f'Can not evaluate the "{cmd}" command')
@@ -115,10 +115,10 @@ class JS:
 
 
 def main_window():
-    return sp.ui.get_main_window()
+    return substance_painter.ui.get_main_window()
 
 
-def create_project(mesh_file: str, project_path=None, cfg=None):
+def create_project(mesh_file, project_path=None, cfg=None):
     """
     To remotely create a new project
     :param mesh_file: (str) the mesh file path
@@ -137,41 +137,42 @@ def create_project(mesh_file: str, project_path=None, cfg=None):
         cfg["project_workflow"] = Settings[cfg["project_workflow"]]
         cfg["tangent_space_mode"] = Settings[cfg["tangent_space_mode"]]
 
-        # open project
-        if sp.project.is_open():
-            sp.project.close()
-        sp.project.create(mesh_file_path=mesh_file, settings=sp.project.Settings(**cfg))
-        if sp.project.is_open():
-            print("The project was successfully created.")
+    # open project
+    if substance_painter.project.is_open():
+        substance_painter.project.close()
 
-        # save project
-        if project_path:
-            sp.project.save_as(project_path)
-            if not sp.project.needs_saving():
-                print("As expected, there is nothing to save since this was just done.")
+    substance_painter.project.create(mesh_file_path=mesh_file, settings=substance_painter.project.Settings(**cfg))
+    if substance_painter.project.is_open():
+        print("The project was successfully created.")
+
+    # save project
+    if project_path:
+        substance_painter.project.save_as(project_path)
+        if not substance_painter.project.needs_saving():
+            print("As expected, there is nothing to save since this was just done.")
 
 
 def reload_mesh(mesh_path):
-    mesh_reloading_settings = sp.project.MeshReloadingSettings(
+    mesh_reloading_settings = substance_painter.project.MeshReloadingSettings(
         import_cameras=False,
         preserve_strokes=True)
 
     def on_mesh_reload(status):
-        if status == sp.project.ReloadMeshStatus.SUCCESS:
+        if status == substance_painter.project.ReloadMeshStatus.SUCCESS:
             info("The mesh was reloaded successfully.")
         else:
             error_("The mesh couldn't be reloaded.")
 
-    sp.project.reload_mesh(mesh_path, mesh_reloading_settings, on_mesh_reload)
+    substance_painter.project.reload_mesh(mesh_path, mesh_reloading_settings, on_mesh_reload)
 
 
 def get_mesh_path():
-    return sp.project.last_imported_mesh_path()
+    return substance_painter.project.last_imported_mesh_path()
 
 
 def get_file_path():
     try:
-        filepath = sp.project.file_path()
+        filepath = substance_painter.project.file_path()
     except ProjectError:
         filepath = None
         pass
@@ -184,24 +185,24 @@ def get_file_path():
 def save_file(file_path):
     if not file_path.endswith('.spp'):
         error_('The substance painter file must endswith ".spp"')
-    return sp.project.save_as(file_path, sp.project.ProjectSaveMode.Full)
+    return substance_painter.project.save_as(file_path, substance_painter.project.ProjectSaveMode.Full)
 
 
 def save_copy(file_path):
     if not file_path.endswith('.spp'):
         error_('The substance painter file must endswith ".spp"')
-    return sp.project.save_as_copy(file_path)
+    return substance_painter.project.save_as_copy(file_path)
 
 
 def save_incremental(file_path):
     if not file_path.endswith('.spp'):
         error_('The substance painter file must endswith ".spp"')
-    return sp.project.save_as(file_path, sp.project.ProjectSaveMode.Incremental)
+    return substance_painter.project.save_as(file_path, substance_painter.project.ProjectSaveMode.Incremental)
 
 
 def get_all_texture_sets():
     try:
-        return [x.name() for x in sp.textureset.all_texture_sets()]
+        return [x.name() for x in substance_painter.textureset.all_texture_sets()]
     except ProjectError:
         pass
 
@@ -267,7 +268,7 @@ def export_texture(tex_dir=None):
                 "exportPreset": export_preset
             })
 
-        result = sp.export.export_project_textures(export_options)
+        result = substance_painter.export.export_project_textures(export_options)
         return on_export_texture_finished(result)
 
     except Exception as e:
@@ -275,14 +276,14 @@ def export_texture(tex_dir=None):
 
 
 def on_export_texture_finished(result):
-    if result.status != sp.export.ExportStatus.Success:
+    if result.status != substance_painter.export.ExportStatus.Success:
         message(main_window(), "Error", result.message)
 
     for key in result.textures:
         sg = key[0]
         info(sg)
 
-        texture_set = sp.textureset.TextureSet.from_name(sg)
+        texture_set = substance_painter.textureset.TextureSet.from_name(sg)
         textures = result.textures.get(key)
 
         if texture_set.has_uv_tiles():
@@ -299,3 +300,5 @@ def on_export_texture_finished(result):
 
 if __name__ == '__main__':
     print(__name__)
+    mesh_path =  r"C:/Users/michael/Documents/projects/dummy/scenes/Export/chair/chair_v0029.obj"
+    create_project(mesh_file=mesh_path)
