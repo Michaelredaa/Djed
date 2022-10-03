@@ -14,6 +14,7 @@ for sysPath in sysPaths:
 
 from utils.dialogs import message
 from utils.file_manager import FileManager
+from utils.spp_remote import RemotePainter
 
 import substance_painter
 from substance_painter.exception import ProjectError, ResourceNotFoundError, ServiceNotFoundError
@@ -297,6 +298,21 @@ def on_export_texture_finished(result):
         for file_path in selected_textures:
             info(file_path)
 
+def connect_spp():
+    """
+    To connect with the current substance painter session
+    :return: substance painter object
+    """
+    try:
+        sp = RemotePainter()
+        sp.checkConnection()
+        sp.execScript('import substance_painter', 'python')
+        sp.execScript('[Djed]', 'python')
+        return sp
+    except:
+        pass
+        # print(traceback.format_exc())
+        # message(None, 'Error', 'Can not get the current session of substance painter.')
 
 if __name__ == '__main__':
     print(__name__)
