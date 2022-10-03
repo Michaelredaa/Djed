@@ -18,7 +18,7 @@ import pyblish.api
 fm = FileManager()
 
 
-class createAsset(pyblish.api.InstancePlugin):
+class LoadAsset(pyblish.api.InstancePlugin):
     label = "create project and set the asset"
     order = pyblish.api.ExtractorOrder
     hosts = ["spp"]
@@ -27,6 +27,9 @@ class createAsset(pyblish.api.InstancePlugin):
     trying_depth = 3
 
     def process(self, instance):
+        if self.trying_depth == 0:
+            return
+
         asset_name = instance.name
         data = instance.data
 

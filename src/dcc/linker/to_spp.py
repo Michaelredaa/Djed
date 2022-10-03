@@ -10,17 +10,17 @@ DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 ##########################
 import importlib
 
-import dcc.spp.plugins.create_asset
-importlib.reload(dcc.spp.plugins.create_asset)
+import dcc.spp.plugins.load_asset
+importlib.reload(dcc.spp.plugins.load_asset)
 ############################
 
 from dcc.linker.instance import create_instance
-from dcc.spp.plugins.create_asset import createAsset
+from dcc.spp.plugins.load_asset import LoadAsset
 
 
 def to_spp(data):
     instance = create_instance(data)
-    createAsset().process(instance)
+    LoadAsset().process(instance)
 
 
 # Main function

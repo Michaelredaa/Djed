@@ -22,7 +22,6 @@ class updateAsset(pyblish.api.InstancePlugin):
     hosts = ["spp"]
     families = ["asset"]
 
-    trying_depth = 3
 
     def process(self, instance):
         asset_name = instance.name
