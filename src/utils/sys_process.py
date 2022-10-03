@@ -2,10 +2,17 @@
 """
 Documentation:
 """
+
+import os
+import site
+from pathlib import Path
+
+DJED_ROOT = Path(os.getenv('DJED_ROOT'))
+
+site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
+
 import subprocess
-
 import psutil
-
 
 def is_process_running(process_name):
     '''
@@ -24,5 +31,3 @@ def is_process_running(process_name):
 def execute_commmand(*args):
     subprocess.Popen(args)
 
-if __name__ == '__main__':
-    print(is_process_running("Adobe Substance 3D Painter.exe"))
