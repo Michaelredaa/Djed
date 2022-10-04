@@ -238,6 +238,18 @@ class FileManager():
         else:
             return version
 
+    def get_latest_file(self,root, ext='.*'):
+        root = Path(root)
+
+        files = root.glob(f'*{ext}')
+        names = files
+        print(files)
+
+        for filepath in root.glob(f'*{ext}'):
+            print(filepath)
+
+
+
     @error(name=__name__)
     def version_up(self, path, prefix='v', padding=4):
         self.make_dirs(path)
@@ -316,7 +328,8 @@ class FileManager():
 def main():
     pass
     fm = FileManager()
-    print(fm.resolve_path('../../foo', relatives_to='c:/users/michael'))
+    fm.get_latest_file(r"C:\Users\michael\Documents\projects\dummy\scenes\sur")
+    # print(fm.resolve_path('../../foo', relatives_to='c:/users/michael'))
 
 
 if __name__ == '__main__':
