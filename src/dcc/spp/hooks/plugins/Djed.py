@@ -160,10 +160,10 @@ class SubstanceIntegration():
                     f"'{source_file_path}' is not an path\nIt seems you not save the source maya file.")
             return
 
-        export_root = self.fm.get_user_json("spp", "export_preset").get("path")
+        save_root = self.fm.get_user_json("spp", "save_dir")
 
         resolved_path = self.fm.resolve_path(
-            export_root,
+            save_root,
             relatives_to=source_file_path,
             variables={"$asset_name": self.asset_name, "$project": self.project_dir})
 
