@@ -22,7 +22,7 @@ def start_plugin():
     DJED_ROOT = os.getenv("DJED_ROOT")
     spp_path = os.path.join(DJED_ROOT, "src", "dcc", "spp")
 
-    plugin_path = os.path.join(spp_path, "plugins")
+    plugin_path = os.path.join(spp_path, "hooks", "plugins")
 
     sysPaths = [spp_path, plugin_path]
     for sysPath in sysPaths:
