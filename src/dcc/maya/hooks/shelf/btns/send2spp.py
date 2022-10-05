@@ -30,12 +30,6 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-import importlib
-from dcc.maya.hooks.shelf import tool_settings
-import dcc.linker.to_spp
-importlib.reload(tool_settings)
-importlib.reload(dcc.linker.to_spp)
-
 
 from dcc.maya.hooks.shelf.tool_settings import ToolSettings
 from dcc.maya.api.cmds import maya_main_window
@@ -117,7 +111,7 @@ class Maya2SppSettings(ToolSettings):
 
     def onApply(self):
         cfg = self.get_presets()
-        instance = {}
+        data = {}
         asset_name = self.ma.selection()[0]
         mesh_path = self.ma.export_selection(
             asset_dir=self.le_dir.text(),
@@ -126,13 +120,13 @@ class Maya2SppSettings(ToolSettings):
             _message=False
         )["obj"]
 
-        instance['name'] = asset_name
-        instance['family'] = 'asset'
-        instance['host'] = 'spp'
-        instance['mesh_path'] = mesh_path
-        instance['cfg'] = cfg
+        data['name'] = asset_name
+        data['family'] = 'asset'
+        data['host'] = 'spp'
+        data['mesh_path'] = mesh_path
+        data['cfg'] = cfg
 
-        to_spp(instance)
+        to_spp(data)
 
 
 # Main function
