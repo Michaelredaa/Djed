@@ -259,21 +259,22 @@ class FileManager():
     @error(name=__name__)
     def version_up(self, path, prefix='v', padding=4):
         self.make_dirs(path)
-        base_version = "{}{}".format(prefix, "1".zfill(padding))
+        increment = "1".zfill(padding)
+        up_version = "{}{}".format(prefix, increment)
         all_versions = os.listdir(path)
         if len(all_versions) < 1:
-            ret_path = os.path.join(path, base_version)
+            ret_path = os.path.join(path, up_version)
         else:
             latest_version = self.get_latest_version(path, prefix=prefix, padding=padding, ret_path=False)
 
             num_str = re.findall(r"\d+", latest_version)
             if not num_str:
-                ret_path = os.path.join(path, base_version)
-            else:
-                increment = str(int(num_str[0]) + 1)
-                up_version = "{}{}".format(prefix, increment.zfill(padding))
                 ret_path = os.path.join(path, up_version)
-        return ret_path.replace("\\", "/")
+            else:
+                increment = str(int(num_str[0]) + 1).zfill(padding)
+                up_version = "{}{}".format(prefix, increment)
+                ret_path = os.path.join(path, up_version)
+        return ret_path.replace("\\", "/"), up_version
 
     @error(name=__name__)
     def version_file_up(self, file_path, prefix='v', padding=4):
