@@ -12,6 +12,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 import substance_painter as sp
+import substance_painter_plugins
 
 # ---------------------------------
 # Variables
@@ -20,6 +21,12 @@ sysPaths = [DJED_ROOT, DJED_ROOT.joinpath('src')]
 for sysPath in sysPaths:
     if str(sysPath) not in sys.path:
         sys.path.append(str(sysPath))
+
+import importlib
+import utils.file_manager
+importlib.reload(utils.file_manager)
+
+
 
 from utils.dialogs import save_dialog, text_dialog, message
 from utils.assets_db import AssetsDB
@@ -57,7 +64,7 @@ class SubstanceIntegration():
         self.menu.addSeparator()
 
         save_action = self.menu.addAction(QIcon(str(Icons.joinpath('save.png'))), "&Save")
-        save_incremental_action = self.menu.addAction(QIcon(str(Icons.joinpath('increment.png'))), "&Save incremental")
+        # save_incremental_action = self.menu.addAction(QIcon(str(Icons.joinpath('increment.png'))), "&Save incremental")
         save_backup_action = self.menu.addAction(QIcon(str(Icons.joinpath('backup.png'))), "&Save Backup")
         open_action = self.menu.addAction(QIcon(str(Icons.joinpath('folder.png'))), "&Open Location")
         self.menu.addSeparator()
@@ -76,7 +83,7 @@ class SubstanceIntegration():
 
         # signals
         save_action.triggered.connect(self.on_save)
-        save_incremental_action.triggered.connect(self.on_save_incremental)
+        # save_incremental_action.triggered.connect(self.on_save_incremental)
         save_backup_action.triggered.connect(self.on_save_backup)
         open_action.triggered.connect(self.on_open_location)
         export_action.triggered.connect(self.on_textures_export)
@@ -87,33 +94,35 @@ class SubstanceIntegration():
         about_action.triggered.connect(self.on_about)
 
     def on_save(self):
+
+        if not sp.project.is_open():
+            message(self.main_window, 'Error', 'Please open project first.')
+            return
+
         save_path = self.get_save_path()
+        save_path = self.fm.version_file_up(save_path)
         if not save_path:
             spp_path = save_dialog(self.main_window, "Files (*.spp)")
             if not spp_path:
                 return
-        else:
-            spp_path = save_path + ".spp"
 
-        spp_path = self.fm.version_file_up(spp_path)
+        pipeline.save_incremental(str(save_path))
 
-        pipeline.save_file(str(spp_path))
+        db.add_geometry(asset_name=self.asset_name, substance_file=save_path)
 
-        db.add_geometry(asset_name=self.asset_name, substance_file=spp_path)
-
-    def on_save_incremental(self):
-        save_path = self.get_save_path()
-        if not save_path:
-            spp_path = save_dialog(self.main_window, "Files (*.spp)")
-            if not spp_path:
-                return
-        else:
-            spp_path = save_path + ".spp"
-
-        spp_path = self.fm.version_file_up(spp_path)
-
-        pipeline.save_incremental(spp_path)
-        db.add_geometry(asset_name=self.asset_name, substance_file=spp_path)
+    # def on_save_incremental(self):
+    #     save_path = self.get_save_path()
+    #     if not save_path:
+    #         spp_path = save_dialog(self.main_window, "Files (*.spp)")
+    #         if not spp_path:
+    #             return
+    #     else:
+    #         spp_path = save_path
+    #
+    #     spp_path = self.fm.version_file_up(spp_path)
+    #
+    #     pipeline.save_incremental(spp_path)
+    #     db.add_geometry(asset_name=self.asset_name, substance_file=spp_path)
 
     def on_save_backup(self):
         comment = text_dialog(self.main_window)
@@ -151,7 +160,10 @@ class SubstanceIntegration():
         pass
 
     def on_about(self):
-        pass
+        print("reload")
+        sys.path.append(DJED_ROOT.joinpath("src", "dcc", "spp", "hooks", "plugins").as_posix())
+        plugin = importlib.import_module("Djed")
+        substance_painter_plugins.reload_plugin(plugin)
 
     def get_save_path(self):
         source_file_path = db.get_geometry(asset_name=self.asset_name, source_file="")["source_file"]
@@ -162,12 +174,12 @@ class SubstanceIntegration():
 
         save_root = self.fm.get_user_json("spp", "save_dir")
 
-        resolved_path = self.fm.resolve_path(
+        resolved_dir = self.fm.resolve_path(
             save_root,
             relatives_to=source_file_path,
             variables={"$asset_name": self.asset_name, "$project": self.project_dir})
-
-        return self.fm.version_file_up(resolved_path)
+        resolved_path = os.path.join(resolved_dir, self.asset_name+"_sur_v0000.spp")
+        return resolved_path
 
     def get_export_texture_path(self):
         source_file_path = db.get_geometry(asset_name=self.asset_name, source_file="")["source_file"]
