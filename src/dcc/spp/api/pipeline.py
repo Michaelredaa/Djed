@@ -230,10 +230,14 @@ def export_texture(tex_dir=None):
         # export preset
         export_preset = js.get_current_export_preset()
 
+        if current_option.get("fileFormat", "png") == "":
+            current_option["fileFormat"] = "png"
+
+
         export_options = {}
         export_options["exportPath"] = tex_dir
         export_options["exportShaderParams"] = current_option.get("exportShaderParams", True)
-        export_options["format"] = current_option.get("exportShaderParams", "png")
+        export_options["format"] = current_option.get("fileFormat", "png")
         export_options["defaultExportPreset"] = export_preset
 
         # extension
