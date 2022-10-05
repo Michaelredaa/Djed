@@ -226,7 +226,7 @@ class FileManager():
         if len(all_versions) < 1:
             version = prefix + "1".zfill(padding)
         else:
-            all_versions = [x for x in all_versions if re.search(prefix + "\d+", x)]
+            all_versions = [x for x in all_versions if re.search(prefix + r"\d+", x)]
             if len(all_versions) <= 1:
                 version = prefix + "1".zfill(padding)
             else:
@@ -238,17 +238,23 @@ class FileManager():
         else:
             return version
 
-    def get_latest_file(self,root, ext='.*'):
+    def get_latest_file_version(self, root, ext='.*', prefix='v', padding=4, ret_path=False):
         root = Path(root)
 
         files = root.glob(f'*{ext}')
-        names = files
-        print(files)
+        names = [x.name for x in files if re.search(prefix + "\d+", x.name)]
+        if len(names) < 1:
+            return 0
 
-        for filepath in root.glob(f'*{ext}'):
-            print(filepath)
+        all_versions_ints = [int(re.findall(r"\d+", x)[0]) for x in names]
+        max_version_num = max(all_versions_ints)
+        latest_version = prefix + str(max_version_num).zfill(padding)
 
-
+        file_name = re.sub(prefix + r'\d+', latest_version, names[0])
+        if ret_path:
+            return root.joinpath(file_name).as_posix(), max_version_num
+        else:
+            return file_name, max_version_num
 
     @error(name=__name__)
     def version_up(self, path, prefix='v', padding=4):
@@ -270,24 +276,28 @@ class FileManager():
         return ret_path.replace("\\", "/")
 
     @error(name=__name__)
-    def version_file_up(self, file_path, prefix='v'):
+    def version_file_up(self, file_path, prefix='v', padding=4):
 
         file_path = Path(str(file_path))
+        ext = file_path.suffix
+        file_dir = file_path.parent
+        file_dir.mkdir(parents=True, exist_ok=True)
 
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        files = file_dir.glob(f'*{ext}')
 
-        file_name = file_path.name
+        names = [x.name for x in files if re.search(prefix + r'\d+', x.name)]
+        if len(names) < 1:
+            file_name = re.sub(prefix+r'\d+', prefix+'0001', file_path.name)
+            return file_dir.joinpath(file_name).as_posix()
 
-        try:
-            v = re.findall(prefix + "\d+", file_name)
-            v = re.findall("\d+", v[0])[0]
-            vpluse = str(int(v) + 1).zfill(len(v))
-            version_name = re.sub(v, vpluse, file_name)
-        except:
-            spp_name, ext = file_name.split('.')
-            version_name = spp_name + "_v0001." + ext
+        latest_file, num = self.get_latest_file_version(file_dir, ext=ext, prefix=prefix,padding=padding, ret_path=True)
+        increment_file = re.sub(
+            prefix + str(num).zfill(padding),
+            prefix + str(num+1).zfill(padding),
+            latest_file
+        )
 
-        return file_path.parent.joinpath(version_name)
+        return increment_file
 
     def open_in_expoler(self, path):
         path = Path(str(path))
@@ -328,7 +338,8 @@ class FileManager():
 def main():
     pass
     fm = FileManager()
-    fm.get_latest_file(r"C:\Users\michael\Documents\projects\dummy\scenes\sur")
+    fm.version_file_up(
+        r"D:\3D\working\projects\Generic\03_Workflow\Assets\tv_table\Scenefiles\sur\substance\tv_table")
     # print(fm.resolve_path('../../foo', relatives_to='c:/users/michael'))
 
 
