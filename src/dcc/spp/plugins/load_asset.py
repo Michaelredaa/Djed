@@ -7,7 +7,7 @@ from pathlib import Path
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
-from dcc.spp.api.pipeline import connect_spp
+from dcc.spp.api.remote_connect import connect_spp
 from utils.dialogs import message
 from src.utils.sys_process import is_process_running
 from utils.file_manager import FileManager
