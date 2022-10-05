@@ -4,6 +4,9 @@ Documentation:
 """
 import time
 
+from utils.file_manager import FileManager
+
+fm = FileManager()
 
 def wait_until(somepredicate, timeout, period=0.25, **kwargs):
     mustend = time.time() + timeout
@@ -37,6 +40,37 @@ def merge_dicts(dict1, dict2):
             yield k, dict1[k]
         else:
             yield k, dict2[k]
+
+
+def material_conversion(from_host, from_renderer, to_host, to_renderer):
+
+    cfg = fm.get_cfg('renderer')
+    plugs = cfg.get('plugs')
+    nodes = cfg.get('nodes')
+
+    if (from_host == 'standard') or (from_renderer == 'standard'):
+        plugs_dict = {
+            plug_name: plugs[plug_name].get(to_host).get(to_renderer)
+            for plug_name in plugs
+        }
+        nodes_dict = {
+            node_name: nodes[node_name].get(to_host).get(to_renderer)
+            for node_name in nodes
+        }
+
+    else:
+        plugs_dict = {
+            plugs[plug_name].get(from_host).get(from_renderer).get('name'):
+                plugs[plug_name].get(to_host).get(to_renderer)
+            for plug_name in plugs
+        }
+        nodes_dict = {
+            nodes[node_name].get(from_host).get(from_renderer).get('name'):
+                nodes[node_name].get(to_host).get(to_renderer)
+            for node_name in nodes
+        }
+
+    return {"plugs": plugs_dict, "nodes": nodes_dict}
 
 
 if __name__ == '__main__':
