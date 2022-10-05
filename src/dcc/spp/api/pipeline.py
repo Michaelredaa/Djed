@@ -218,7 +218,7 @@ def export_texture(tex_dir=None):
     if tex_dir is None:
         tex_dir = js.get_export_path()
 
-    tex_dir = fm.version_up(tex_dir)
+    tex_dir, version = fm.version_up(tex_dir)
     Path(tex_dir).mkdir(parents=True, exist_ok=True)
 
     try:
@@ -274,7 +274,7 @@ def export_texture(tex_dir=None):
             })
 
         result = substance_painter.export.export_project_textures(export_options)
-        return on_export_texture_finished(result)
+        return on_export_texture_finished(result), version
 
     except Exception as e:
         error_("Export error: \n"+str(e))
@@ -284,8 +284,11 @@ def on_export_texture_finished(result):
     if result.status != substance_painter.export.ExportStatus.Success:
         message(main_window(), "Error", result.message)
 
+    textures_data = {}
+
     for key in result.textures:
         sg = key[0]
+        textures_data[sg] = {}
         info(sg)
 
         texture_set = substance_painter.textureset.TextureSet.from_name(sg)
@@ -296,11 +299,25 @@ def on_export_texture_finished(result):
             udim = len(uv_tiles)
             selected_textures = textures[:int(len(textures) / udim)]
         else:
-            udim = -1
+            udim = 0
             selected_textures = textures
 
         for file_path in selected_textures:
             info(file_path)
+            map_type = fm.ck_tex(os.path.basename(file_path))
+            tex_name = r'{sg}_{map_type}'
+
+            textures_data[sg][tex_name] = {
+                'plugs': [map_type],
+                'filepath': file_path,
+                'udim': udim,
+                'type': 'file',
+
+            }
+    return textures_data
+
+
+
 
 
 
