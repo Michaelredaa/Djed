@@ -4,49 +4,37 @@ Documentation:
 """
 
 import re
+import traceback
 
+from utils.dialogs import message
 from utils.file_manager import FileManager
-from dcc.maya.api.cmds import Maya
-
-import maya.cmds as cmds
+from utils.open_ports import OpenSocket
 
 fm = FileManager()
-ma = Maya()
 
+def send_to_maya(data):
+    try:
+        port = fm.get_user_json("maya", "command_port")
+        socket = OpenSocket(host='127.0.0.1', port=port)
 
-def process(instance):
-    asset_name = instance.get('name')
-    data = instance.get('data')
+        cmd_text = "## Djed Tools ##\n\n"
+        cmd_text += "print('## Djed Tools ##')\n"
+        cmd_text += "print('[Djed] Start of receiving from Substance Painter')\n"
+        cmd_text += "import sys, os, traceback\n"
+        cmd_text += "sys.path.append(os.getenv('DJED_ROOT') + '/src')\n"
+        cmd_text += "try:\n"
+        cmd_text += "\tfrom dcc.maya.plugins.load_asset import LoadAsset\n"
+        cmd_text += "\tfrom dcc.linker.instance import create_instance\n"
+        cmd_text += f"\tinstance = create_instance({data})\n"
+        cmd_text += f"\tLoadAsset().process(instance)\n"
+        cmd_text += f"except:\n"
+        cmd_text += f"\tprint(traceback.format_exc())\n"
+        cmd_text += "print('[Djed] End of receiving from Substance Painter')\n"
 
-    colorspace = data.get("colorspace", "aces")
-    sgs = data.get('data')
-    tex_dir = data.get('texture_dir', '')
-    material_type = data.get('material_type')
+        socket.send('''{}'''.format(cmd_text))
 
-    if not sgs:
-        sgs = fm.get_sgName_from_textures(tex_dir)
-
-    for sg in data.get('data', []):
-        if cmds.objExists(sg):
-            # update if exists
-            materials = ma.get_materials_from_sg(sg, 'material')
-            displacements = ma.get_materials_from_sg(sg, 'displacement')
-
-            if not materials:
-                # if there is no materials connected with shading group
-                mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
-                mtl_name, sg_name = ma.create_material(name=mtl_name, sg=sg)
-                materials = [mtl_name]
-
-            for mtl in materials:
-                ma.create_material_with_texture(tex_dir, material_type, colorspace=colorspace, sg_mtl=[mtl, sg])
-
-
-        else:
-            mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
-            mtl_name, sg = ma.create_material(name=mtl_name, sg=sg)
-            ma.create_material_with_texture(tex_dir, material_type, colorspace=colorspace, sg_mtl=[mtl_name, sg])
-
+    except Exception as e:
+        message(None, "Error", str(e))
 
 if __name__ == '__main__':
     print(__name__)
