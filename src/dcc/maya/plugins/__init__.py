@@ -3,5 +3,12 @@
 Documentation:
 """
 
-if __name__ == '__main__':
-    print(__name__)
+from .create_asset import CreateAsset
+from .create_material_from_textures import CreateMaterialFromTextures
+from .load_asset import LoadAsset
+
+__all__ = [
+    'CreateAsset',
+    'CreateMaterialFromTextures',
+    'LoadAsset'
+]
