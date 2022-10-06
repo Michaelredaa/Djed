@@ -3,6 +3,7 @@
 Documentation:
 """
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -288,7 +289,17 @@ def on_export_texture_finished(result):
 
     for key in result.textures:
         sg = key[0]
-        textures_data[sg] = {}
+        mtl_name = re.sub(r"(?i)sg$", "MTL", sg)
+        textures_data[sg] = {
+            'materials': {
+                mtl_name: {
+                    'type': 'standardSurface',
+                    'attrs': {},
+                    'texs': {}
+                }
+            },
+            'displacements': {}
+        }
         info(sg)
 
         texture_set = substance_painter.textureset.TextureSet.from_name(sg)
@@ -305,9 +316,22 @@ def on_export_texture_finished(result):
         for file_path in selected_textures:
             info(file_path)
             map_type = fm.ck_tex(os.path.basename(file_path))
-            tex_name = r'{sg}_{map_type}'
+            tex_name = f'{sg}_{map_type}'
 
-            textures_data[sg][tex_name] = {
+            if map_type == 'height':
+                textures_data[sg]['displacements'][f'{sg}_displacement'] = {
+                    'type': 'displacement',
+                    'texs': {
+                        'plugs': [map_type],
+                        'filepath': file_path,
+                        'udim': udim,
+                        'type': 'file',
+                    },
+                    'attrs': {}
+                }
+                continue
+
+            textures_data[sg]['materials'][mtl_name]['texs'][tex_name] = {
                 'plugs': [map_type],
                 'filepath': file_path,
                 'udim': udim,
