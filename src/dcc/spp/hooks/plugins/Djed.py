@@ -3,6 +3,7 @@
 Documentation:
 """
 import importlib
+import json
 import os
 import sys
 import traceback
@@ -16,22 +17,32 @@ import substance_painter_plugins
 
 # ---------------------------------
 # Variables
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT, DJED_ROOT.joinpath('src')]
 for sysPath in sysPaths:
     if str(sysPath) not in sys.path:
         sys.path.append(str(sysPath))
 
+##################################
 import importlib
 import utils.file_manager
+from dcc.spp.api import pipeline
+import dcc.linker.to_maya
+
 importlib.reload(utils.file_manager)
+importlib.reload(pipeline)
+importlib.reload(dcc.linker.to_maya)
+##################################
 
 
 
 from utils.dialogs import save_dialog, text_dialog, message
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
+from utils.generic import merge_dicts
 from dcc.spp.api import pipeline
+from dcc.linker.to_maya import send_to_maya
 
 Icons = DJED_ROOT.joinpath("src", "utils", "resources", "icons")
 
@@ -49,7 +60,7 @@ class SubstanceIntegration():
         self.main_window = pipeline.main_window()
 
         self.asset_name = ''
-        self.project_dir = ""
+        self.project_dir = ''
         self.exported_textures = dict()
 
         self.init_menus()
@@ -139,7 +150,14 @@ class SubstanceIntegration():
         self.fm.open_in_expoler(pipeline.get_file_path())
 
     def on_textures_export(self):
-        pipeline.export_texture()
+        tex_data, version = pipeline.export_texture()
+
+        old_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+        old_data = json.loads(old_data)
+
+        new_data = dict(merge_dicts(old_data, tex_data))
+
+        db.add_geometry(asset_name=self.asset_name, mesh_data=json.dumps(new_data))
         # add texture to db
 
     def on_export_settings(self):
@@ -154,13 +172,25 @@ class SubstanceIntegration():
         return
 
     def on_send_to_maya(self):
-        pass
+        self.on_textures_export()
+
+        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+        asset_data = json.loads(asset_data)
+        data = {
+            'name': self.asset_name,
+            'host': 'spp',
+            'to_renderer': 'arnold',
+            'source_renderer': 'standard',
+            'asset_data': asset_data,
+        }
+        send_to_maya(data)
+
 
     def on_send_to_clarisse(self):
         pass
 
     def on_about(self):
-        print("reload")
+
         sys.path.append(DJED_ROOT.joinpath("src", "dcc", "spp", "hooks", "plugins").as_posix())
         plugin = importlib.import_module("Djed")
         substance_painter_plugins.reload_plugin(plugin)
@@ -178,7 +208,7 @@ class SubstanceIntegration():
             save_root,
             relatives_to=source_file_path,
             variables={"$asset_name": self.asset_name, "$project": self.project_dir})
-        resolved_path = os.path.join(resolved_dir, self.asset_name+"_sur_v0000.spp")
+        resolved_path = os.path.join(resolved_dir, self.asset_name + "_sur_v0000.spp")
         return resolved_path
 
     def get_export_texture_path(self):
@@ -197,7 +227,7 @@ class SubstanceIntegration():
 
         if "$version" in resolved_path:
             resolved_path = resolved_path.replace("$version", "")
-            resolved_path = self.fm.version_up(resolved_path)
+            resolved_path, version = self.fm.version_up(resolved_path)
 
         save_path = str(resolved_path).replace("\\", "/")
 
