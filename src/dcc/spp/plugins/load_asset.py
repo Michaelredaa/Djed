@@ -9,7 +9,7 @@ DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
 from dcc.spp.api.remote_connect import connect_spp
 from utils.dialogs import message
-from src.utils.sys_process import is_process_running
+from src.utils.sys_process import is_process_running, execute_commmand
 from utils.file_manager import FileManager
 from utils.generic import wait_until
 
@@ -43,8 +43,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
             message(None, 'Error', 'Please configure the substance painter executable first.')
             return
 
-        # args = [str(spp_exe), '--enable-remote-scripting']
-        # execute_commmand(*args)
+        args = [str(spp_exe), '--enable-remote-scripting']
+        execute_commmand(*args)
 
         open_flag = wait_until(self.open_spp_file, 90, period=0.25, mesh_path=mesh_path, cfg=cfg)
         if open_flag:
