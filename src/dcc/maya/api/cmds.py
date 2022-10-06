@@ -23,6 +23,7 @@ from maya.app.general import fileTexturePathResolver
 # QT
 from PySide2.QtWidgets import QMessageBox, QWidget
 from shiboken2 import wrapInstance
+from utils.generic import merge_dicts
 
 DJED_ROOT = os.getenv("DJED_ROOT")
 scripts_path = os.path.join(DJED_ROOT, "src")
@@ -240,8 +241,15 @@ class Maya():
 
             return True
 
+
+    def connect_attr(self, src, dist, force=True):
+        cmds.connectAttr(src, dist, f=force)
+
+    def create_util_node(self, _type, name):
+        return cmds.shadingNode(_type, asUtility=True, n=name)
+
     @error(__name__)
-    def import_texture(self, tex_path, udim=None, colorspace='aces', color=False):
+    def import_texture(self, tex_path, udim=None, colorspace='aces', color=False, tex_name=None):
         """
         To import the texture inside maya
         """
@@ -264,7 +272,9 @@ class Maya():
         if not os.path.isfile(tex_path):
             cmds.warning("System Error: Can not import {} file. It not located.")
             return False
-        tex_name = os.path.basename(tex_path).split(".")[0]
+
+        if not tex_name:
+            tex_name = os.path.basename(tex_path).split(".")[0]
 
         if not cmds.objExists(tex_name):
             place2d = cmds.shadingNode("place2dTexture", asUtility=True, n="p2d_#")
@@ -440,6 +450,32 @@ class Maya():
         self.arrangeHypershade()
         return sgs
 
+    def get_mesh_data(self, node):
+        """
+        To gather mesh data like sgs and paths
+        :param node: Transform node of asset
+        :return:
+        """
+        data = {}
+        # Get all selection shapes
+        shapes = self.list_all_dag_meshes(node, shape=True, fullPath=True, type=om.MFn.kMesh)
+        for shapeNode in shapes:
+            # Get each shape shadingEngine
+            sgs = cmds.listConnections(shapeNode, s=0, d=1, type="shadingEngine")
+            if not sgs:
+                continue
+            for sg in sgs:
+                if (sg in data) or (sg == 'initialShadingGroup'):
+                    continue
+
+                data[sg] = {
+                    "meshes": {}
+                }
+                # list of meshes
+                meshes = self.list_all_DG_nodes(sg, om.MFn.kMesh, om.MItDependencyGraph.kUpstream)
+                data[sg]["meshes"]["shape"] = meshes
+        return data
+
     @error(name=__name__)
     def get_asset_data(self, node):
         """
@@ -540,9 +576,10 @@ class Maya():
         if not export_dir:
             return
         self.fm.make_dirs(export_dir)
-        export_path = self.fm.version_up(export_dir, prefix=asset_name + "_v")
+        export_path, version = self.fm.version_up(export_dir)
+        self.fm.make_dirs(export_path)
 
-        self.fm.make_dirs(os.path.dirname(export_path))
+        export_path += f"/{asset_name}"
 
         # add mtl attribute
         attr_name = "materialBinding"
@@ -608,6 +645,14 @@ class Maya():
                 return
 
             print("[Geometry Exported]: ", export_path + "." + ext)
+
+        old_data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
+        old_data = json.loads(old_data)
+        mesh_data = self.get_mesh_data(asset_name)
+        new_data = dict(merge_dicts(old_data, mesh_data))
+
+        db.add_geometry(asset_name=asset_name, mesh_data=json.dumps(new_data))
+
         if _message:
             info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
 
@@ -616,6 +661,7 @@ class Maya():
         #     self.fm.set_user_json(last_object_path=export_paths,
         #                           last_maya_path=maya_file_path
         #                           )
+
         return export_paths
 
     @error(name=__name__)
