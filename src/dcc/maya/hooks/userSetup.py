@@ -1,7 +1,6 @@
 # >>>>>>>>>
 # Djed Tools
 # Add self
-import pathlib
 
 import maya.cmds as cmds
 
@@ -41,8 +40,8 @@ def init_djed():
         sys.path.append(DJED_ROOT.joinpath('src/dcc/maya/hooks').as_posix())
 
         print('start DJED')
-        import shelf
-        shelf.main()
+        from dcc.maya import shelves
+        shelves.main()
         open_commandPort()
 
 
