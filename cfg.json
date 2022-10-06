@@ -160,7 +160,7 @@
           }
         }
     },
-      "baseColor": {
+      "basecolor": {
         "maya": {
           "arnold": {
             "name": "baseColor",
@@ -181,7 +181,7 @@
           }
         }
     },
-      "metalness": {
+      "metallic": {
         "maya": {
           "arnold": {
             "name": "metalness",
@@ -202,12 +202,12 @@
           }
         }
     },
-      "normalCamera": {
+      "normal": {
         "maya": {
           "arnold": {
             "name": "normalCamera",
             "type": "vector3",
-            "inBetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
+            "inBetween": [{"name": "_normal","type": "aiNormalMap", "inplug": "input", "outplug": "outValue"}]
           }
         },
         "clarisse": {
@@ -244,7 +244,7 @@
           }
         }
     },
-      "specularRoughness": {
+      "roughness": {
         "maya": {
           "arnold": {
             "name": "specularRoughness",
@@ -286,7 +286,7 @@
           }
         }
     },
-      "specularColor": {
+      "specularcolor": {
         "maya": {
           "arnold": {
             "name": "specularColor",
@@ -307,7 +307,7 @@
           }
         }
     },
-      "transmissionColor": {
+      "transmissioncolor": {
         "maya": {
           "arnold": {
             "name": "transmissionColor",
@@ -349,7 +349,7 @@
           }
         }
     },
-      "subsurfaceColor": {
+      "subsurfacecolor": {
         "maya": {
           "arnold": {
             "name": "subsurfaceColor",
@@ -370,7 +370,7 @@
           }
         }
     },
-      "subsurfaceRadius": {
+      "subsurfaceradius": {
         "maya": {
           "arnold": {
             "name": "subsurfaceRadius",
@@ -433,7 +433,7 @@
           }
         }
     },
-      "sheenColor": {
+      "sheencolor": {
         "maya": {
           "arnold": {
             "name": "sheenColor",
@@ -475,7 +475,7 @@
           }
         }
     },
-      "emissionColor": {
+      "emissioncolor": {
         "maya": {
           "arnold": {
             "name": "emissionColor",
