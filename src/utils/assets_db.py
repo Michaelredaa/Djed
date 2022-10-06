@@ -6,6 +6,7 @@ Documentation:
 # ---------------------------------
 # Import Libraries
 import datetime
+import json
 import sqlite3
 import sys
 import os
@@ -13,7 +14,7 @@ import site
 from functools import wraps
 from urllib.parse import unquote
 
-sysPaths = [os.getenv("DJED_ROOT")]
+sysPaths = [os.getenv("DJED_ROOT"), os.getenv("DJED_ROOT")+"/src"]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
@@ -121,6 +122,7 @@ class AssetsDB(Connect):
         table_name = "geometry"
 
         # self.delete_table(table_name=table_name)
+        default_data = {}
         cur = conn.cursor()
         query = f'''
                     CREATE TABLE IF NOT EXISTS {table_name} (
@@ -132,6 +134,7 @@ class AssetsDB(Connect):
                     fbx_file TEXT,
                     source_file TEXT,
                     substance_file TEXT,
+                    mesh_data TEXT DEFAULT "{default_data}",
                     FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
                     UNIQUE(asset_id)
                     );
@@ -356,18 +359,19 @@ class AssetsDB(Connect):
     @Connect.db
     def add_geometry(self, conn, asset_name, **kwargs):
 
-        '''obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="", substance_file=""'''
+        '''obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="", substance_file="", mesh_data=""'''
         self.update_date(asset_name=asset_name)
         for col in kwargs:
+            print(type(kwargs.get(col)))
             cur = conn.cursor()
             query = f'''
                     INSERT INTO geometry 
                     (asset_id, {col})
                     VALUES
-                    ((SELECT id from assets WHERE name="{asset_name}"), "{kwargs.get(col)}")
+                    ((SELECT id from assets WHERE name='{asset_name}'), '{kwargs.get(col)}')
                     ON CONFLICT(asset_id) 
                     DO UPDATE
-                    SET {col} = "{kwargs.get(col)}";
+                    SET {col} = '{kwargs.get(col)}';
 
             '''
             cur.execute(query)
@@ -675,14 +679,15 @@ def main():
     db = AssetsDB()
     # db.create_default_tables()
     # db.create_geometry_table()
-    # db.add_geometry(asset_name="ABAGORA", source_file="foo")
+    data = json.dumps({'foo': 'bar'})
+    db.add_geometry(asset_name="tv_table", mesh_data=f'{data}')
     # x = db.add_tag(asset_name="ABAGORA", tag_name="tag1")
     # x = db.get_assets_data()
     # print(db.get_tags(asset_name="ABAGORA"))
 
     # print(db.get_thumbnail(asset_name="tv_table"))
     # print(db.add_textures(asset_name="tv_table", map_type_name="_", texture_path="bar", udim_num=10, material_name="", resolution=""))
-    db.get_asset(uuid='a990d365-62f4-43ff-81bf-63422dc5cefb')
+    # db.get_asset(uuid='a990d365-62f4-43ff-81bf-63422dc5cefb')
 
 
 if __name__ == '__main__':
