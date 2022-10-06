@@ -29,6 +29,7 @@ importlib.reload(utils.file_manager)
 import pyblish.api
 
 from utils.file_manager import FileManager
+from utils.generic import material_conversion
 from dcc.clarisse.api.cmds import Clarisse
 
 import ix
@@ -97,9 +98,9 @@ class LoadAsset(pyblish.api.InstancePlugin):
         asset_data = data.get('asset_data')
 
         # convert material data to clarisse engines
-        material_conversion = self.fm.material_conversion(source_host, source_renderer, "clarisse", to_renderer)
-        plugs_conversion = material_conversion.get('plugs')
-        nodes_conversion = material_conversion.get('nodes')
+        mtl_conversion = material_conversion(source_host, source_renderer, "clarisse", to_renderer)
+        plugs_conversion = mtl_conversion.get('plugs')
+        nodes_conversion = mtl_conversion.get('nodes')
 
         # materials data
         for sg in asset_data:
