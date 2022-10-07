@@ -18,7 +18,7 @@ from dcc.linker.instance import create_instance
 from dcc.spp.plugins.load_asset import LoadAsset
 
 
-def to_spp(data):
+def send_to_spp(data):
     instance = create_instance(data)
     LoadAsset().process(instance)
 

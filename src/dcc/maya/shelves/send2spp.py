@@ -33,7 +33,7 @@ for sysPath in sysPaths:
 
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
-from dcc.linker.to_spp import to_spp
+from dcc.linker.to_spp import send_to_spp
 
 
 class Maya2SppSettings(ToolSettingsBase):
@@ -126,7 +126,7 @@ class Maya2SppSettings(ToolSettingsBase):
         data['mesh_path'] = mesh_path
         data['cfg'] = cfg
 
-        to_spp(data)
+        send_to_spp(data)
 
 
 # Main function
