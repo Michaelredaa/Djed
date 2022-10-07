@@ -30,6 +30,25 @@ def add_maya_module(maya_module_path=None):
 
     with mod_file.open('w') as f:
         f.write(cmd)
+
+def add_clarisse_shelf(env_path=None):
+    if not env_path:
+        env_path = os.path.join(os.environ["APPDATA"], "Isotropix", "Clarisse", "5.0", "clarisse.env")
+
+    shelf_path = "$DJED_ROOT/src/dcc/clarisse/hooks/djed_shelf.cfg"
+    text = []
+    with open(env_path, "r") as fh:
+        for line in fh:
+            if "IX_SHELF_CONFIG_FILE" in line:
+                if shelf_path in line:
+                    return
+                else:
+                    text.append(line.strip()+";"+shelf_path+"\n")
+            else:
+                text.append(line)
+    with open(env_path, "w") as fh2:
+        fh2.writelines(text)
+
 def set_environment():
     from ctypes import windll
 
