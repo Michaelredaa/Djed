@@ -131,28 +131,41 @@ class Clarisse:
             self.working_geo_type = "abc_ref"
 
 
-    def create_ref(self, cntx, name, path):
-        if not ix.item_exists(f'{cntx}/{name}_ref'):
-            ref_cntx = ix.cmds.CreateCustomContext(name + "_ref", "Reference", "", str(cntx))
-        else:
+    def create_ref(self, cntx, name, path, update_existence=True):
+        if ix.item_exists(f'{cntx}/{name}_ref') and update_existence:
             ref_cntx = ix.get_item(f'{cntx}/{name}_ref')
+        else:
+            ref_cntx = ix.cmds.CreateCustomContext(name + "_ref", "Reference", "", str(cntx))
+
         if not ref_cntx:
             raise "Can not load asset as a reference"
         ix.cmds.SetReferenceFilenames([ix.get_item(str(ref_cntx))], [1, 0], [path])
         return ref_cntx
 
-    def abc_bundle(self, cntx, name, path):
-        bundle_item = ix.cmds.CreateObject(name + "_bndl", "GeometryBundleAlembic", "Global", str(cntx))
+    def abc_bundle(self, cntx, name, path, update_existence=True):
+
+        bundle_item = f'{cntx}/{name}_abndl'
+        if ix.item_exists(bundle_item) and update_existence:
+            bundle_item = ix.get_item(bundle_item)
+        else:
+            bundle_item = ix.cmds.CreateObject(name + "_abndl", "GeometryBundleAlembic", "Global", str(cntx))
+
         if not bundle_item:
             raise "Can not load asset as a abc bundle"
         ix.cmds.SetValues([str(bundle_item) + ".filename[0]"], [str(path)])
         return bundle_item
 
-    def usd_bundle(self, cntx, name, path):
-        bundle_item = ix.cmds.CreateObject(name + "_bndl", "GeometryBundleUsd", "Global", str(cntx))
+    def usd_bundle(self, cntx, name, path, update_existence=True):
+
+        bundle_item = f'{cntx}/{name}_ubndl'
+        if ix.item_exists(bundle_item) and update_existence:
+            bundle_item = ix.get_item(bundle_item)
+        else:
+            bundle_item = ix.cmds.CreateObject(name + "_ubndl", "GeometryBundleUsd", "Global", str(cntx))
+
         if not bundle_item:
             raise "Can not load asset as a abc bundle"
-        ix.cmds.SetUsdBundleFilename([str(bundle_item) + ".filename[0]"], [str(path)])
+        ix.cmds.SetUsdBundleFilename([str(bundle_item) + ".filename[0]"], [str(path)], [0])
         return bundle_item
 
     @error(name=__name__)
@@ -170,7 +183,7 @@ class Clarisse:
         if asset_name is None:
             asset_name = os.path.basename(geo_path).rsplit('.', 1)[-1]
 
-        geo_item = _types[geo_type](geo_cntx, asset_name, geo_path)
+        geo_item = _types[geo_type](geo_cntx, asset_name, geo_path, update_existence)
 
 
         ix.application.check_for_events()
