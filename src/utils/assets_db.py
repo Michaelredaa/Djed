@@ -362,7 +362,6 @@ class AssetsDB(Connect):
         '''obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="", substance_file="", mesh_data=""'''
         self.update_date(asset_name=asset_name)
         for col in kwargs:
-            print(type(kwargs.get(col)))
             cur = conn.cursor()
             query = f'''
                     INSERT INTO geometry 
