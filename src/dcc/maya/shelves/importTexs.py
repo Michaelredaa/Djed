@@ -3,16 +3,14 @@
 Documentation: 
 """
 
-
 # ---------------------------------
 # MetaData
+
 _annotation = "Create material with imported textures from directory."
 _icon = "mtlTexture.png"
 _color = (0.9, 0.9, 0.9)
 _backColor = (0.0, 0.0, 0.0, 0.0)
 _imgLabel = ""
-
-
 
 # import libraries
 
@@ -32,20 +30,36 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from dcc.maya.hooks.shelf.tool_settings import (
-    ToolSettings,
+#######################################
+import importlib
+import dcc.maya.plugins.load_asset
+import dcc.maya.plugins.create_material_from_textures
+importlib.reload(dcc.maya.plugins.load_asset)
+importlib.reload(dcc.maya.plugins.create_material_from_textures)
+#########################################
+
+
+
+from dcc.maya.api import renderer
+from dcc.maya.plugins import CreateMaterialFromTextures, LoadAsset
+from dcc.maya.plugins.load_asset import LoadAsset
+from dcc.maya.plugins.create_material_from_textures import CreateMaterialFromTextures
+
+from dcc.maya.shelves.tool_settings import (
+    ToolSettingsBase,
     ClickedLabel,
     Icons,
-    ScreenWidth
+    ScreenWidth,
+    maya_main_window
 )
 
-from dcc.maya.api.cmds import maya_main_window
-
+import pyblish.api
+import pyblish.util
 
 import maya.cmds as cmds
 
 
-class CreateMtlTexs(ToolSettings):
+class CreateMtlTexs(ToolSettingsBase):
     def __init__(self, parent=None):
         super(CreateMtlTexs, self).__init__(parent, preset_name="create_mtl_tex_presets")
         self.setupUi(self)
@@ -85,7 +99,7 @@ class CreateMtlTexs(ToolSettings):
         gbox = QGridLayout(self)
 
         # renderers
-        renderers = ["Arnold", ]
+        renderers = ["arnold", ]
         gbox.addWidget(QLabel("Renderer: "), 0, 1, 1, 1, Qt.AlignRight)
         self.com_rend = QComboBox()
         self.com_rend.setMinimumSize(QSize(150, 20))
@@ -170,10 +184,10 @@ class CreateMtlTexs(ToolSettings):
         self.com_mtls.addItems(sgs)
 
     def onApply(self):
-        rend_name = self.com_rend.currentText()
+        renderer_name = self.com_rend.currentText()
         tex_dir = self.convert_text_tokens(self.le_dir.text())
 
-        if rend_name == "Arnold":
+        if renderer_name == "arnold":
             active_renderer = renderer.arnold
         else:
             return
@@ -190,28 +204,25 @@ class CreateMtlTexs(ToolSettings):
         else:
             colorspace = "srgb"
 
-        sp = SppMaya(active_renderer)
-        sp.send_Maya(tex_dir, sgs=sgs, colorspace=colorspace)
 
-
-
+        context = pyblish.api.Context()
+        instance_obj = CreateMaterialFromTextures(tex_dir)
+        instance = instance_obj.process(context)
+        LoadAsset().process(instance)
 
 
 # Main function
 def main():
-
     cm = CreateMtlTexs(maya_main_window())
     if len(sys.argv) > 1:
         cm.show()
     else:
         current_path = cm.convert_text_tokens(cm.le_dir.text())
 
-        tex_dir = cmds.fileDialog2(dir=current_path, ds=2,fm=3, okc="select")
+        tex_dir = cmds.fileDialog2(dir=current_path, ds=2, fm=3, okc="select")
         if tex_dir:
             cm.le_dir.setText(tex_dir[0])
             cm.onApply()
-
-
 
 
 if __name__ == '__main__':

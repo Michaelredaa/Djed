@@ -20,11 +20,10 @@ __python__ = sys.version_info[0]
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 icons = DJED_ROOT.joinpath('src', 'utils', 'resources', 'icons')
-modules = DJED_ROOT.joinpath( 'src/dcc/maya/hooks/shelf/btns')
+modules = DJED_ROOT.joinpath('src/dcc/maya/shelves')
 
-sysPaths = [DJED_ROOT, modules]
+sysPaths = [DJED_ROOT.as_posix(), modules.as_posix()]
 for sysPath in sysPaths:
-    sysPath = str(sysPath)
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
@@ -47,7 +46,7 @@ def delete_self():
 def create_self():
     if modules.is_dir():
 
-        # Delete old shelf
+        # Delete old shelves
         try:
             delete_self()
         except:
@@ -56,7 +55,7 @@ def create_self():
         shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
         shelves = cmds.tabLayout(shelftoplevel, query=True, childArray=True)
 
-        # Add new shelf
+        # Add new shelves
         if not (shelf_name in shelves):
             mel.eval("addNewShelfTab {};".format(shelf_name))
 
@@ -117,7 +116,7 @@ def create_self():
     else:
         # message
         cmds.confirmDialog(title='Djed Shelf Error',
-                           message='Unable to scripts to Djed Shelf.\n Please check shelf path', button=['OK'])
+                           message='Unable to start Djed Shelf.\n Please check shelves path', button=['OK'])
 
 
 # Main function

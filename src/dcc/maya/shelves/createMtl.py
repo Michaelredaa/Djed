@@ -28,8 +28,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from dcc.maya.hooks.shelf.tool_settings import ExportSettings
-from dcc.maya.api.cmds import Maya, maya_main_window
+from dcc.maya.api.cmds import Maya
 from dcc.maya.api.renderer import arnold
 
 from maya import cmds

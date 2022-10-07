@@ -31,12 +31,12 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 
-from dcc.maya.hooks.shelf.tool_settings import ToolSettings
+from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 from dcc.linker.to_spp import to_spp
 
 
-class Maya2SppSettings(ToolSettings):
+class Maya2SppSettings(ToolSettingsBase):
     def __init__(self, parent=None):
         super(Maya2SppSettings, self).__init__(parent, preset_name="maya_spp_presets")
         self.setupUi(self)

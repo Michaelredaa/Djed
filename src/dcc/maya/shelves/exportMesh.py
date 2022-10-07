@@ -31,10 +31,10 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from dcc.maya.hooks.shelf.tool_settings import ToolSettings
+from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 
-class ExportSettings(ToolSettings):
+class ExportSettings(ToolSettingsBase):
     def __init__(self, parent=None):
         super(ExportSettings, self).__init__(parent, preset_name="export_preset")
         self.setupUi(self)
