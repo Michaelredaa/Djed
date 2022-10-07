@@ -10,6 +10,8 @@ import sys
 import site
 from pathlib import Path
 
+
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
@@ -18,7 +20,7 @@ for sysPath in sysPaths:
 
 site.addsitedir(DJED_ROOT.joinpath('venv', 'python39', 'Lib', 'site-packages').as_posix())
 
-##########################
+############################################
 import importlib
 import dcc.clarisse.api.cmds
 import utils.file_manager
@@ -26,10 +28,14 @@ import utils.file_manager
 importlib.reload(dcc.clarisse.api.cmds)
 importlib.reload(utils.file_manager)
 
+############################################
+
 import pyblish.api
 
 from utils.file_manager import FileManager
 from utils.generic import material_conversion
+from utils.dialogs import message
+
 from dcc.clarisse.api.cmds import Clarisse
 
 import ix
@@ -62,6 +68,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         data = instance.data
 
+        colorspace = data.get('colorspace', 'aces')
+
         source_renderer = data.get('renderer')
         source_host = data.get('host')
         to_renderer = data.get('to_renderer', 'standardSurface')
@@ -69,14 +77,18 @@ class LoadAsset(pyblish.api.InstancePlugin):
         geo_paths = data.get('geo_paths')
 
         # get the geometry types
+        # abc_ref, usd_ref, abc_bundle, usd_bundle
         geo_type = data.get('geo_type', 'abc_ref')
         if 'abc' in geo_type:
-            geo_path = geo_paths.get('abc')
+            geo_path = geo_paths.get('abc_file')
         elif 'usd' in geo_type:
-            geo_path = geo_paths.get('usd')
+            geo_path = geo_paths.get('usd_geo_file')
         else:
             return
 
+        if not os.path.isfile(str(geo_path)):
+            message(None, "Error", f"'{geo_path}' file does not exists")
+            return
         # create main contexts
         mtl_ctx = self.fm.get_user_json('clarisse', 'material_root')
         tex_ctx = self.fm.get_user_json('clarisse', 'texture_root')
@@ -85,7 +97,6 @@ class LoadAsset(pyblish.api.InstancePlugin):
         # root
         root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
         root_ctx = self.cl.create_context(root_ctx)
-
         geo_ctx = self.cl.create_context(root_ctx + "/geo")
         mtl_ctx = self.cl.create_context(mtl_ctx.replace('..', root_ctx))
         tex_ctx = self.cl.create_context(tex_ctx.replace('..', root_ctx))
@@ -144,7 +155,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         tex_dict.get('filepath'),
                         tex_ctx,
                         tex_dict.get('udim'),
-                        tex_dict.get('colorspace'),
+                        colorspace,  # tex_dict.get('colorspace'),
                         False
                     )
 
@@ -174,16 +185,15 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 for tex_name, tex_dict in displacements[displacement].get('texs', {}).items():
                     tex_item = self.cl.import_texture(
                         tex_dict.get('filepath'),
-                      tex_ctx,
-                      tex_dict.get('udim'),
-                      tex_dict.get('colorspace'),
-                      False
-                      )
+                        tex_ctx,
+                        tex_dict.get('udim'),
+                        colorspace,  # tex_dict.get('colorspace'),
+                        False
+                    )
                     displacement_item.attrs.front_value = str(tex_item)
 
-
-
             # assign materials
+            default_sgs = ['default', 'top', 'bottom', 'back', 'left', 'right', 'front', 'sides', 'subset']
             # - reference
             if "ref" in geo_type:
                 if 'abc' in geo_type:
@@ -200,12 +210,17 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         shape_item_sgs = self.cl.get_shading_group(shape_item)
 
                         shape_item_name = str(shape_item.get_name())
-                        if mesh_shape_path.endswith(shape_item_name):
 
+                        if 'usd' in geo_type:
+                            mesh_path = mesh_shape_path.rsplit('|', 1)[0]
+                        else:
+                            mesh_path = mesh_shape_path
+
+                        if mesh_path.endswith(shape_item_name):
                             for shape_item_sg, index in shape_item_sgs.items():
                                 shape_sg = shape_item_sg.split('>')[-1]
 
-                                if (shape_sg == sg) or (shape_sg == 'default'):
+                                if (shape_sg == sg) or (shape_sg in default_sgs):
                                     ix.cmds.SetValues(
                                         [str(shape_item) + f".materials[{index}]"],
                                         [str(material_items[0])])
@@ -221,12 +236,19 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 for mesh_shape in asset_data.get(sg, {}).get('meshes', {}).get('shape', {}):
                     for shape_item_path, index in bundle_sgs.items():
                         shape_sg = shape_item_path.split('>')[-1]
-                        if (shape_sg == sg) or (shape_sg == 'default'):
+
+                        if (shape_sg == sg) or (shape_sg in default_sgs):
                             clarisse_path_pattern = shape_item_path.split('>')[0].split('/', 2)[-1]
 
                             # source data pattern
                             source_path_pattern = mesh_shape.split('|')
-                            source_path_pattern.pop(-2)
+                            if 'usd' in geo_type:
+                                # remove shape node
+                                source_path_pattern.pop(-1)
+                            else:
+                                # remove transform node
+                                source_path_pattern.pop(-2)
+
                             source_path_pattern = '/'.join(source_path_pattern)
 
                             # assign material
