@@ -10,6 +10,8 @@ import os
 import sys
 from pathlib import Path
 
+
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
@@ -19,13 +21,15 @@ for sysPath in sysPaths:
 import pyblish.api
 import pyblish.util
 
-from dcc.maya.api.cmds import Maya
+from dcc.maya.api.cmds import Maya, maya_main_window
+from utils.assets_db import AssetsDB
+from utils.dialogs import message
 
 import maya.cmds as cmds
 
 # ---------------------------------
 # Variables
-
+db = AssetsDB()
 
 # ---------------------------------
 # Start Here
@@ -39,14 +43,18 @@ class CreateAsset(pyblish.api.ContextPlugin):
         ma = Maya()
         selection = ma.selection()
 
-        assert len(selection) == 1, "You should select the asset main group only."
-        assert '.' not in selection[0], "You should select the asset main group only."
-
+        if len(selection) != 1:
+            message(maya_main_window(), "Warring", "You should select the asset main group only.")
+            raise
+        if '.' in selection[0]:
+            message(maya_main_window(), "Warring", "You should select the asset main group only.")
+            raise
         asset_name = selection[0]
 
         # export mesh
         cmds.select(selection, r=1)
-        geo_paths = ma.export_selection(asset_dir=None, asset_name=asset_name, export_type=["obj", "abc"], _message=False)
+        geo_paths = ma.export_selection(asset_dir=None, asset_name=asset_name, export_type=["obj", "abc", "usd"], _message=False)
+        geo_paths = db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="")
         cmds.select(selection, r=1)
 
         instance = context.create_instance(
