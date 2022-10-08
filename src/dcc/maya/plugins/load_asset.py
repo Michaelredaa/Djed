@@ -20,9 +20,11 @@ for sysPath in sysPaths:
 import importlib
 import utils.generic
 import dcc.maya.api.cmds
+import utils.file_manager
 
 importlib.reload(utils.generic)
 importlib.reload(dcc.maya.api.cmds)
+importlib.reload(utils.file_manager)
 
 ################################
 
@@ -145,25 +147,26 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
             # displacement
             displacements = asset_data.get(sg, {}).get('displacements', {})
-            for displacement in displacements:
+            for displacement, displacement_dict in displacements.items():
                 # create displacement
                 displacement_node = displacement
                 tex_name = displacement.replace('displacement', 'height')
                 if not cmds.objExists(displacement_node):
                     displacement_node = cmds.shadingNode('displacementShader', n=displacement_node, asShader=1)
 
-                tex_dict = displacements[displacement].get('texs', {})
-
-                # create texture
-                tex_node = ma.import_texture(
-                    tex_dict.get('filepath'),
-                    tex_dict.get('udim'),
-                    tex_dict.get('colorspace', 'aces'),
-                    False,
-                    tex_name
-                )
-                cmds.connectAttr(f'{tex_node}.outColor.outColorR', displacement_node + '.displacement', f=1)
-                cmds.connectAttr(displacement_node + '.displacement', f'{sg}.displacementShader', f=1)
+                for tex_name, tex_dict in displacement_dict.get('texs', {}).items():
+                    # create texture
+                    tex_node = ma.import_texture(
+                        tex_dict.get('filepath'),
+                        tex_dict.get('udim'),
+                        tex_dict.get('colorspace', 'aces'),
+                        False,
+                        tex_name
+                    )
+                    if not tex_node:
+                        continue
+                    cmds.connectAttr(f'{tex_node}.outColor.outColorR', displacement_node + '.displacement', f=1)
+                    cmds.connectAttr(displacement_node + '.displacement', f'{sg}.displacementShader', f=1)
 
             # assign materials
             if not geo_path:
