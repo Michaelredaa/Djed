@@ -10,10 +10,15 @@ from pathlib import Path
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-from utils.startup.system_tray import DjedTray
+
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
+from utils.startup.system_tray import DjedTray
+from utils.sys_process import create_shortcut
+from utils.file_manager import FileManager
+
+fm = FileManager()
 
 def add_maya_module(maya_module_path=None):
     if maya_module_path is None:
@@ -65,12 +70,24 @@ def set_environment():
     )
     success = result > 32
 
+def create_spp_shortcut():
+    create_shortcut(
+        f'{os.getenv("PROGRAMDATA")}/Microsoft/Windows/Start Menu/Programs/Djed Adobe Substance 3D Painter.lnk',
+        fm.get_cfg('spp').get('spp_exe'),
+        '--enable-remote-scripting',
+        fm.get_cfg('spp').get('spp_exe'),
+    )
 
+def main():
+    set_environment()
+    add_maya_module()
+    add_clarisse_shelf()
+    create_spp_shortcut()
 
 
 
 
 if __name__ == '__main__':
     print("Starting Djed")
-    add_maya_module()
+    main()
 
