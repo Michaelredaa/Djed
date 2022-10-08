@@ -122,20 +122,6 @@ class SubstanceIntegration():
 
         db.add_geometry(asset_name=self.asset_name, substance_file=save_path)
 
-    # def on_save_incremental(self):
-    #     save_path = self.get_save_path()
-    #     if not save_path:
-    #         spp_path = save_dialog(self.main_window, "Files (*.spp)")
-    #         if not spp_path:
-    #             return
-    #     else:
-    #         spp_path = save_path
-    #
-    #     spp_path = self.fm.version_file_up(spp_path)
-    #
-    #     pipeline.save_incremental(spp_path)
-    #     db.add_geometry(asset_name=self.asset_name, substance_file=spp_path)
-
     def on_save_backup(self):
         comment = text_dialog(self.main_window)
 
@@ -151,8 +137,15 @@ class SubstanceIntegration():
         self.fm.open_in_expoler(pipeline.get_file_path())
 
     def on_textures_export(self):
-        tex_data, version = pipeline.export_texture()
 
+        # get presets
+        presets = self.fm.get_user_json("spp", "export_preset")
+        self.js.set_export_preset_name(presets["preset"])
+
+        # export textures
+        tex_data, version = pipeline.export_texture(tex_dir=os.path.dirname(presets["path"]))
+
+        # update database
         old_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
         old_data = json.loads(old_data)
 
@@ -165,10 +158,23 @@ class SubstanceIntegration():
         options = self.fm.get_user_json("spp", "export_preset")
         options["path"] = os.path.dirname(self.get_export_texture_path())
 
-        if not options["preset"].endswith(".spexp"):
+        if (not options["preset"].endswith(".spexp")) and options["preset"].startswith('resource://'):
             options["preset"] = sp.resource.ResourceID(context="allegorithmic", name=options["preset"]).url()
 
+        # open window
         x = self.js.open_export_window(**options)
+
+        # save presets
+        new_preset = self.js.get_export_preset_name()
+        if new_preset.endswith(".spexp"):
+            new_preset = pipeline.get_preset_name_from_url(new_preset)
+
+        new_presets = {
+            'path': self.js.get_export_path()+'/$version',
+            'preset': new_preset,
+            'format': self.js.get_current_export_option()['fileFormat']
+        }
+        self.fm.set_user_json(spp={"export_preset": new_presets})
 
         return
 
@@ -185,7 +191,6 @@ class SubstanceIntegration():
             'asset_data': asset_data,
         }
         send_to_maya(data)
-
 
     def on_send_to_clarisse(self):
         self.on_textures_export()
@@ -207,7 +212,6 @@ class SubstanceIntegration():
             'asset_data': asset_data,
         }
         send_to_clarisse(data)
-
 
     def on_about(self):
 
