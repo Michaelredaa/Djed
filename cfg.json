@@ -81,6 +81,7 @@
     "clarisse_exe": "C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe",
     "command_port": 55000,
     "asset_root": "build://project/Assets/$assetName",
+    "geo_root": "../geos",
     "material_root": "../mtls",
     "texture_root": "../mtls/texs",
     "utils_root": "../mtls/utils"
