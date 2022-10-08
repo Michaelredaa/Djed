@@ -13,6 +13,11 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, DJED_ROOT+'/src']
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
 
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
@@ -211,6 +216,10 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
     def add_item(self):
         try:
             row = next(self.img_iter)
+
+            thumb_path = db.get_thumbnail(asset_name=row[1], latest=True)
+            if not (thumb_path or os.path.isfile(str(thumb_path))):
+                thumb_path = f'{Icons}/empty_asset.png'
             item_data = {
                 "asset_id": row[0],
                 "asset_name": row[1],
@@ -223,7 +232,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
                 "fbx_path": row[10],
                 "ma_path": row[11],
                 "spp_path": row[12],
-                "thumb_path": db.get_thumbnail(asset_name=row[1], latest=True),
+                "thumb_path": thumb_path,
                 "tags": db.get_tags(asset_name=row[1]),
                 "projects": db.get_projects(asset_name=row[1])
 
@@ -380,7 +389,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         menu.exec_(cursor.pos())
 
     def on_open_maya(self):
-        import_asset_file_path = DJED_ROOT.joinpath("Scripts/dcc/Maya/import_asset.py")
+        from dcc.linker.to_maya import send_to_maya
 
         index = self.get_selection()
 
@@ -390,44 +399,28 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         asset = db.get_asset(uuid=asset_uuid)
 
-        # import command
-        cmd_text = "print('## Djed Tools ##')\n"
-        cmd_text += "print('[Djed] Start of receiving from Asset gallery')\n"
-        cmd_text += "import sys\n"
-        cmd_text += f"asset={asset}\n"
-        cmd_text += f"sys.argv = [asset, ]\n"
-        cmd_text += f"with open(r'{str(import_asset_file_path)}', 'r') as f:\n"
-        cmd_text += "\texec(f.read())\n"
-        cmd_text += "print('[Djed] End of receiving from Asset gallery')\n"
+        asset['family'] = 'asset'
+        asset['colorspace'] = 'aces'
+        asset['to_renderer'] = 'arnold'
+        asset['geo_type'] = 'abc_file'
 
-        # OpenSocket
-        port_num = self.fm.get_user_json("maya", "command_port")
-        socket = OpenSocket(host='127.0.0.1', port=port_num)
-        socket.send('''{}'''.format(cmd_text))
+        send_to_maya(asset)
 
     def on_open_clarisse(self):
-        print("cls")
-        import_asset_file_path = DJED_ROOT.joinpath("Scripts/dcc/Clarisse/import_asset.py")
+        from dcc.linker.to_clarisse import send_to_clarisse
 
         # get selection data
         index = self.get_selection()
         asset_uuid = index.data(ItemRoles.UUID)
         asset = db.get_asset(uuid=asset_uuid)
 
-        # import command
-        cmd_text = "print('## Djed Tools ##')\n"
-        cmd_text += "print('[Djed] Start of receiving from Asset gallery')\n"
-        cmd_text += "import sys\n"
-        cmd_text += f"asset={asset}\n"
-        cmd_text += f"sys.argv = [asset, ]\n"
-        cmd_text += f"with open(r'{str(import_asset_file_path)}', 'r') as f:\n"
-        cmd_text += "\texec(f.read())\n"
-        cmd_text += "print('[Djed] End of receiving from Asset gallery')\n"
+        asset['family'] = 'asset'
+        asset['colorspace'] = 'aces'
+        asset['to_renderer'] = 'standardSurface'
+        asset['geo_type'] = 'abc_bundle'
 
-        # socket
-        port_num = self.fm.get_user_json("clarisse", "command_port")
-        socket = ix.ClarisseNet('127.0.0.1', port_num)
-        socket.run('''{}'''.format(cmd_text))
+        send_to_clarisse(asset)
+
 
 
     def on_open_spp(self):
