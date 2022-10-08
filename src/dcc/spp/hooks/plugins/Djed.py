@@ -43,6 +43,7 @@ from utils.file_manager import FileManager
 from utils.generic import merge_dicts
 from dcc.spp.api import pipeline
 from dcc.linker.to_maya import send_to_maya
+from dcc.linker.to_clarisse import send_to_clarisse
 
 Icons = DJED_ROOT.joinpath("src", "utils", "resources", "icons")
 
@@ -187,7 +188,26 @@ class SubstanceIntegration():
 
 
     def on_send_to_clarisse(self):
-        pass
+        self.on_textures_export()
+
+        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+        asset_data = json.loads(asset_data)
+        geo_paths = db.get_geometry(asset_name=self.asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
+                                    source_file="")
+
+        data = {
+            'name': self.asset_name,
+            'host': 'spp',
+            'renderer': 'arnold',
+            'to_renderer': 'standardSurface',
+            'source_renderer': 'standard',
+            'colorspace': 'aces',
+            'geo_type': 'abc_bundle',
+            'geo_paths': geo_paths,
+            'asset_data': asset_data,
+        }
+        send_to_clarisse(data)
+
 
     def on_about(self):
 
