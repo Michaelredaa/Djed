@@ -322,10 +322,12 @@ def on_export_texture_finished(result):
                 textures_data[sg]['displacements'][f'{sg}_displacement'] = {
                     'type': 'displacement',
                     'texs': {
-                        'plugs': [map_type],
-                        'filepath': file_path,
-                        'udim': udim,
-                        'type': 'file',
+                        tex_name: {
+                            'plugs': [map_type],
+                            'filepath': file_path,
+                            'udim': udim,
+                            'type': 'file',
+                        },
                     },
                     'attrs': {}
                 }
