@@ -2,11 +2,18 @@
 """
 Documentation:
 """
-import os.path
+import os
 import sys
 
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
+
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, DJED_ROOT+'/src']
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
+
 
 from lib.assets_browser.window import AssetViewWindow
 
@@ -59,7 +66,8 @@ class DjedTray(QSystemTrayIcon):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     parent = QWidget()
-    icon = QIcon(os.path.join(os.getenv('DJED_ROOT'), 'src', 'utils', 'resources', 'icons', 'djed.png'))
+    icon_path = os.path.join(os.getenv('DJED_ROOT'), 'src', 'utils', 'resources', 'icons', 'djed.png')
+    icon = QIcon(icon_path)
     tray = DjedTray(icon, parent)
 
     sys.exit(app.exec_())
