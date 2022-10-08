@@ -103,6 +103,14 @@ class JS:
         cmd = 'alg.mapexport.getProjectExportOptions()'
         return self.exe(cmd)
 
+    def set_export_preset_name(self, preset_name):
+        cmd = f'alg.mapexport.setProjectExportPreset("{preset_name}")'
+        return self.exe(cmd)
+
+    def get_export_preset_name(self):
+        cmd = f'alg.mapexport.getProjectExportPreset()'
+        return self.exe(cmd)
+
     def get_export_path(self):
         cmd = 'alg.mapexport.exportPath()'
         return self.exe(cmd)
@@ -212,6 +220,9 @@ def get_all_texture_sets():
 def get_resolutions():
     return 11
 
+def get_preset_name_from_url(url):
+    preset_id = substance_painter.resource.ResourceID.from_url(url)
+    return preset_id.name
 
 def export_texture(tex_dir=None):
     js = JS()
@@ -259,7 +270,7 @@ def export_texture(tex_dir=None):
                 "bitDepth": bit_depth,
                 "dithering": True,
                 "paddingAlgorithm": current_option.get("padding", "Infinite"),
-                "sizeLog2": get_resolutions(),
+                # "sizeLog2": get_resolutions(),  # to override all resolutions
                 "dilationDistance": current_option.get("dilation", 16)
             }
         }]
