@@ -268,6 +268,17 @@ class Clarisse:
 
         return sgs
 
+    def get_selected_context(self):
+        selection = ix.selection
+        if selection:
+            if not selection[0].is_context():
+                ctx = os.path.dirname(str(selection[0]))
+            else:
+                ctx = str(selection[0])
+            return ctx
+        else:
+            ix.log_warning('Make sure the selection is a context')
+
     @error(name=__name__)
     def import_asset(self, asset, colorspace='aces'):
         self.set_material_type()
