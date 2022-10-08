@@ -10,8 +10,6 @@ import sys
 import site
 from pathlib import Path
 
-
-
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
@@ -65,51 +63,73 @@ class LoadAsset(pyblish.api.InstancePlugin):
         self.cl = Clarisse()
 
         asset_name = instance.name
-
         data = instance.data
 
+        # colorspace
         colorspace = data.get('colorspace', 'aces')
 
-        source_renderer = data.get('renderer')
-        source_host = data.get('host')
-        to_renderer = data.get('to_renderer', 'standardSurface')
+        # host
+        source_host = data.get('host', 'standard')
+        if source_host == 'spp':
+            source_host = 'standard'
+        host = 'clarisse'
+
+        # renderer
+        to_renderer = data.get('to_renderer', 'standardSurface')  # clarisse
+        source_renderer = data.get('renderer', 'standard')
 
         geo_paths = data.get('geo_paths')
 
-        # get the geometry types
-        # abc_ref, usd_ref, abc_bundle, usd_bundle
-        geo_type = data.get('geo_type', 'abc_ref')
-        if 'abc' in geo_type:
-            geo_path = geo_paths.get('abc_file')
-        elif 'usd' in geo_type:
-            geo_path = geo_paths.get('usd_geo_file')
-        else:
-            return
+        if geo_paths:
+            # get the geometry types  (abc_ref, usd_ref, abc_bundle, usd_bundle)
+            geo_type = data.get('geo_type', 'abc_ref')
+            if 'abc' in geo_type:
+                geo_path = geo_paths.get('abc_file')
+            elif 'usd' in geo_type:
+                geo_path = geo_paths.get('usd_geo_file')
+            else:
+                return
 
-        if not os.path.isfile(str(geo_path)):
-            message(None, "Error", f"'{geo_path}' file does not exists")
-            return
+            if not os.path.isfile(str(geo_path)):
+                message(None, "Error", f"'{geo_path}' file does not exists")
+                return
+        else:
+            geo_type = geo_paths = geo_path = None
+
         # create main contexts
+        selected_ctx = data.get('context')  # if the working context is given
+        if selected_ctx == 'selected':
+            root_ctx = self.cl.get_selected_context()
+            if not root_ctx:
+                return
+        else:
+            root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
+            root_ctx = self.cl.create_context(root_ctx)
+
+        # get context cfg
+        geo_ctx = self.fm.get_user_json('clarisse', 'geo_root')
         mtl_ctx = self.fm.get_user_json('clarisse', 'material_root')
         tex_ctx = self.fm.get_user_json('clarisse', 'texture_root')
         utils_ctx = self.fm.get_user_json('clarisse', 'utils_root')
 
-        # root
-        root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
-        root_ctx = self.cl.create_context(root_ctx)
-        geo_ctx = self.cl.create_context(root_ctx + "/geo")
+        # resolve and create contexts
+        if selected_ctx != 'selected':
+            geo_ctx = self.cl.create_context(geo_ctx.replace('..', root_ctx))
         mtl_ctx = self.cl.create_context(mtl_ctx.replace('..', root_ctx))
         tex_ctx = self.cl.create_context(tex_ctx.replace('..', root_ctx))
         utils_ctx = self.cl.create_context(utils_ctx.replace('..', root_ctx))
 
         # import geometry
-        geo_item = self.cl.import_geo(geo_path, asset_name, context=str(geo_ctx), geo_type=geo_type)
+        if geo_paths:
+            geo_item = self.cl.import_geo(geo_path, asset_name, context=str(geo_ctx), geo_type=geo_type)
+        else:
+            geo_item = None
 
         # get asset data
         asset_data = data.get('asset_data')
 
         # convert material data to clarisse engines
-        mtl_conversion = material_conversion(source_host, source_renderer, "clarisse", to_renderer)
+        mtl_conversion = material_conversion(source_host, source_renderer, host, to_renderer)
         plugs_conversion = mtl_conversion.get('plugs')
         nodes_conversion = mtl_conversion.get('nodes')
 
@@ -122,7 +142,6 @@ class LoadAsset(pyblish.api.InstancePlugin):
             displacement_items = []
             for mtl in materials:
                 from_renderer = materials[mtl].get('type')
-
                 mtl_type = nodes_conversion.get(from_renderer).get('name')
 
                 # create material
@@ -177,12 +196,13 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     ix.cmds.SetTexture([str(tex_attr)], str(connected_item))
 
             displacements = asset_data.get(sg, {}).get('displacements', {})
-            for displacement in displacements:
+            for displacement, displacement_dict in displacements.items():
                 displacement_item = self.cl.create_node(displacement, material_type='Displacement', cntx=mtl_ctx)
                 if not displacement_item:
                     displacement_item = ix.get_item(f'{mtl_ctx}/{displacement}')
                 displacement_items.append(displacement_item)
-                for tex_name, tex_dict in displacements[displacement].get('texs', {}).items():
+
+                for tex_name, tex_dict in displacement_dict.get('texs', {}).items():
                     tex_item = self.cl.import_texture(
                         tex_dict.get('filepath'),
                         tex_ctx,
@@ -190,7 +210,11 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         colorspace,  # tex_dict.get('colorspace'),
                         False
                     )
-                    displacement_item.attrs.front_value = str(tex_item)
+                    # displacement_item.attrs.front_value = str(tex_item)
+                    ix.cmds.SetTexture([f"{displacement_item}.front_value"], str(tex_item))
+
+            if not geo_item:
+                continue
 
             # assign materials
             default_sgs = ['default', 'top', 'bottom', 'back', 'left', 'right', 'front', 'sides', 'subset']
@@ -243,10 +267,10 @@ class LoadAsset(pyblish.api.InstancePlugin):
                             # source data pattern
                             source_path_pattern = mesh_shape.split('|')
                             if 'usd' in geo_type:
-                                # remove shape node
+                                # remove shape node because clarisse usd ignore the shape nodes
                                 source_path_pattern.pop(-1)
                             else:
-                                # remove transform node
+                                # remove transform node because clarisse abc ignore the transform nodes
                                 source_path_pattern.pop(-2)
 
                             source_path_pattern = '/'.join(source_path_pattern)
