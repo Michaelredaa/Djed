@@ -544,11 +544,13 @@ class AssetsDB(Connect):
         asset = {}
         asset_name = self.get_asset_name(uuid=uuid)
         geometries = self.get_geometry(asset_name=asset_name, obj_file='', usd_geo_file='', abc_file='', fbx_file='')
+        asset_data = json.loads(self.get_geometry(asset_name=asset_name, mesh_data='')['mesh_data'])
         materials = self.get_textures(uuid=uuid)
 
         asset["name"] = asset_name
-        asset["geos"] = geometries
-        asset["mtls"] = materials
+        asset["geo_paths"] = geometries
+        asset["asset_data"] = asset_data
+        asset["materials"] = materials
 
         return asset
 
