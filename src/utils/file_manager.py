@@ -181,7 +181,7 @@ class FileManager():
 
     @error(name=__name__)
     def ck_udim(self, texture_name):
-        if re.search("\.\d+\.", texture_name):
+        if re.search(r"[.-_]\d+\.", texture_name):
             return True
 
     @error(name=__name__)
