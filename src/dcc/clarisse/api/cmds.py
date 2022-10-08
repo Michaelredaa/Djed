@@ -211,8 +211,9 @@ class Clarisse:
         tex_node = self.create_node(tex_name, 'TextureStreamedMapFile', cntx)
 
         # Check UDIM
-        if (udim is not None) and (udim != 1):
-            tex_path = re.sub('\.\d+\.', '.<UDIM>.', tex_path)
+        if udim:
+            tex_path = re.sub(r'_\d+\.', '_<UDIM>.', tex_path)
+            tex_path = re.sub(r'\.\d+\.', '.<UDIM>.', tex_path)
 
         if not tex_node:
             tex_node = ix.get_item(str(cntx) + "/" + tex_name)
