@@ -175,7 +175,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         tex_ctx,
                         tex_dict.get('udim'),
                         colorspace,  # tex_dict.get('colorspace'),
-                        False
+                        to_plug.get('type') == 'color'
                     )
 
                     tex_attr = mtl_item.get_attribute(to_plug.get('name'))
