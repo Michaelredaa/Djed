@@ -112,7 +112,10 @@ class ExportSettings(ToolSettingsBase):
         if self.cb_usd.isChecked(): extensions.append("usd")
 
         export_path = self.le_dir.text()
-        export_meshs = self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
+
+        from dcc.maya.shelves.pyblish_launch import process
+        process(path=export_path, extensions=extensions)
+        # export_meshs = self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
 
 # Main function
 def main():
