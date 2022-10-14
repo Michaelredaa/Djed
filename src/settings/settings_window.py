@@ -8,10 +8,7 @@ Documentation:
 # Import Libraries
 import os
 import sys
-import time
-import traceback
 
-from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
@@ -23,8 +20,6 @@ for sysPath in sysPaths:
 
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
-
-from utils.settings.style_rc import *
 
 # ---------------------------------
 # Variables
