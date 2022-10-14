@@ -4,7 +4,6 @@
 Documentation:
 """
 
-
 # ---------------------------------
 # Import Libraries
 import os
@@ -22,12 +21,10 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 
 from utils.settings.style_rc import *
-
 
 # ---------------------------------
 # Variables
@@ -36,13 +33,13 @@ db = AssetsDB()
 DJED_ROOT = os.getenv("DJED_ROOT")
 Icons = f'{DJED_ROOT}/src/utils/resources/icons'
 
+
 # ---------------------------------
 # Start Here
 
 class TextFeild(QWidget):
     def __init__(self, parent=None):
         super(TextFeild, self).__init__(parent)
-
 
         h_layout = QHBoxLayout(self)
         self.setLayout(h_layout)
@@ -53,10 +50,8 @@ class TextFeild(QWidget):
         h_layout.addWidget(self.line_edit)
         # h_layout.addItem(QSpacerItem(100, 2, QSizePolicy.MinimumExpanding, QSizePolicy.Maximum))
 
-
-
-
     def set_name(self, name):
+        # name = ' '.join(str(name).split('_')).title()
         self.label.setText(name)
 
     def set_default_value(self, value):
@@ -67,8 +62,6 @@ class TextFeild(QWidget):
 
     def set_placeholder(self, text):
         self.line_edit.setPlaceholderText(text)
-
-
 
 
 class TreeItemWidget(QWidget):
@@ -83,24 +76,29 @@ class TreeItemWidget(QWidget):
         if not widgets_data:
             return
 
-        for i, item in enumerate(widgets_data):
-            if isinstance(item, dict):
-                continue
-            item_data = widgets_data.get(item)
-            widget_type = item_data.get("type")
+        print("data: ", widgets_data)
+        if isinstance(widgets_data, dict):
+            widgets_data = [widgets_data]
+
+        for item in widgets_data:
+            # if isinstance(item, dict):
+            #     continue
+
+            widget_type = item.get("type")
+            if not widget_type:
+                return
+
             widget_class = self.widgets.get(widget_type)
             if not widget_class:
                 continue
             widget = self.widgets.get(widget_type)(self)
-            widget.set_name(item_data.get("name"))
+            widget.set_name(item.get("label"))
 
-            widget.set_default_value(str(item_data.get("default_value")))
-            widget.set_placeholder(str(item_data.get("placeholder")))
-            widget.set_tooltip(str(item_data.get("tool_tip")))
+            widget.set_default_value(str(item.get("default_value")))
+            widget.set_placeholder(str(item.get("placeholder")))
+            widget.set_tooltip(str(item.get("tooltip")))
 
             self.main_layout.addWidget(widget)
-
-
 
     def all_widgets(self):
         # input text
@@ -108,16 +106,15 @@ class TreeItemWidget(QWidget):
 
 
 class ItemRoles():
-    TapName = Qt.UserRole+10
-    SettingName = Qt.UserRole+11
-    SettingFields = Qt.UserRole+12
+    TapName = Qt.UserRole + 10
+    SettingName = Qt.UserRole + 11
+    SettingFields = Qt.UserRole + 12
 
 
 class StyledItemDelegate(QStyledItemDelegate):
     def __init__(self, _index=None, parent=None):
         super(StyledItemDelegate, self).__init__(parent)
         self._index = _index
-
 
     def paint(self, painter, option, index):
         if (index == self._index):
@@ -137,7 +134,6 @@ class StyledItemDelegate(QStyledItemDelegate):
             return editor
         return super(StyledItemDelegate, self).createEditor(parent, option, index)
 
-
     # def setEditorData(self, editor, index):
     #     if not index.isValid(): return
     #     if self.model_indices and index in self.model_indices:
@@ -147,13 +143,11 @@ class StyledItemDelegate(QStyledItemDelegate):
     #     else:
     #         super().setEditorData(editor, index)
 
-
     # def setModelData(self, editor, model, index):
     #     if self.model_indices and index in self.model_indices:
     #         model.setData(index, editor.text(), Qt.EditRole)
     #     else:
     #         super().setModelData(editor, model, index)
-
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setContentsMargins(0, 0, 0, 0)
@@ -173,47 +167,160 @@ class SettingsTree(QTreeView):
         self.header().hide()
         self.setModel(self.data_model)
 
-    def add_rows(self, items_data):
-        # self.setItemDelegate(Delegate())
-        for tap in items_data:
-            tap_item = QStandardItem()
-            tap_item.setText(tap)
-            tap_item.setData(tap, ItemRoles.TapName)
+    def has_childrens(self, data):
+        for item in data:
+            if 'children' in item:
+                return True
+        return False
 
-            child = QStandardItem()
-            tap_item.appendRow([child])
+    def populate_rows(self, data, row_item, separate=False):
+        print('start', separate)
+        print('init: ', data)
+        child_item = QStandardItem()
+        row_item.appendRow([child_item])
 
-            children_items = items_data.get(tap)
 
-            for item in children_items:
-                child.setData(item, ItemRoles.SettingName)
-                child.setData(children_items, ItemRoles.SettingFields)
 
-                sub_children_items = children_items.get(item)
+        if not self.has_childrens(data):
+            print("has")
 
-                if self.fm.dict_depth(sub_children_items) > 1:
+            drop_item = QStandardItem()
+            # drop_item.setText(data.get('label'))
+
+            widgets_item = QStandardItem()
+            widgets_item.setData(data, ItemRoles.SettingFields)
+            drop_item.appendRow([widgets_item])
+
+            row_item.appendRow([drop_item])
+
+
+
+            self.set_item_widget(drop_item, row=0)
+            return
+
+
+        for child_data in data:
+            child_item.setData(child_data.get('name'), ItemRoles.TapName)
+            # child_item.setData(child_data.get('name'), ItemRoles.SettingName)
+
+            drop_item = QStandardItem()
+            drop_item.setText(child_data.get('label'))
+
+            widgets_item = QStandardItem()
+
+
+
+            print(child_data.get('name'))
+            passed_item = []
+
+            if 'children' in child_data:
+
+                if not self.has_childrens(child_data.get('children')):
                     drop_item = QStandardItem()
-                    drop_item.setText(item)
-                    tap_item.appendRow([drop_item])
+                    drop_item.setText(child_data.get('label'))
 
-                    sub_child = QStandardItem()
-                    sub_child.setData(item, ItemRoles.SettingName)
-                    sub_child.setData(sub_children_items, ItemRoles.SettingFields)
-                    drop_item.appendRow([sub_child])
+                    widgets_item = QStandardItem()
+                    widgets_item.setData(child_data.get('children'), ItemRoles.SettingFields)
+                    drop_item.appendRow([widgets_item])
+
+                    row_item.appendRow([drop_item])
 
                     self.set_item_widget(drop_item, row=0)
+                    continue
+
+                for sub_child_data in child_data.get('children'):
+
+                    sub_drop_item = QStandardItem()
+                    sub_drop_item.setText(sub_child_data.get('label'))
+                    drop_item.appendRow([sub_drop_item])
+
+                    print("sub", sub_child_data)
+                    if 'children' in sub_child_data:
+                        if separate:
+                            print('populate', sub_child_data.get('children'))
+                            self.populate_rows(sub_child_data.get('children'),
+                                               drop_item,
+                                               self.has_childrens(sub_child_data.get('children'))
+                                               )
+                        else:
+                            passed_item = sub_child_data.get('children')
+                            print('push: ', passed_item)
 
 
+                    else:
+                        passed_item.append(sub_child_data)
 
-            self.data_model.appendRow(tap_item)
-            self.set_item_widget(tap_item, row=0)
+                    widgets_item = QStandardItem()
+                    widgets_item.setData(passed_item, ItemRoles.SettingFields)
+                    sub_drop_item.appendRow([widgets_item])
+                    self.set_item_widget(sub_drop_item, row=0)
+
+            else:
+                print('no children')
+                if not isinstance(child_data, list):
+                    passed_item = [child_data]
+
+            widgets_item.setData(passed_item, ItemRoles.SettingFields)
+            drop_item.appendRow([widgets_item])
+            # sub_drop_item.appendRow([widgets_item])
+
+
+            row_item.appendRow([drop_item])
+            self.set_item_widget(drop_item, row=0)
+
+    def add_rows(self, items_data):
+        # self.setItemDelegate(Delegate())
+        # for tap in items_data:
+        #     tap_item = QStandardItem()
+        #     tap_item.setText(tap)
+        #     tap_item.setData(tap, ItemRoles.TapName)
+        #
+        #     child = QStandardItem()
+        #     tap_item.appendRow([child])
+        #
+        #     children_items = items_data.get(tap)
+        #
+        #     for item in children_items:
+        #         child.setData(item, ItemRoles.SettingName)
+        #         child.setData(children_items, ItemRoles.SettingFields)
+        #
+        #         sub_children_items = children_items.get(item)
+        #
+        #         if self.fm.dict_depth(sub_children_items) > 1:
+        #             drop_item = QStandardItem()
+        #             drop_item.setText(item)
+        #             tap_item.appendRow([drop_item])
+        #
+        #             sub_child = QStandardItem()
+        #             sub_child.setData(item, ItemRoles.SettingName)
+        #             sub_child.setData(sub_children_items, ItemRoles.SettingFields)
+        #             drop_item.appendRow([sub_child])
+        #
+        #             self.set_item_widget(drop_item, row=0)
+        #
+        #
+        #
+        #     self.data_model.appendRow(tap_item)
+        #     self.set_item_widget(tap_item, row=0)
+
+
+        for row_data in items_data:
+            row_item = QStandardItem()
+            row_item.setText(row_data.get('label'))
+            row_item.setData(row_data.get('name'), ItemRoles.TapName)
+
+            children_data = row_data.get('children', [])
+
+            self.populate_rows(children_data, row_item)
+
+            self.data_model.appendRow(row_item)
+            self.set_item_widget(row_item, row=0)
+
 
     def set_item_widget(self, item, row=0):
         index = self.data_model.index(row, 0, self.data_model.indexFromItem(item))
         self.setItemDelegate(StyledItemDelegate(_index=index))
         self.openPersistentEditor(index)
-
-
 
 
 class SettingsWindow(QMainWindow):
@@ -233,7 +340,7 @@ class SettingsWindow(QMainWindow):
 
         # tree widget
         self.setting_tree = SettingsTree()
-        self.setting_tree.add_rows(ui_data)
+        self.setting_tree.add_rows(ui_data.get('items', []))
 
         # buttons
         l_btn = QHBoxLayout(self.cw)
@@ -245,9 +352,7 @@ class SettingsWindow(QMainWindow):
         self.main_layout.addWidget(self.setting_tree)
         self.main_layout.addLayout(l_btn)
 
-
-
-        # self.setting_table.expandAll()
+        self.setting_tree.expandAll()
 
     def init_win(self):
         title = "Djed Settings"
@@ -256,7 +361,6 @@ class SettingsWindow(QMainWindow):
         SizeObject = QGuiApplication.primaryScreen().availableGeometry()
         self.screen_height = SizeObject.height()
         self.screen_width = SizeObject.width()
-
 
         self.setWindowIcon(QIcon(icon_path))
         self.setWindowTitle(title)
@@ -274,8 +378,8 @@ class SettingsWindow(QMainWindow):
 
     def color(self):
         darkPalette = QPalette()
-        color = QColor(45,45,45)
-        display_color = QColor(127,127,127)
+        color = QColor(45, 45, 45)
+        display_color = QColor(127, 127, 127)
         darkPalette.setColor(QPalette.Window, color)
 
         # darkPalette.setColor(QPalette.WindowText, Qt.white)
