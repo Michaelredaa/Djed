@@ -178,14 +178,14 @@
                   "name": "sss_color",
                   "label": "Subsurface Scattering Color",
                   "default_value": [
-                    "(?i)scattering"
+                    "(?i)scattering.*color"
                   ],
                   "value": [
                     "(?i)scattering"
                   ],
                   "type": "input_text",
                   "tooltip": "The subsurface scattering color textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)scattering\", ..]'"
+                  "placeholder": "eg. '[\"(?i)scattering.*color\", ..]'"
                 },
                 {
                   "name": "opacity",
@@ -239,15 +239,78 @@
       ]
     },
     {
+      "name": "substance_painter",
+      "label": "Substance Painter",
+      "children": [
+        {
+          "name": "configuration",
+          "label": "Configuration",
+          "children": [
+            {
+              "name": "executable",
+              "label": "Executable",
+              "default_value": "C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
+              "value": "C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
+              "type": "input_text",
+              "tooltip": "Maya executable path",
+              "placeholder": "eg. C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe"
+            },
+            {
+              "name": "spp_save_directory",
+              "label": "SPP save directory",
+              "default_value": "../../../sur/substance/$asset_name",
+              "value": "../../../sur/substance/$asset_name",
+              "type": "input_text",
+              "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
+              "placeholder": "eg. ../../../sur/substance/$asset_name"
+            }
+          ]
+        },
+        {
+          "name": "texture_export",
+          "label": "Textures Export",
+          "children": [
+            {
+              "name": "path",
+              "label": "Path",
+              "default_value": "../../../sur/substance/textures",
+              "value": "../../../sur/substance/textures",
+              "type": "input_text",
+              "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
+              "placeholder": "eg. \"../../../sur/substance/textures\""
+            },
+            {
+              "name": "preset",
+              "label": "Preset",
+              "default_value": "Arnold (AiStandard)",
+              "value": "Arnold (AiStandard)",
+              "type": "input_text",
+              "tooltip": "The presets of exporting textures",
+              "placeholder": "eg. Arnold (AiStandard)"
+            },
+            {
+              "name": "texture_format",
+              "label": "Texture Format",
+              "default_value": "png",
+              "value": "png",
+              "type": "input_text",
+              "tooltip": "The format of export textures",
+              "placeholder": "eg. png"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "maya",
       "label": "Maya",
       "children": [
         {
-          "name": "config",
+          "name": "configuration",
           "label": "Configuration",
           "children": [
             {
-              "name": "exe",
+              "name": "executable",
               "label": "Executable",
               "default_value": "C:/Program Files/Autodesk/Maya2023/bin/maya.exe",
               "value": "C:/Program Files/Autodesk/Maya2023/bin/maya.exe",
@@ -283,35 +346,102 @@
               "name": "arnold",
               "label": "Arnold",
               "children": [
-                {
-                  "name": "nodes",
-                  "label": "Nodes",
-                  "children": [
-                    {
-                      "name": "foo",
-                      "label": "foo",
-                      "default_value": 4436,
-                      "value": 4436,
-                      "type": "input_text",
-                      "tooltip": "Maya command port number to communicate with another programs",
-                      "placeholder": "eg. '4436'"
-                    },
-                    {
-                      "name": "bar",
-                      "label": "bar",
-                      "default_value": "../Export/$selection",
-                      "value": "../Export/$selection",
-                      "type": "input_text",
-                      "tooltip": "The export path to export in relatives to the current file",
-                      "placeholder": "eg. '../Export/$selection'"
-                    }
-                  ]
-                }
+                "$maya_arnold"
               ]
             }
           ]
         }
       ]
+    },
+    {
+      "name": "clarisse",
+      "label": "Clarisse",
+      "children": [
+        {
+          "name": "configuration",
+          "label": "Configuration",
+          "children": [
+            {
+              "name": "executable",
+              "label": "Executable",
+              "default_value": "C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe",
+              "value": "C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe",
+              "type": "input_text",
+              "tooltip": "clarisse executable path",
+              "placeholder": "eg. 'C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe'"
+            },
+            {
+              "name": "command_port",
+              "label": "Command Port",
+              "default_value": 55000,
+              "value": 55000,
+              "type": "input_text",
+              "tooltip": "Clarisse command port number to communicate with another programs",
+              "placeholder": "eg. '55000'"
+            },
+            {
+              "name": "asset_root",
+              "label": "Asset Root",
+              "default_value": "build://project/Assets/$assetName",
+              "value": "build://project/Assets/$assetName",
+              "type": "input_text",
+              "tooltip": "The directory root of in which the assets imported",
+              "placeholder": "eg. 'build://project/Assets/$assetName'"
+            },
+            {
+              "name": "material_root",
+              "label": "Material Root",
+              "default_value": "../Mtls",
+              "value": "../mtls",
+              "type": "input_text",
+              "tooltip": "The directory root of clarisse in which the materials created.\n '../' mean relative to asset root",
+              "placeholder": "eg. '../mtls'"
+            },
+            {
+              "name": "texture_root",
+              "label": "Texture Root",
+              "default_value": "../texs",
+              "value": "../texs",
+              "type": "input_text",
+              "tooltip": "The directory root of clarisse in which the textures created.\n '../' mean relative to asset root",
+              "placeholder": "eg. '../texs'"
+            },
+            {
+              "name": "utils_root",
+              "label": "Utils Root",
+              "default_value": "../utils",
+              "value": "../utils",
+              "type": "input_text",
+              "tooltip": "The directory root of clarisse in which the material utilities created.\n '../' mean relative to asset root",
+              "placeholder": "eg. '../utils'"
+            }
+          ]
+        },
+        {
+          "name": "renderers",
+          "label": "Renderers",
+          "children": [
+            {
+              "name": "autodesk_standard_surface",
+              "label": "Autodesk Standard Surface",
+              "children": [
+                "$clarisse_standardSurface"
+              ]
+            },
+            {
+              "name": "disney_standard_surface",
+              "label": "disney Standard Surface",
+              "children": [
+                "$clarisse_disney"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "end",
+      "label": "End"
     }
   ]
 }

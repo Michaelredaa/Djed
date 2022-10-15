@@ -8,6 +8,8 @@ Documentation:
 # Import Libraries
 import os
 import sys
+import json
+from collections import OrderedDict
 
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
@@ -21,7 +23,7 @@ for sysPath in sysPaths:
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 
-from settings.style_rc import *
+from utils.resources.style_rc import *
 
 # ---------------------------------
 # Variables
@@ -35,6 +37,8 @@ Icons = f'{DJED_ROOT}/src/utils/resources/icons'
 # Start Here
 
 class TextFiled(QWidget):
+    name = 'input_text'
+
     def __init__(self, parent=None):
         super(TextFiled, self).__init__(parent)
 
@@ -59,6 +63,7 @@ class TextFiled(QWidget):
 
     def set_placeholder(self, text):
         self.line_edit.setPlaceholderText(text)
+
 
 class MultiTextFiled(QWidget):
     def __init__(self, parent=None, num=2):
@@ -94,6 +99,59 @@ class MultiTextFiled(QWidget):
         self.line_edits[num]['lineedit'].setPlaceholderText(text)
 
 
+class tableField(QWidget):
+    name = 'table_field'
+
+    def __init__(self, parent=None):
+        super(tableField, self).__init__(parent=parent)
+
+        g_layout = QGridLayout(self)
+        self.setLayout(g_layout)
+
+        self.table = QTableWidget()
+        self.table.setAlternatingRowColors(True)
+        self.table.setCornerButtonEnabled(False)
+        self.table.setFrameStyle(QFrame.NoFrame)
+
+        g_layout.addWidget(self.table)
+
+    def set_data(self, data):
+        hor_headers = []
+
+        self.table.setRowCount(len(data))
+        for r, item_data in enumerate(data):
+            vert_headers = []
+            hor_headers.append(item_data.get('label'))
+
+            self.table.setColumnCount(len(item_data.get('value', {})))
+
+            c = 0
+            for col, value in item_data.get('value', {}).items():
+                vert_headers.append(col)
+                new_item = QTableWidgetItem(value)
+                new_item.setToolTip(value)
+                self.table.setItem(r, c, new_item)
+                c += 1
+
+            self.table.setHorizontalHeaderLabels(vert_headers)
+
+        self.table.setVerticalHeaderLabels(hor_headers)
+
+        self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
+
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.Stretch)
+        #
+        # self.adjustSize()
+
+        self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # +++
+
+
 class TreeItemWidget(QWidget):
     def __init__(self, widgets_data, parent=None):
         super(TreeItemWidget, self).__init__(parent)
@@ -110,8 +168,8 @@ class TreeItemWidget(QWidget):
             widgets_data = [widgets_data]
 
         for item in widgets_data:
-            # if isinstance(item, dict):
-            #     continue
+            if not isinstance(item, dict):
+                continue
 
             widget_type = item.get("type")
             if not widget_type:
@@ -127,7 +185,6 @@ class TreeItemWidget(QWidget):
                 widget.setLayout(h_layout)
 
                 for i in range(len(item.get("label"))):
-
                     in_widget = self.widgets.get(widget_type)(self)
                     in_widget.set_name(item.get("label")[i])
 
@@ -135,6 +192,11 @@ class TreeItemWidget(QWidget):
                     in_widget.set_placeholder(str(item.get("placeholder")[i]))
                     in_widget.set_tooltip(str(item.get("tooltip")[i]))
                     h_layout.addWidget(in_widget)
+
+            elif 'table_field' in widget_type:
+                widget = self.widgets.get(widget_type)(self)
+                widget.set_data(item.get('data', []))
+
             else:
 
                 widget = self.widgets.get(widget_type)(self)
@@ -150,7 +212,7 @@ class TreeItemWidget(QWidget):
         # input text
         self.widgets["input_text"] = TextFiled
         self.widgets["multi_input_text"] = TextFiled
-
+        self.widgets["table_field"] = tableField
 
 
 class ItemRoles():
@@ -221,6 +283,12 @@ class SettingsTree(QTreeView):
                 return True
         return False
 
+    def has_refernce(self, data):
+        for item in data:
+            if isinstance(item, str):
+                return True
+        return False
+
     def populate_row(self, widgets_data, parent_item):
         widgets_item = QStandardItem()
         parent_item.appendRow([widgets_item])
@@ -228,6 +296,15 @@ class SettingsTree(QTreeView):
         self.set_item_widget(parent_item, row=0)
 
     def populate_rows(self, data, row_item):
+
+        if self.has_refernce(data):
+            for i in range(len(data)):
+                if "$" in data[i]:
+                    cfg_path = r"./cfg"
+                    with open(cfg_path + "/" + data[i].split('$')[-1] + ".json") as f:
+                        data_list = json.load(f, object_pairs_hook=OrderedDict).get('data', [])
+                        data.pop(i)
+                        data.extend(data_list)
 
         if not self.has_childrens(data):
             self.populate_row(data, row_item)
@@ -300,7 +377,7 @@ class SettingsWindow(QMainWindow):
         self.color()
 
         self.fm = FileManager()
-        ui_data = self.fm.read_json(r"settings.json")
+        ui_data = self.fm.read_json(r"./cfg/settings.json")
 
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
@@ -336,7 +413,7 @@ class SettingsWindow(QMainWindow):
         self.setWindowTitle(title)
         self.setMinimumSize(self.screen_width * 0.4, self.screen_height * 0.45)
 
-        self.setStyleSheet(open("style.qss").read())
+        self.setStyleSheet(open("../utils/resources/style.qss").read())
         self.font = QFont()
         self.font.setFamily("DejaVu Sans Condensed")
         self.font.setPointSize(20)
@@ -344,7 +421,7 @@ class SettingsWindow(QMainWindow):
         self.font.setWeight(50)
         self.font.setKerning(True)
 
-        self.setFont(self.font)
+        # self.setFont(self.font)
 
     def color(self):
         darkPalette = QPalette()
@@ -386,6 +463,4 @@ def main():
 
 
 if __name__ == '__main__':
-    print(("-" * 20) + "\nStart of code...\n" + ("-" * 20))
     main()
-    print(("-" * 20) + "\nEnd of code.\n" + ("-" * 20))

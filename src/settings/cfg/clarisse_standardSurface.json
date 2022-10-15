@@ -1,0 +1,274 @@
+{
+  "host": "clarisse",
+  "renderer": "ad_standard_surface",
+  "data": [
+    {
+      "name": "standard_surface",
+      "label": "Standard Surface",
+      "default_value": "MaterialPhysicalAutodeskStandardSurface",
+      "value": "MaterialPhysicalAutodeskStandardSurface",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "standard_surface_plugs",
+      "label": "Standard Surface Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "base",
+          "label": "Base",
+          "value": {
+            "name": "base_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "base_color",
+          "label": "Base Color",
+          "value": {
+            "name": "base_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "metallic",
+          "label": "Metallic",
+          "value": {
+            "name": "metalness",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "normal",
+          "label": "Normal",
+          "value": {
+            "name": "normal_input",
+            "type": "vector3",
+            "plug": "input",
+            "inbetween": "[{\"name\": \"_normal\",\"type\": \"TextureNormalMap\", \"inplug\": \"input\", \"outplug\": \"\"}]"
+          }
+        },
+        {
+          "name": "specular",
+          "label": "Specular",
+          "value": {
+            "name": "specular_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "roughness",
+          "label": "Roughness",
+          "value": {
+            "name": "specular_roughness",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "transmission",
+          "label": "Transmission",
+          "value": {
+            "name": "transmission_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "specular_color",
+          "label": "Specular Color",
+          "value": {
+            "name": "specular_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "transmission_color",
+          "label": "Transmission Color",
+          "value": {
+            "name": "transmission_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "subsurface",
+          "label": "Subsurface",
+          "value": {
+            "name": "subsurface_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "subsurface_color",
+          "label": "Subsurface Color",
+          "value": {
+            "name": "subsurface_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "subsurface_radius",
+          "label": "Subsurface Radius",
+          "value": {
+            "name": "subsurface_radius",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "coat",
+          "label": "Coat",
+          "value": {
+            "name": "coat_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "sheen",
+          "label": "Sheen",
+          "value": {
+            "name": "sheen_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "sheen_color",
+          "label": "Sheen color",
+          "value": {
+            "name": "sheen_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "emission",
+          "label": "Emission",
+          "value": {
+            "name": "emission_weight",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "emission_color",
+          "label": "Emission Color",
+          "value": {
+            "name": "emission_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "opacity",
+          "label": "Opacity",
+          "value": {
+            "name": "opacity",
+            "type": "color",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "displacement",
+      "label": "Displacement",
+      "default_value": "Displacement",
+      "value": "Displacement",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "displacement_plugs",
+      "label": "Displacement Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "displacement",
+          "label": "Displacement",
+          "value": {
+            "name": "front_value",
+            "type": "float",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "displacement",
+          "label": "Displacement",
+          "value": {
+            "name": "",
+            "type": "",
+            "plug": "",
+            "inbetween": "[{}]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal_map",
+      "label": "Normal Map",
+      "default_value": "TextureNormalMap",
+      "value": "TextureNormalMap",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "normal_map_plugs",
+      "label": "Normal Map Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "input",
+          "label": "Input",
+          "value": {
+            "name": "input",
+            "type": "vector3",
+            "plug": "input",
+            "inbetween": "{[]}"
+          }
+        },
+        {
+          "name": "out_value",
+          "label": "out Value",
+          "value": {
+            "name": "",
+            "type": "",
+            "plug": "",
+            "inbetween": "{[]}"
+          }
+        }
+      ]
+    }
+  ]
+}
