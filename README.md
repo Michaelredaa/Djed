@@ -20,7 +20,12 @@ Requirements
 
 Djed trying to follow [**VFX Reference Platform**](https://vfxplatform.com/)
 
-Djed is written in python 3
+Djed is written in python 3, and based on [**pyblish**](https://pyblish.com/) in publishing
+
+
+Installing
+------------
+...
 
 
 Ideas and contributions are welcome!
