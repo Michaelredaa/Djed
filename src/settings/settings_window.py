@@ -99,11 +99,11 @@ class MultiTextFiled(QWidget):
         self.line_edits[num]['lineedit'].setPlaceholderText(text)
 
 
-class tableField(QWidget):
+class TableField(QWidget):
     name = 'table_field'
 
     def __init__(self, parent=None):
-        super(tableField, self).__init__(parent=parent)
+        super(TableField, self).__init__(parent=parent)
 
         g_layout = QGridLayout(self)
         self.setLayout(g_layout)
@@ -212,7 +212,7 @@ class TreeItemWidget(QWidget):
         # input text
         self.widgets["input_text"] = TextFiled
         self.widgets["multi_input_text"] = TextFiled
-        self.widgets["table_field"] = tableField
+        self.widgets["table_field"] = TableField
 
 
 class ItemRoles():
@@ -295,13 +295,15 @@ class SettingsTree(QTreeView):
         widgets_item.setData(widgets_data, ItemRoles.SettingFields)
         self.set_item_widget(parent_item, row=0)
 
-    def populate_rows(self, data, row_item):
+    def populate_rows(self, data, row_item, row=None):
 
         if self.has_refernce(data):
             for i in range(len(data)):
                 if "$" in data[i]:
-                    cfg_path = r"./cfg"
-                    with open(cfg_path + "/" + data[i].split('$')[-1] + ".json") as f:
+                    cfg_path = f"./cfg/{data[i].split('$')[-1]}.json"
+                    if not os.path.isfile(cfg_path):
+                        continue
+                    with open(cfg_path) as f:
                         data_list = json.load(f, object_pairs_hook=OrderedDict).get('data', [])
                         data.pop(i)
                         data.extend(data_list)
@@ -314,7 +316,11 @@ class SettingsTree(QTreeView):
                 child_item = QStandardItem()
                 child_item.setText(child_data.get('label'))
                 child_item.setData(child_data.get('label'), ItemRoles.TapName)
-                row_item.appendRow([child_item])
+                child_item.setData(child_data, ItemRoles.SettingFields)
+                if row:
+                    row_item.insertRow(row, [child_item])
+                else:
+                    row_item.appendRow([child_item])
                 self.populate_rows(child_data.get('children'), child_item)
 
     def add_rows(self, items_data):
@@ -356,6 +362,7 @@ class SettingsTree(QTreeView):
             row_item = QStandardItem()
             row_item.setText(row_data.get('label'))
             row_item.setData(row_data.get('name'), ItemRoles.TapName)
+            row_item.setData(row_data, ItemRoles.SettingFields)
 
             children_data = row_data.get('children', [])
 
@@ -376,8 +383,44 @@ class SettingsWindow(QMainWindow):
         self.init_win()
         self.color()
 
-        self.fm = FileManager()
-        ui_data = self.fm.read_json(r"./cfg/settings.json")
+        self.connect_events()
+
+        self.setting_tree.expandAll()
+
+
+    def connect_events(self):
+
+        self.save_btn.clicked.connect(self.on_save)
+
+        self.setting_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setting_tree.customContextMenuRequested.connect(self.on_right_click)
+    def init_win(self):
+        title = "Djed Settings"
+        icon_path = os.path.join(Icons, "settings.png")
+
+        Size_object = QGuiApplication.primaryScreen().availableGeometry()
+        screen_height = Size_object.height()
+        screen_width = Size_object.width()
+
+        self.setWindowIcon(QIcon(icon_path))
+        self.setWindowTitle(title)
+        self.setMinimumSize(screen_width * 0.45, screen_height * 0.5)
+
+        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/style.qss").read())
+
+        # set Font
+        font = QFont()
+        font.setFamily("DejaVu Sans Condensed")
+        font.setPointSize(20)
+        font.setBold(True)
+        font.setWeight(50)
+        font.setKerning(True)
+
+        # setFont(self.font)
+
+        # Update table
+        with open(f"{DJED_ROOT}/src/settings/cfg/settings.json") as f:
+            ui_data = json.load(f, object_pairs_hook=OrderedDict)
 
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
@@ -399,29 +442,7 @@ class SettingsWindow(QMainWindow):
         self.main_layout.addWidget(self.setting_tree)
         self.main_layout.addLayout(l_btn)
 
-        self.setting_tree.expandAll()
 
-    def init_win(self):
-        title = "Djed Settings"
-        icon_path = os.path.join(Icons, "settings.png")
-
-        SizeObject = QGuiApplication.primaryScreen().availableGeometry()
-        self.screen_height = SizeObject.height()
-        self.screen_width = SizeObject.width()
-
-        self.setWindowIcon(QIcon(icon_path))
-        self.setWindowTitle(title)
-        self.setMinimumSize(self.screen_width * 0.4, self.screen_height * 0.45)
-
-        self.setStyleSheet(open("../utils/resources/style.qss").read())
-        self.font = QFont()
-        self.font.setFamily("DejaVu Sans Condensed")
-        self.font.setPointSize(20)
-        self.font.setBold(True)
-        self.font.setWeight(50)
-        self.font.setKerning(True)
-
-        # self.setFont(self.font)
 
     def color(self):
         darkPalette = QPalette()
@@ -447,6 +468,58 @@ class SettingsWindow(QMainWindow):
         # darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, display_color)
 
         self.setPalette(darkPalette)
+
+    def on_right_click(self, point):
+
+        index = self.setting_tree.indexAt(point)
+
+        if not index.isValid():
+            return
+
+        # We build the menu.
+        menu = QMenu()
+        duplicate_action = menu.addAction("Duplicate")
+        print_action = menu.addAction("Print Data")
+
+        duplicate_action.triggered.connect(lambda: self.on_duplicate_item(index))
+        print_action.triggered.connect(lambda: self.on_print_data(index))
+
+
+        menu.exec_(self.setting_tree.mapToGlobal(point))
+    def on_duplicate_item(self, index):
+        item = self.setting_tree.data_model.itemFromIndex(index)
+        parent = item.parent()
+        data = index.data(ItemRoles.SettingFields)
+
+        self.setting_tree.populate_rows([data], parent, item.row()+1)
+    def on_print_data(self, index):
+
+        item = self.setting_tree.data_model.itemFromIndex(index)
+
+        item_data = index.data(ItemRoles.SettingFields)
+        parent_data = index.parent().data(ItemRoles.SettingFields)
+
+        print('item data : ', item_data)
+        print('parent data : ', parent_data)
+
+    def on_save(self):
+
+
+
+        for x in self.iterItems(self.setting_tree.data_model.invisibleRootItem()):
+            if not x:
+                continue
+
+            print(x.data(ItemRoles.TapName), x.data(ItemRoles.SettingFields))
+    def iterItems(self, root):
+        if root is not None:
+            for row in range(root.rowCount()):
+                row_item = root.child(row, 0)
+                yield row_item
+                # if row_item.hasChildren():
+                #     for childIndex in range(row_item.rowCount()):
+                #         child = row_item.child(childIndex, 0)
+                #         yield child
 
 
 # Main Function
