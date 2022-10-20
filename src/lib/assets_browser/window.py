@@ -28,6 +28,7 @@ from utils import clarisse_net as ix
 from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
 
+from utils.resources.style_rc import *
 
 # ---------------------------------
 # Variables
@@ -35,7 +36,6 @@ from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
 db = AssetsDB()
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
-Icons = DJED_ROOT.joinpath('src', 'utils', 'resources', 'icons')
 
 
 # ---------------------------------
@@ -55,7 +55,7 @@ class AddTagWindow(QWidget, Ui_addTagWidget):
 
     def init_ui(self):
         self.setWindowTitle('Add Tags')
-        self.setWindowIcon(QIcon(str(Icons.joinpath('tags'))))
+        self.setWindowIcon(QIcon(":/icons/tags.png"))
 
         for tag in self.tags:
             self.add_tag_to_bar(tag)
@@ -133,7 +133,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.setupUi(self)
         self.fm = FileManager()
 
-        self.setStyleSheet(open(DJED_ROOT.joinpath('src', 'utils', 'resources', 'style.qss')).read())
+        self.setStyleSheet(open(DJED_ROOT.joinpath('src', 'utils', 'resources', 'stylesheet.qss')).read())
 
         self.init_win()
         self.connect_events()
@@ -142,7 +142,6 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
     def init_win(self):
         title = "Asset Browser"
-        icon_path = Icons.joinpath('assetIcon.png')
 
         # border colors
         darkPalette = QPalette()
@@ -154,13 +153,13 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.screen_height = SizeObject.height()
         self.screen_width = SizeObject.width()
 
-        self.setWindowIcon(QIcon(str(icon_path)))
+        self.setWindowIcon(QIcon(":/icons/assetIcon.png"))
         self.setWindowTitle(title)
         self.setMinimumSize(self.screen_width * 0.4, self.screen_height * 0.3)
         self.showMaximized()
 
         # button
-        self.pushButton_filterItems.setIcon(QIcon(str(Icons.joinpath("filter.png"))))
+        self.pushButton_filterItems.setIcon(QIcon(":/icons/filter.png"))
 
         self.filter_menu = QMenu()
         tag_filter_action = self.filter_menu.addAction("tags")
@@ -219,7 +218,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
             thumb_path = db.get_thumbnail(asset_name=row[1], latest=True)
             if not (thumb_path or os.path.isfile(str(thumb_path))):
-                thumb_path = f'{Icons}/empty_asset.png'
+                thumb_path = ":/icons/empty_asset.png"
             item_data = {
                 "asset_id": row[0],
                 "asset_name": row[1],

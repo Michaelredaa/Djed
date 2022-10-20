@@ -13,6 +13,8 @@ from collections import OrderedDict
 
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from PySide2.QtCore import *
+
 
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT, f"{DJED_ROOT}/src"]
@@ -24,13 +26,10 @@ from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 
 from utils.resources.style_rc import *
-
+from utils.resources.style_rc import *
 # ---------------------------------
 # Variables
 db = AssetsDB()
-
-DJED_ROOT = os.getenv("DJED_ROOT")
-Icons = f'{DJED_ROOT}/src/utils/resources/icons'
 
 
 # ---------------------------------
@@ -109,7 +108,7 @@ class TableField(QWidget):
         self.setLayout(g_layout)
 
         self.table = QTableWidget()
-        self.table.setAlternatingRowColors(True)
+        # self.table.setAlternatingRowColors(True)
         self.table.setCornerButtonEnabled(False)
         self.table.setFrameStyle(QFrame.NoFrame)
 
@@ -396,17 +395,16 @@ class SettingsWindow(QMainWindow):
         self.setting_tree.customContextMenuRequested.connect(self.on_right_click)
     def init_win(self):
         title = "Djed Settings"
-        icon_path = os.path.join(Icons, "settings.png")
 
         Size_object = QGuiApplication.primaryScreen().availableGeometry()
         screen_height = Size_object.height()
         screen_width = Size_object.width()
 
-        self.setWindowIcon(QIcon(icon_path))
+        self.setWindowIcon(QIcon(":icons/settings.png"))
         self.setWindowTitle(title)
         self.setMinimumSize(screen_width * 0.45, screen_height * 0.5)
 
-        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/style.qss").read())
+        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
 
         # set Font
         font = QFont()
