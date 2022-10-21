@@ -16,6 +16,8 @@ for sysPath in sysPaths:
 
 
 from lib.assets_browser.window import AssetViewWindow
+from settings.settings_window import SettingsWindow
+from utils.resources.style_rc import *
 
 
 class DjedTray(QSystemTrayIcon):
@@ -35,20 +37,26 @@ class DjedTray(QSystemTrayIcon):
         self.show()
         self.showMessage('Djed', 'Starting')
 
+
     def create_menus(self):
         menu = QMenu(self._parent)
 
-        asset_browser_action = menu.addAction("Open Asset Browser")
+        asset_browser_action = menu.addAction(QIcon(":/icons/assetIcon.png"), "Asset Browser")
         asset_browser_action.triggered.connect(self.on_open_asset_browser)
 
+        settings_action = menu.addAction(QIcon(":/icons/settings.png"), "Settings")
+        settings_action.triggered.connect(self.on_open_settings)
+
         menu.addSeparator()
-        close_action = menu.addAction("Close")
+        close_action = menu.addAction(QIcon(":/icons/close.png"), "Close")
         close_action.triggered.connect(lambda: sys.exit())
 
         menu.addSeparator()
 
         self.setContextMenu(menu)
         self.activated.connect(self.on_tray_activated)
+
+        menu.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
 
     def init_environment(self):
         ...
@@ -57,6 +65,9 @@ class DjedTray(QSystemTrayIcon):
         win = AssetViewWindow()
         win.show()
 
+    def on_open_settings(self):
+        win = SettingsWindow()
+        win.show()
 
     def on_tray_activated(self, action):
         if action == self.DoubleClick:
@@ -66,7 +77,7 @@ class DjedTray(QSystemTrayIcon):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     parent = QWidget()
-    icon_path = os.path.join(os.getenv('DJED_ROOT'), 'src', 'utils', 'resources', 'icons', 'djed.png')
+    icon_path = f"{DJED_ROOT}/src/utils/resources/icons/djed.png"
     icon = QIcon(icon_path)
     tray = DjedTray(icon, parent)
 
