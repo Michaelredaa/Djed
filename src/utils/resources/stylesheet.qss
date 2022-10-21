@@ -1089,7 +1089,7 @@ QListView {
     border-radius: 4px;
     background-color: #2B2B2B;  /* related with alternate-background-color*/
     selection-color: white;
-    selection-background-color: #7D4A20; /* should be similar to QListView::item selected background-color */
+    selection-background-color: #2B2B2B; /* should be similar to QListView::item selected background-color */
     show-decoration-selected: 1; /* make the selection span the entire width of the view */
     padding: 0px;
     margin: 0px 4px 0px 4px;
@@ -1127,7 +1127,7 @@ QListView::item {
 QListView::item:selected,
 QTreeView::item:selected  {
     color: white;
-    background-color: #7D4A20; /* should be similar to QListView selection-background-color */
+    background-color: #4E3A29; /* should be similar to QListView selection-background-color */
 }
 
 /* Branch system */
@@ -1391,11 +1391,11 @@ QTableView {
 }
 
 QTableView::item{
-    background: #cbc9c4;
+    background: #2B2B2B;
     font-weight: bold;
 }
 QTableView::item:hover  {
-    background: #cbc9c4;
+    background: #C15D24;
 }
 
 QTableView::item:disabled  {
@@ -1403,13 +1403,13 @@ QTableView::item:disabled  {
 }
 
 QTableView::item:selected  {
-    color: #9d7106;
+    color: #1F1E1E;
     background-color: #fad57a;
 }
 
 /* when editing a cell: */
 QTableView QLineEdit {
-    color: #DEE0E2;
+    color: #1F1E1E;
     background-color: #cfcdc9;
     border-radius: 0px;
     margin: 0px;
