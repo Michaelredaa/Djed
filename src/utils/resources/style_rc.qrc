@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>icons/about.png</file>
+    <file>icons/delete.png</file>
     <file>icons/assetIcon.png</file>
     <file>icons/background_freecad.png</file>
     <file>icons/backup.png</file>
