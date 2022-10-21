@@ -5,6 +5,7 @@ Documentation:
 
 import os
 import site
+import tempfile
 from pathlib import Path
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
