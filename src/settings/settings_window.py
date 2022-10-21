@@ -15,7 +15,6 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 
-
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT, f"{DJED_ROOT}/src"]
 for sysPath in sysPaths:
@@ -27,6 +26,7 @@ from utils.file_manager import FileManager
 
 from utils.resources.style_rc import *
 from utils.resources.style_rc import *
+
 # ---------------------------------
 # Variables
 db = AssetsDB()
@@ -386,13 +386,15 @@ class SettingsWindow(QMainWindow):
 
         self.setting_tree.expandAll()
 
-
     def connect_events(self):
 
         self.save_btn.clicked.connect(self.on_save)
 
         self.setting_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setting_tree.customContextMenuRequested.connect(self.on_right_click)
+
+        self.mousePressEvent = self.showEvent
+
     def init_win(self):
         title = "Djed Settings"
 
@@ -440,8 +442,6 @@ class SettingsWindow(QMainWindow):
         self.main_layout.addWidget(self.setting_tree)
         self.main_layout.addLayout(l_btn)
 
-
-
     def color(self):
         darkPalette = QPalette()
         color = QColor(45, 45, 45)
@@ -482,14 +482,15 @@ class SettingsWindow(QMainWindow):
         duplicate_action.triggered.connect(lambda: self.on_duplicate_item(index))
         print_action.triggered.connect(lambda: self.on_print_data(index))
 
-
         menu.exec_(self.setting_tree.mapToGlobal(point))
+
     def on_duplicate_item(self, index):
         item = self.setting_tree.data_model.itemFromIndex(index)
         parent = item.parent()
         data = index.data(ItemRoles.SettingFields)
 
-        self.setting_tree.populate_rows([data], parent, item.row()+1)
+        self.setting_tree.populate_rows([data], parent, item.row() + 1)
+
     def on_print_data(self, index):
 
         item = self.setting_tree.data_model.itemFromIndex(index)
@@ -502,13 +503,12 @@ class SettingsWindow(QMainWindow):
 
     def on_save(self):
 
-
-
         for x in self.iterItems(self.setting_tree.data_model.invisibleRootItem()):
             if not x:
                 continue
 
             print(x.data(ItemRoles.TapName), x.data(ItemRoles.SettingFields))
+
     def iterItems(self, root):
         if root is not None:
             for row in range(root.rowCount()):
@@ -518,6 +518,15 @@ class SettingsWindow(QMainWindow):
                 #     for childIndex in range(row_item.rowCount()):
                 #         child = row_item.child(childIndex, 0)
                 #         yield child
+
+    def showEvent(self, event):
+        self.show
+
+    def closeEvent(self, event):
+        self.destroy()
+
+    def mousePressEvent(self, event):
+        pass
 
 
 # Main Function
