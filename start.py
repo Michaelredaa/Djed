@@ -71,11 +71,14 @@ def create_spp_shortcut():
 
 
 def run_tray():
-    app = QApplication(sys.argv)
+    if not QApplication.instance():
+        app = QApplication(sys.argv)
+    else:
+        app = QApplication.instance()
+
     parent = QWidget()
     icon_path = f"{DJED_ROOT}/src/utils/resources/icons/djed.png"
-    icon = QIcon(icon_path)
-    tray = DjedTray(icon, parent)
+    tray = DjedTray(QIcon(icon_path), parent)
 
     sys.exit(app.exec_())
 
