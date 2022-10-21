@@ -8,9 +8,10 @@ Documentation:
 import os
 import sys
 from cx_Freeze import setup, Executable
+from pathlib import Path
 
-DJED_ROOT = os.getenv("DJED_ROOT")
-sysPaths = [DJED_ROOT, DJED_ROOT + '/src']
+DJED_ROOT = Path(os.getenv("DJED_ROOT"))
+sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
@@ -25,12 +26,22 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 executables = [
-    Executable("start.py", base="", targetName=base, icon=f"{DJED_ROOT}/src/utils/resources/icons/djed.png")
+    Executable("start.py", base=base, targetName="Djed", icon=f"{DJED_ROOT.as_posix()}/src/utils/resources/icons/djed.ico")
+]
+
+include_files = [
+    "docs",
+    "src",
+    "venv",
+    "start.py",
+    "start.bat",
+    "cfg.json",
+    "README.md"
 ]
 
 build_options = {
-    "include_files": ["docs", "src", "venv", "README.md"],
-    "packages": ["sqlite3", "pyblish", "pyblish-maya", "PySide2", "psutil"]
+    "include_files": include_files,
+    "packages": []
 }
 
 # ---------------------------------
