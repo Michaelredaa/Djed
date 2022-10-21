@@ -8,12 +8,15 @@ import site
 import tempfile
 from pathlib import Path
 
+from ctypes import windll
+
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
 site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
 
 import subprocess
 import psutil
+
 
 def is_process_running(process_name):
     '''
@@ -28,6 +31,7 @@ def is_process_running(process_name):
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
     return False
+
 
 def execute_commmand(*args):
     subprocess.Popen(args)
@@ -52,6 +56,24 @@ def create_shortcut(shortcut_path, target, arguments='', working_dir=''):
     try:
         with os.fdopen(fd, 'w') as f:
             f.write(js_content)
-        subprocess.run([R'wscript.exe', path])
+        subprocess.run([r'wscript.exe', path])
     finally:
         os.unlink(path)
+
+
+def run_as_administrator(cmd):
+    """
+    to run a cmd command as administrator
+    :param cmd: the command text
+    :return:
+    """
+    result = windll.shell32.ShellExecuteW(
+        None,  # handle to parent window
+        'runas',  # verb
+        'cmd.exe',  # file on which verb acts
+        ' '.join(['/c', str(cmd)]),  # parameters
+        None,  # working directory (default is cwd)
+        0,  # show window normally
+    )
+    success = result > 32
+    return success
