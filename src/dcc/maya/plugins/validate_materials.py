@@ -5,7 +5,7 @@ from dcc.maya.api.cmds import Maya
 from maya import cmds
 
 
-class SelectInvalidNodes(pyblish.api.Action):
+class SelectInvalidMTLNodes(pyblish.api.Action):
     label = "Select node"
     on = "failed"
     icon = "hand-o-up"
@@ -31,7 +31,6 @@ class SplitPerMaterials(pyblish.api.Action):
             for record in result["records"]:
                 print(record.levelno)
             if result["error"]:
-
                 self.log.info("Split object by materials")
 
                 instance = result['instance']
@@ -44,14 +43,14 @@ class ValidateShadingGroups(pyblish.api.InstancePlugin):
     To validate the binding shading groups on geometry
     """
 
-    order = pyblish.api.ValidatorOrder + 1.1
+    order = pyblish.api.ValidatorOrder + 0.20
 
     optional = True
     label = "Validate shading groups"
     hosts = ["maya"]
     families = ["model"]
     active = True
-    actions = [SelectInvalidNodes, SplitPerMaterials]
+    actions = [SelectInvalidMTLNodes, SplitPerMaterials]
 
     def process(self, instance):
         self.log.info("Initialize validation binding materials")
@@ -62,15 +61,19 @@ class ValidateShadingGroups(pyblish.api.InstancePlugin):
 
             sgs = ma.list_all_DG_nodes(shape_node)
 
+            msg = ''
             if len(sgs) == 0:
                 instance.set_data("output", {'node': shape_node, 'sgs': sgs})
-                raise pyblish.api.ValidationError(f"'{shape_name}' have no shading group.")
+                msg = f"'{shape_name}' have no shading group."
 
             elif len(sgs) != 1:
                 instance.set_data("output", {'node': shape_node, 'sgs': sgs})
-                raise pyblish.api.ValidationError(
-                    f"'{shape_name}' have multiple material assign on one object. sgs: {sgs}")
+                msg = f"'{shape_name}' have multiple material assign on one object. sgs: {sgs}"
 
             elif sgs[0] == "initialShadingGroup":
                 instance.set_data("output", {'node': shape_node, 'sgs': sgs})
-                raise pyblish.api.ValidationError(f"'{shape_name}' have not material assign. ('lambert1' not allowed)")
+                msg = f"'{shape_name}' have 'lambert1' material assign. ('lambert1' not allowed)"
+
+            if msg:
+                self.log.error(msg)
+                raise pyblish.api.ValidationError(msg)

@@ -7,7 +7,7 @@ from dcc.maya.api.cmds import Maya
 from maya import cmds
 
 
-class SelectInvalidNodes(pyblish.api.Action):
+class SelectInvalidNameNodes(pyblish.api.Action):
     label = "Select node"
     on = "failed"
     icon = "hand-o-up"
@@ -26,7 +26,7 @@ class ValidateNamespaces(pyblish.api.InstancePlugin):
     To validate and removing all namespaces in current file
     """
 
-    order = pyblish.api.ValidatorOrder + 1.40
+    order = pyblish.api.ValidatorOrder + 0.10
 
     optional = True
     label = "remove namespaces"
@@ -39,19 +39,20 @@ class ValidateNamespaces(pyblish.api.InstancePlugin):
         ma = Maya()
         ma.remove_all_namespaces()
 
+
 class ValidateNaming(pyblish.api.InstancePlugin):
     """
     To validate the naming conventional of nodes
     """
 
-    order = pyblish.api.ValidatorOrder + 1.41
+    order = pyblish.api.ValidatorOrder + 0.11
 
     optional = True
     label = "check naming conventional"
     hosts = ["maya"]
     families = ["model"]
     active = True
-    actions = [SelectInvalidNodes]
+    actions = [SelectInvalidNameNodes]
 
     def process(self, instance):
         self.log.info("Initialize naming conventional")
@@ -65,11 +66,15 @@ class ValidateNaming(pyblish.api.InstancePlugin):
             for name in invalid_names:
                 if re.findall(r"(?i)" + name, shape_name):
                     instance.set_data("output", {'node': shape_node})
-                    raise pyblish.api.ValidationError(f"'{shape_name}' name is not allowed!")
+                    msg = f"'{shape_name}' name is not allowed!"
+                    self.log.error(msg)
+                    raise pyblish.api.ValidationError(msg)
 
             sgs = ma.list_all_DG_nodes(shape_node)
             for sg_node in sgs:
                 # add suffix SG
+                if sg_node == 'initialShadingGroup':
+                    continue
                 sg_name = re.findall(r'(?i)sg', sg_node)
                 if not sg_name:
                     new_name = sg_node + "SG"

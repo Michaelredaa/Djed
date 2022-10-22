@@ -4,12 +4,13 @@ from dcc.maya.api.cmds import Maya
 
 import maya.cmds as cmds
 
+
 class ExtractModel(pyblish.api.InstancePlugin):
     """
-    To validate and recalculate the mesh normals
+    To export the selected object
     """
 
-    order = pyblish.api.ExtractorOrder + 2.00
+    order = pyblish.api.ExtractorOrder + 0.01
 
     optional = True
     label = "Export Model"
@@ -23,7 +24,6 @@ class ExtractModel(pyblish.api.InstancePlugin):
 
         data = instance.data
 
-        print(data)
         cmds.select(data.get('name'), r=1)
         export_meshs = ma.export_selection(
             asset_dir=data.get('path'),
