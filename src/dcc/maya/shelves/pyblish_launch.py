@@ -17,7 +17,6 @@ import os
 import sys
 from pathlib import Path
 
-
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 
 sysPaths = [
@@ -39,11 +38,11 @@ from dcc.maya.plugins import (
     ValidateTopology,
     ValidateUVBoarders,
     ValidateShadingGroups,
-    ExtractModel
+    ValidateNamespaces,
+    ValidateNaming,
+    ExtractModel,
 
 )
-
-
 
 
 def process(**kwargs):
@@ -53,7 +52,6 @@ def process(**kwargs):
     # pyblish.api.deregister_plugin_path(plugin_path)
     # pyblish.api.register_plugin_path(plugin_path)
     # pyblish.api.plugins_by_family()
-
 
     pyblish.api.register_host("maya")
     pyblish.api.register_gui("pyblish_lite")
@@ -75,12 +73,14 @@ def process(**kwargs):
         ValidateTopology,
         ValidateUVBoarders,
         ValidateShadingGroups,
+        ValidateNamespaces,
+        ValidateNaming,
         ExtractModel,
+
     ]
 
     for _plugin in plugins:
         pyblish.api.register_plugin(_plugin)
-
 
     pyblish_maya.show()
 
