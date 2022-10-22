@@ -24,6 +24,10 @@ class CollectMesh(pyblish.api.ContextPlugin):
 
         shapes = ma.list_all_dag_meshes(node=selection[0], shape=True, hidden=False)
 
-        instance = context.create_instance(selection[0], family="model", **self.external_data)
+        name = selection[0]
+        if '|' in selection[0]:
+            name = selection[0].split('|')[1]
+
+        instance = context.create_instance(name, family="model", **self.external_data)
 
         instance.extend(shapes)
