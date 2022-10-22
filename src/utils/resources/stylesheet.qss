@@ -94,7 +94,7 @@ QWidget:focus {
 
 QWidget:disabled {
     color: #9e9d9a;
-    background-color: #EBEBEA; /* same as QMenu background-color */
+    background-color: #2B2B2B; /* same as QMenu background-color */
 }
 
 QMenuBar {
@@ -204,7 +204,7 @@ QScrollBar:horizontal {
     margin: 3px 15px 3px 15px;
     border: 1px transparent #EBEBEA;
     border-radius: 4px;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
 }
 
 QScrollBar::handle:horizontal {
@@ -254,7 +254,7 @@ QScrollBar::sub-page:horizontal {
 }
 
 QScrollBar:vertical {
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     width: 15px;
     margin: 15px 3px 15px 3px;
     border: 1px transparent #EBEBEA;
@@ -429,7 +429,7 @@ QComboBox QFrame:pressed,
 QComboBox QFrame:focus,
 QComboBox QFrame:on {
     border: 1px solid #EBEBEA;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     padding: 0px;
     margin: 0px;
 }
@@ -719,7 +719,7 @@ QComboBox::down-arrow:focus {
 
 QComboBox QAbstractItemView {
     color: #DEE0E2;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     border-radius: 3px;
     margin: 0px;
     padding: 0px;
@@ -1204,7 +1204,7 @@ QSlider::groove:vertical:disabled {
 
 QSlider::handle:horizontal,
 QSlider::handle:vertical {
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     border: 1px solid #EBEBEA;
     width: 14px;
     height: 14px;
@@ -1592,7 +1592,7 @@ QFrame[class="panel"] {
 
 QSint--ActionGroup QFrame[class="header"] {
     border: none;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     border-bottom-left-radius: 0px;
@@ -1693,7 +1693,7 @@ QSint--ActionGroup QFrame[class="content"] QComboBox:on {
 
 QSint--ActionGroup QFrame[class="content"] QComboBox QAbstractItemView {
     border-color: #EBEBEA;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
 }
 
 QSint--ActionGroup QFrame[class="content"] QListView {
@@ -1731,7 +1731,7 @@ QSint--ActionGroup QFrame[class="content"] QRadioButton::indicator:disabled {
 
 QSint--ActionGroup QFrame[class="content"] QHeaderView {
     border: none;
-    background-color: #EBEBEA;
+    background-color: #2B2B2B;
     border-radius: 0px;
     margin: 0px;
     padding: 0px;
