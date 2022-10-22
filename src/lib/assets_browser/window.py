@@ -13,8 +13,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-DJED_ROOT = os.getenv("DJED_ROOT")
-sysPaths = [DJED_ROOT, DJED_ROOT+'/src']
+DJED_ROOT = Path(os.getenv("DJED_ROOT"))
+sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
@@ -22,8 +22,6 @@ for sysPath in sysPaths:
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 from utils.dialogs import browse_files
-from utils.open_ports import OpenSocket
-from utils import clarisse_net as ix
 
 from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
@@ -34,9 +32,6 @@ from utils.resources.style_rc import *
 # Variables
 
 db = AssetsDB()
-
-DJED_ROOT = Path(os.getenv('DJED_ROOT'))
-
 
 # ---------------------------------
 # Start Here
@@ -56,6 +51,10 @@ class AddTagWindow(QWidget, Ui_addTagWidget):
     def init_ui(self):
         self.setWindowTitle('Add Tags')
         self.setWindowIcon(QIcon(":/icons/tags.png"))
+        self.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
+
+        self.setWindowFlags(self.windowFlags() | Qt.Window)
+        self.setWindowModality(Qt.WindowModal)
 
         for tag in self.tags:
             self.add_tag_to_bar(tag)
@@ -78,7 +77,7 @@ class AddTagWindow(QWidget, Ui_addTagWidget):
         tag = QFrame()
         tag.setStyleSheet('border:1px solid rgb(120, 120, 120); border-radius: 5px;')
         tag.setContentsMargins(2, 2, 2, 2)
-        tag.setFixedHeight(28)
+        # tag.setFixedHeight(28)
         hbox = QHBoxLayout()
         hbox.setContentsMargins(4, 4, 4, 4)
         hbox.setSpacing(10)
@@ -88,8 +87,28 @@ class AddTagWindow(QWidget, Ui_addTagWidget):
         label.setFixedHeight(16)
         hbox.addWidget(label)
         x_button = QPushButton('x')
-        x_button.setFixedSize(20, 20)
-        x_button.setStyleSheet('border:0px; font-weight:bold')
+        # x_button.setFixedSize(20, 20)
+
+        x_button.setStyleSheet('''
+        QPushButton{
+            text-align: top;
+            background-color: #4C3F3A;
+            border: 0px solid #704020;
+            padding: 0px 0px 0px 0px;
+            margin: 0px 1px 0px 0px;
+            border-radius: 5px;
+            min-width: 14px;
+            min-height: 14px;
+            }
+            
+        QPushButton:hover,
+        QPushButton:focus {
+            color: black;
+            background-color: #F3400F;
+            border-color: #704020;
+        }
+            
+        ''')
         x_button.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         x_button.clicked.connect(lambda: self.remove_tag_from_bar(text))
         hbox.addWidget(x_button)
@@ -132,8 +151,9 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         super(AssetViewWindow, self).__init__(parent)
         self.setupUi(self)
         self.fm = FileManager()
+        self.tags_win = None
 
-        self.setStyleSheet(open(DJED_ROOT.joinpath('src', 'utils', 'resources', 'stylesheet.qss')).read())
+        self.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
 
         self.init_win()
         self.connect_events()
@@ -384,6 +404,9 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
             # signals
             refresh_action.triggered.connect(self.refresh)
+
+        menu.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
+
         cursor = QCursor()
         menu.exec_(cursor.pos())
 
@@ -420,8 +443,6 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         send_to_clarisse(asset)
 
-
-
     def on_open_spp(self):
         print("spp")
 
@@ -431,14 +452,15 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
     def on_add_tag_window(self):
         index = self.get_selection()
         tags = index.data(ItemRoles.Tags)
-        tags_win = AddTagWindow(tags)
-        tags_win.index = index
-        tags_win.le_tags.set_autocomplete_list(db.all_tags())
+        self.tags_win = AddTagWindow(tags, self)
 
-        tags_win.pb_add_tag.clicked.connect(lambda: self.on_add_tag(tags_win))
-        tags_win.cb_project.stateChanged.connect(lambda: self.on_add_tag(tags_win, switch=True))
+        self.tags_win.index = index
+        self.tags_win.le_tags.set_autocomplete_list(db.all_tags())
 
-        tags_win.show()
+        self.tags_win.pb_add_tag.clicked.connect(lambda: self.on_add_tag(self.tags_win))
+        self.tags_win.cb_project.stateChanged.connect(lambda: self.on_add_tag(self.tags_win, switch=True))
+
+        self.tags_win.show()
 
     def on_add_tag(self, tags_win, switch=None):
         if switch:
@@ -515,6 +537,9 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.filter_menu.exec_(cursor.pos())
 
     def closeEvent(self, event):
+        if self.tags_win:
+            self.tags_win.destroy()
+
         self.destroy()
 
 
@@ -532,6 +557,4 @@ def main():
 
 
 if __name__ == '__main__':
-    
     main()
-    
