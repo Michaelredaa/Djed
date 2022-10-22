@@ -14,6 +14,22 @@ _imgLabel = ""
 # import libraries
 
 import os
+import sys
+from pathlib import Path
+
+
+DJED_ROOT = Path(os.getenv("DJED_ROOT"))
+
+sysPaths = [
+    DJED_ROOT.as_posix(),
+    DJED_ROOT.joinpath('src').as_posix(),
+    DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix()
+]
+
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
+
 import pyblish.api, pyblish_lite, pyblish_maya
 
 from dcc.maya.plugins import (
@@ -50,7 +66,6 @@ def process(**kwargs):
     pyblish_lite.settings.TerminalLoglevel = 1
 
     # plugins = pyblish.api.discover()
-    print(kwargs)
     CollectMesh.external_data = kwargs
 
     plugins = [
