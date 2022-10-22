@@ -457,11 +457,10 @@ QPushButton {
     text-align: center;
     background-color: qlineargradient(spread:pad, x1:1, y1:0.545, x2:1, y2:0, stop:0 #704020, stop:1 #704530);
     border: 1px solid #704020;
-    padding: 5px 12px 5px 12px;
-    margin: 4px 8px 4px 8px;
+    padding: 4px 20px 4px 20px;
     border-radius: 3px;
     min-width: 14px;
-    min-height: 14px;
+    min-height: 7px;
 }
 
 QPushButton:hover,
@@ -736,7 +735,7 @@ QComboBox {
     border-top-color: #61605d; /* Creates an inset effect inside the elements */
     padding: 2px 6px 2px 6px; /* This makes text colour work on QComboBox */
     margin: 0px 2px 0px 2px;
-    min-width: 70px; /* it was 120 because of QCombobox... */
+    min-width: 130px; /* it was 120 because of QCombobox... */
     border-radius: 3px;
 }
 /* end Common parameters */
