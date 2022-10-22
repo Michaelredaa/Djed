@@ -23,7 +23,7 @@ from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 from utils.dialogs import browse_files
 
-from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot
+from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot, add_checkable_action
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
 
 from utils.resources.style_rc import *
@@ -32,6 +32,7 @@ from utils.resources.style_rc import *
 # Variables
 
 db = AssetsDB()
+
 
 # ---------------------------------
 # Start Here
@@ -51,7 +52,6 @@ class AddTagWindow(QWidget, Ui_addTagWidget):
     def init_ui(self):
         self.setWindowTitle('Add Tags')
         self.setWindowIcon(QIcon(":/icons/tags.png"))
-        self.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
 
         self.setWindowFlags(self.windowFlags() | Qt.Window)
         self.setWindowModality(Qt.WindowModal)
@@ -181,13 +181,18 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         # button
         self.pushButton_filterItems.setIcon(QIcon(":/icons/filter.png"))
 
-        self.filter_menu = QMenu()
-        tag_filter_action = self.filter_menu.addAction("tags")
-        tag_filter_action.setCheckable(True)
-        tag_filter_action.setChecked(True)
-        project_filter_action = self.filter_menu.addAction("projects")
-        project_filter_action.setCheckable(True)
-        project_filter_action.setChecked(True)
+        # filter checkbox menu
+        self.filter_menu = QMenu(self)
+        self.filter_menu.setMinimumWidth(100)
+
+        self.all_filter_cb = add_checkable_action(self.filter_menu, 'Select All', False)
+        self.none_filter_cb = add_checkable_action(self.filter_menu, 'Unselect All', False)
+        self.filter_menu.addSeparator()
+
+        self.names_filter_cb = add_checkable_action(self.filter_menu, 'names', True)
+        self.tags_filter_cb = add_checkable_action(self.filter_menu, 'tags', True)
+        self.projects_filter_cb = add_checkable_action(self.filter_menu, 'projects', True)
+        self.on_filter_changed()
 
         # list view
         self.lw_assets.setIconSize(QSize(AssetViewWindow.IconSize, AssetViewWindow.IconSize))
@@ -220,7 +225,14 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.horizontalSlider.valueChanged.connect(self.on_change_icon_size)
 
         # buttons
-        self.pushButton_filterItems.clicked.connect(self.on_filer_click)
+        self.pushButton_filterItems.clicked.connect(self.on_filter_click)
+
+        # check box
+        self.all_filter_cb.stateChanged.connect(self.on_filter_changed)
+        self.none_filter_cb.stateChanged.connect(self.on_filter_changed)
+        self.names_filter_cb.stateChanged.connect(self.on_filter_changed)
+        self.tags_filter_cb.stateChanged.connect(self.on_filter_changed)
+        self.projects_filter_cb.stateChanged.connect(self.on_filter_changed)
 
     def populate_items(self):
         self.timer = QTimer(self)
@@ -375,7 +387,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         QLineEdit.keyPressEvent(self.le_search, event)
 
     def on_asset_rt_clicked(self):
-        menu = QMenu()
+        menu = QMenu(self)
         selection = self.lw_assets.selectionModel().selectedRows()
         if selection:
             send_action = menu.addMenu("Send to")
@@ -404,8 +416,6 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
             # signals
             refresh_action.triggered.connect(self.refresh)
-
-        menu.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
 
         cursor = QCursor()
         menu.exec_(cursor.pos())
@@ -532,9 +542,30 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         index = indices[0]
         return index
 
-    def on_filer_click(self):
+    def on_filter_click(self):
         cursor = QCursor()
         self.filter_menu.exec_(cursor.pos())
+
+    def on_filter_changed(self):
+
+        if self.all_filter_cb.isChecked():
+            self.none_filter_cb.setChecked(False)
+            self.names_filter_cb.setChecked(True)
+            self.tags_filter_cb.setChecked(True)
+            self.projects_filter_cb.setChecked(True)
+
+        if self.none_filter_cb.isChecked():
+            self.all_filter_cb.setChecked(False)
+            self.names_filter_cb.setChecked(False)
+            self.tags_filter_cb.setChecked(False)
+            self.projects_filter_cb.setChecked(False)
+
+
+        self.lw_assets.filter_model.search_filter = {
+            'names': self.names_filter_cb.isChecked(),
+            'tags': self.tags_filter_cb.isChecked(),
+            'projects': self.projects_filter_cb.isChecked()
+        }
 
     def closeEvent(self, event):
         if self.tags_win:
