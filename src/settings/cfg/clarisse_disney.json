@@ -1,7 +1,8 @@
 {
   "host": "clarisse",
-  "renderer": "disney",
-  "data": [
+  "name": "disney",
+  "label": "Disney",
+  "children": [
     {
       "name": "standard_surface",
       "label": "Standard Surface",

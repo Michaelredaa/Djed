@@ -1,7 +1,8 @@
 {
   "host": "maya",
-  "renderer": "arnold",
-  "data": [
+  "name": "arnold",
+  "label": "Arnold",
+  "children": [
     {
       "name": "standard_surface",
       "label": "Standard Surface",

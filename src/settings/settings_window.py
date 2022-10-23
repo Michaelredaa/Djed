@@ -284,7 +284,7 @@ class SettingsTree(QTreeView):
 
     def has_refernce(self, data):
         for item in data:
-            if isinstance(item, str):
+            if isinstance(item, str) and ('$' in item):
                 return True
         return False
 
@@ -299,13 +299,18 @@ class SettingsTree(QTreeView):
         if self.has_refernce(data):
             for i in range(len(data)):
                 if "$" in data[i]:
-                    cfg_path = f"./cfg/{data[i].split('$')[-1]}.json"
+                    file_name = data[i].split('$')[-1]
+                    cfg_path = f"./cfg/{file_name}.json"
+
                     if not os.path.isfile(cfg_path):
                         continue
+
                     with open(cfg_path) as f:
-                        data_list = json.load(f, object_pairs_hook=OrderedDict).get('data', [])
+                        data_list = json.load(f, object_pairs_hook=OrderedDict)
+                        data_list[data[i]] = os.path.abspath(cfg_path)
                         data.pop(i)
-                        data.extend(data_list)
+                        data.insert(i, data_list)
+
 
         if not self.has_childrens(data):
             self.populate_row(data, row_item)

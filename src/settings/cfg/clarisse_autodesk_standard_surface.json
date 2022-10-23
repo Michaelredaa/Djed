@@ -1,7 +1,8 @@
 {
   "host": "clarisse",
-  "renderer": "ad_standard_surface",
-  "data": [
+  "name": "autodesk_standard_surface",
+  "label": "Autodesk Standard Surface",
+  "children": [
     {
       "name": "standard_surface",
       "label": "Standard Surface",

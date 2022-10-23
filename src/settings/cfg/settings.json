@@ -342,13 +342,7 @@
           "name": "renderers",
           "label": "Renderers",
           "children": [
-            {
-              "name": "arnold",
-              "label": "Arnold",
-              "children": [
-                "$maya_arnold"
-              ]
-            }
+            "$maya_arnold"
           ]
         }
       ]
@@ -421,20 +415,8 @@
           "name": "renderers",
           "label": "Renderers",
           "children": [
-            {
-              "name": "autodesk_standard_surface",
-              "label": "Autodesk Standard Surface",
-              "children": [
-                "$clarisse_standardSurface"
-              ]
-            },
-            {
-              "name": "disney_standard_surface",
-              "label": "disney Standard Surface",
-              "children": [
-                "$clarisse_disney"
-              ]
-            }
+            "$clarisse_autodesk_standard_surface",
+            "$clarisse_disney"
           ]
         }
       ]
