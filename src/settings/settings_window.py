@@ -10,6 +10,7 @@ import os
 import sys
 import json
 from collections import OrderedDict
+import copy
 
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
@@ -62,6 +63,12 @@ class TextFiled(QWidget):
 
     def set_placeholder(self, text):
         self.line_edit.setPlaceholderText(text)
+
+    def get_value(self):
+        return self.line_edit.text()
+
+    def get_name(self):
+        return self.label.text()
 
 
 class MultiTextFiled(QWidget):
@@ -150,6 +157,22 @@ class TableField(QWidget):
         self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # +++
 
+    def set_name(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
+    def get_values(self):
+        values = []
+        for row in range(self.table.rowCount()):
+            value = {"name": "", "type": "", "plug": "", "inbetween": ""}
+            for col, key in enumerate(value):
+                it = self.table.item(row, col)
+                text = it.text() if it is not None else ""
+                value[key] = text
+            values.append(value)
+
+        return values
 
 class TreeItemWidget(QWidget):
     def __init__(self, widgets_data, parent=None):
@@ -195,6 +218,7 @@ class TreeItemWidget(QWidget):
             elif 'table_field' in widget_type:
                 widget = self.widgets.get(widget_type)(self)
                 widget.set_data(item.get('data', []))
+                widget.set_name(item.get('label'))
 
             else:
 
@@ -218,12 +242,14 @@ class ItemRoles():
     TapName = Qt.UserRole + 10
     SettingName = Qt.UserRole + 11
     SettingFields = Qt.UserRole + 12
+    Widget = Qt.UserRole + 13
 
 
 class StyledItemDelegate(QStyledItemDelegate):
-    def __init__(self, _index=None, parent=None):
+    def __init__(self, _index=None, item=None, parent=None):
         super(StyledItemDelegate, self).__init__(parent)
         self._index = _index
+        self.item = item
 
     def paint(self, painter, option, index):
         if (index == self._index):
@@ -238,6 +264,7 @@ class StyledItemDelegate(QStyledItemDelegate):
             ui_fields = index.data(ItemRoles.SettingFields)
 
             editor = TreeItemWidget(ui_fields, parent=parent)
+            self.item.setData(editor, ItemRoles.Widget)
 
             editor.installEventFilter(self)
             return editor
@@ -292,6 +319,8 @@ class SettingsTree(QTreeView):
         widgets_item = QStandardItem()
         parent_item.appendRow([widgets_item])
         widgets_item.setData(widgets_data, ItemRoles.SettingFields)
+        if widgets_data:
+            widgets_item.setData(widgets_data[0].get('label'), ItemRoles.TapName)
         self.set_item_widget(parent_item, row=0)
 
     def populate_rows(self, data, row_item, row=None):
@@ -307,10 +336,9 @@ class SettingsTree(QTreeView):
 
                     with open(cfg_path) as f:
                         data_list = json.load(f, object_pairs_hook=OrderedDict)
-                        data_list[data[i]] = os.path.abspath(cfg_path)
+                        data_list['reference'] = {data[i]: os.path.abspath(cfg_path)}
                         data.pop(i)
                         data.insert(i, data_list)
-
 
         if not self.has_childrens(data):
             self.populate_row(data, row_item)
@@ -377,7 +405,7 @@ class SettingsTree(QTreeView):
 
     def set_item_widget(self, item, row=0):
         index = self.data_model.index(row, 0, self.data_model.indexFromItem(item))
-        self.setItemDelegate(StyledItemDelegate(_index=index))
+        self.setItemDelegate(StyledItemDelegate(_index=index, item=item))
         self.openPersistentEditor(index)
 
 
@@ -480,7 +508,7 @@ class SettingsWindow(QMainWindow):
             return
 
         # We build the menu.
-        menu = QMenu()
+        menu = QMenu(self)
         duplicate_action = menu.addAction("Duplicate")
         print_action = menu.addAction("Print Data")
 
@@ -492,14 +520,16 @@ class SettingsWindow(QMainWindow):
     def on_duplicate_item(self, index):
         item = self.setting_tree.data_model.itemFromIndex(index)
         parent = item.parent()
-        data = index.data(ItemRoles.SettingFields)
+        data = copy.deepcopy(index.data(ItemRoles.SettingFields))
+
+        parent_data = index.parent().data(ItemRoles.SettingFields)
+        parent.parent().setData(parent_data['children'].append(data))
 
         self.setting_tree.populate_rows([data], parent, item.row() + 1)
 
     def on_print_data(self, index):
 
         item = self.setting_tree.data_model.itemFromIndex(index)
-
         item_data = index.data(ItemRoles.SettingFields)
         parent_data = index.parent().data(ItemRoles.SettingFields)
 
@@ -508,21 +538,61 @@ class SettingsWindow(QMainWindow):
 
     def on_save(self):
 
-        for x in self.iterItems(self.setting_tree.data_model.invisibleRootItem()):
-            if not x:
-                continue
+        all_data = []
+        self.parent_data = None
 
-            print(x.data(ItemRoles.TapName), x.data(ItemRoles.SettingFields))
+        root = self.setting_tree.data_model.invisibleRootItem()
+        self.iterItems(root)
+
+        for row in range(root.rowCount()):
+            row_item = root.child(row, 0)
+            name, row_data = row_item.data(ItemRoles.TapName), row_item.data(ItemRoles.SettingFields)
+            all_data.append(row_data)
+
+        with open(r'C:\Users\michael\Documents\work\Djed\test\c.json', 'w') as f:
+            json.dump(OrderedDict([('items', all_data)]), f)
+
+
+    def get_data(self, item):
+
+        widget = item.parent().data(ItemRoles.Widget)
+        parent_data = item.parent().data(ItemRoles.SettingFields)
+        data_list = item.data(ItemRoles.SettingFields)
+
+        tap_name = item.parent().text()
+
+        parent_data['name'] = tap_name.lower().strip().replace(' ', '_')
+        parent_data['label'] = tap_name
+
+        # add condition of tap name
+        for child in widget.children():
+            if isinstance(child, TextFiled):
+                label = child.get_name()
+                value = child.get_value()
+
+                for child_dict in data_list:
+                    if child_dict.get('label') == label:
+                        child_dict['value'] = value
+
+            elif isinstance(child, TableField):
+                label = child.get_name()
+                values = child.get_values()
+                for child_dict in data_list:
+                    if child_dict.get('label') == label:
+                        child_dict["data"] = values
+
+        item.parent().setData(parent_data, ItemRoles.SettingFields)
+
+
 
     def iterItems(self, root):
         if root is not None:
             for row in range(root.rowCount()):
                 row_item = root.child(row, 0)
-                yield row_item
-                # if row_item.hasChildren():
-                #     for childIndex in range(row_item.rowCount()):
-                #         child = row_item.child(childIndex, 0)
-                #         yield child
+                if row_item.hasChildren():
+                    self.iterItems(row_item)
+                else:
+                    self.get_data(row_item)
 
     def showEvent(self, event):
         self.show
