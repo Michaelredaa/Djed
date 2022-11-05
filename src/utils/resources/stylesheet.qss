@@ -758,7 +758,6 @@ QAbstractItemView:focus {
 /* hack to hide weird redundant information inside the value of a Placement cell */
 QTreeView QLabel,
 QTreeView QLabel:disabled {
-    color: transparent;
     background-color: transparent;
     border: none;
     border-radius: 0px;
