@@ -173,7 +173,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.screen_height = SizeObject.height()
         self.screen_width = SizeObject.width()
 
-        self.setWindowIcon(QIcon(":/icons/assetIcon.png"))
+        self.setWindowIcon(QIcon(":/icons/djed.png"))
         self.setWindowTitle(title)
         self.setMinimumSize(self.screen_width * 0.4, self.screen_height * 0.3)
         self.showMaximized()
