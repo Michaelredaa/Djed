@@ -58,6 +58,7 @@ class SubstanceIntegration():
         self.js = pipeline.JS()
 
         self.menu = QMenu("DJED")
+        self.menu.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
         self.main_window = pipeline.main_window()
 
         self.asset_name = ''
