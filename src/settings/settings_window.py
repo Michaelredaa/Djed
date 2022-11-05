@@ -16,6 +16,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 
+
+
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT, f"{DJED_ROOT}/src"]
 for sysPath in sysPaths:
@@ -24,13 +26,17 @@ for sysPath in sysPaths:
 
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
+from utils.dialogs import message
 
-from utils.resources.style_rc import *
 from utils.resources.style_rc import *
 
 # ---------------------------------
 # Variables
 db = AssetsDB()
+fm = FileManager()
+
+user_settings = fm.user_documents.joinpath('settings')
+user_settings.mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------
@@ -133,6 +139,7 @@ class TableField(QWidget):
 
             c = 0
             for col, value in item_data.get('value', {}).items():
+                value = json.dumps(value)
                 vert_headers.append(col)
                 new_item = QTableWidgetItem(value)
                 new_item.setToolTip(value)
@@ -162,17 +169,24 @@ class TableField(QWidget):
 
     def get_name(self):
         return self.name
-    def get_values(self):
+
+    def get_values(self, ast=None):
         values = []
         for row in range(self.table.rowCount()):
+            header_label = self.table.verticalHeaderItem(row).text()
+            header_name = header_label.lower().replace(' ', '_')
+
             value = {"name": "", "type": "", "plug": "", "inbetween": ""}
             for col, key in enumerate(value):
                 it = self.table.item(row, col)
                 text = it.text() if it is not None else ""
                 value[key] = text
-            values.append(value)
+                if key == 'inbetween':
+                    value[key] = ast.literal_eval(text)
+            values.append({'name': header_name, 'label': header_label, 'value': value})
 
         return values
+
 
 class TreeItemWidget(QWidget):
     def __init__(self, widgets_data, parent=None):
@@ -329,14 +343,16 @@ class SettingsTree(QTreeView):
             for i in range(len(data)):
                 if "$" in data[i]:
                     file_name = data[i].split('$')[-1]
-                    cfg_path = f"./cfg/{file_name}.json"
+                    cfg_path_rel = f"src/settings/cfg/{file_name}.json"
+                    cfg_path = os.path.join(DJED_ROOT, cfg_path_rel)
 
                     if not os.path.isfile(cfg_path):
                         continue
 
+                    cfg_path = os.path.abspath(cfg_path).replace('\\', '/')
                     with open(cfg_path) as f:
                         data_list = json.load(f, object_pairs_hook=OrderedDict)
-                        data_list['reference'] = {data[i]: os.path.abspath(cfg_path)}
+                        data_list['reference'] = {data[i]: f'$DJED_ROOT/{cfg_path_rel}'}
                         data.pop(i)
                         data.insert(i, data_list)
 
@@ -428,6 +444,20 @@ class SettingsWindow(QMainWindow):
 
         self.mousePressEvent = self.showEvent
 
+    def get_settings_data(self):
+
+        settings_file = user_settings.joinpath(f'settings.json')
+        if settings_file.is_file():
+            try:
+                with open(settings_file, "r") as f:
+                    return json.load(f, object_pairs_hook=OrderedDict)
+            except:
+                message(None, "Warring", "Can not read the user settings data")
+                settings_file.rename(settings_file.with_suffix('bu_djed'))
+        else:
+            with open(f"{DJED_ROOT}/src/settings/cfg/settings.json", "r") as f:
+                return json.load(f, object_pairs_hook=OrderedDict)
+
     def init_win(self):
         title = "Djed Settings"
 
@@ -452,9 +482,7 @@ class SettingsWindow(QMainWindow):
         # setFont(self.font)
 
         # Update table
-        with open(f"{DJED_ROOT}/src/settings/cfg/settings.json") as f:
-            ui_data = json.load(f, object_pairs_hook=OrderedDict)
-
+        ui_data = self.get_settings_data()
         self.cw = QWidget(self)
         self.setCentralWidget(self.cw)
 
@@ -547,11 +575,21 @@ class SettingsWindow(QMainWindow):
         for row in range(root.rowCount()):
             row_item = root.child(row, 0)
             name, row_data = row_item.data(ItemRoles.TapName), row_item.data(ItemRoles.SettingFields)
+            self.subscribe_data_with_variable(row_data)
             all_data.append(row_data)
 
-        with open(r'C:\Users\michael\Documents\work\Djed\test\c.json', 'w') as f:
-            json.dump(OrderedDict([('items', all_data)]), f)
+        fm.write_json(user_settings.joinpath(f'settings.json'), OrderedDict([('items', all_data)]))
 
+    def subscribe_data_with_variable(self, data):
+        # TO replace the dictionary with its file name
+        children = data.get('children', [])
+        for i, child_data in enumerate(children):
+            if 'reference' in child_data:
+                reference_dict = child_data['reference']
+                key = list(reference_dict.keys())[0]
+                children[i] = f'${key}'
+            else:
+                self.subscribe_data_with_variable(child_data)
 
     def get_data(self, item):
 
@@ -581,9 +619,15 @@ class SettingsWindow(QMainWindow):
                     if child_dict.get('label') == label:
                         child_dict["data"] = values
 
+        # reference json
+        if 'reference' in parent_data:
+            ref_name = f'{parent_data.get("host")}_{parent_data.get("name")}'
+            parent_data['reference'] = {
+                f'{ref_name}': f'$DJED_ROOT/src/settings/cfg/{ref_name}.json'
+            }
+            fm.write_json(user_settings.joinpath(f'{ref_name}.json'), parent_data)
+
         item.parent().setData(parent_data, ItemRoles.SettingFields)
-
-
 
     def iterItems(self, root):
         if root is not None:
