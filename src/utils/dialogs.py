@@ -6,14 +6,17 @@ Documentation:
 # ---------------------------------
 # import libraries
 import sys
+import os
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
+DJED_ROOT = os.getenv('DJED_ROOT')
 
 class Message(QtWidgets.QMessageBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setSizeGripEnabled(True)
+        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
 
 
     def event(self, event):
@@ -34,6 +37,8 @@ class Message(QtWidgets.QMessageBox):
 # ---------------------------------
 def text_dialog(parent=None):
     inp = QtWidgets.QInputDialog(parent)
+
+    inp.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
 
     ##### SOME SETTINGS
     inp.setInputMode(QtWidgets.QInputDialog.TextInput)
