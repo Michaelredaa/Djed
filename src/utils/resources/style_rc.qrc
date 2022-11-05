@@ -1,9 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>icons/about.png</file>
-    <file>icons/delete.png</file>
     <file>icons/assetIcon.png</file>
-    <file>icons/background_freecad.png</file>
     <file>icons/backup.png</file>
     <file>icons/branch_closed_dark.png</file>
     <file>icons/branch_closed_darker.png</file>
@@ -17,24 +15,23 @@
     <file>icons/clarisse.png</file>
     <file>icons/close_dark.png</file>
     <file>icons/close_light.png</file>
-    <file>icons/cubes.png</file>
+    <file>icons/delete.png</file>
+    <file>icons/djed.ico</file>
     <file>icons/djed.png</file>
+    <file>icons/djed.svg</file>
     <file>icons/down_arrow_dark.png</file>
     <file>icons/down_arrow_disabled_dark.png</file>
     <file>icons/down_arrow_disabled_light.png</file>
     <file>icons/down_arrow_light.png</file>
     <file>icons/down_arrow_lighter.png</file>
     <file>icons/empty_asset.png</file>
-    <file>icons/export.png</file>
     <file>icons/exportMesh.png</file>
     <file>icons/filter.png</file>
-    <file>icons/fix.png</file>
     <file>icons/folder.png</file>
     <file>icons/Hmovetoolbar_dark.png</file>
     <file>icons/Hmovetoolbar_light.png</file>
     <file>icons/Hsepartoolbar_dark.png</file>
     <file>icons/Hsepartoolbar_light.png</file>
-    <file>icons/increment.png</file>
     <file>icons/left_arrow_dark.png</file>
     <file>icons/left_arrow_disabled_dark.png</file>
     <file>icons/left_arrow_disabled_light.png</file>
