@@ -24,7 +24,7 @@
             "name": "base_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -34,7 +34,7 @@
             "name": "base_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -44,7 +44,7 @@
             "name": "metalness",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -54,7 +54,7 @@
             "name": "normal_input",
             "type": "vector3",
             "plug": "input",
-            "inbetween": "[{\"name\": \"_normal\",\"type\": \"TextureNormalMap\", \"inplug\": \"input\", \"outplug\": \"\"}]"
+            "inbetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
           }
         },
         {
@@ -64,7 +64,7 @@
             "name": "specular_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -74,7 +74,7 @@
             "name": "specular_roughness",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -84,7 +84,7 @@
             "name": "transmission_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -94,7 +94,7 @@
             "name": "specular_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -104,7 +104,7 @@
             "name": "transmission_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -114,7 +114,7 @@
             "name": "subsurface_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -124,7 +124,7 @@
             "name": "subsurface_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -134,7 +134,7 @@
             "name": "subsurface_radius",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -144,7 +144,7 @@
             "name": "coat_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -154,7 +154,7 @@
             "name": "sheen_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -164,7 +164,7 @@
             "name": "sheen_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -174,7 +174,7 @@
             "name": "emission_weight",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -184,7 +184,7 @@
             "name": "emission_color",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -194,7 +194,7 @@
             "name": "opacity",
             "type": "color",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         }
       ]
@@ -220,7 +220,7 @@
             "name": "front_value",
             "type": "float",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -230,7 +230,7 @@
             "name": "",
             "type": "",
             "plug": "",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         }
       ]
@@ -256,7 +256,7 @@
             "name": "input",
             "type": "vector3",
             "plug": "input",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         },
         {
@@ -266,7 +266,7 @@
             "name": "",
             "type": "",
             "plug": "",
-            "inbetween": "[{}]"
+            "inbetween": [{}]
           }
         }
       ]
