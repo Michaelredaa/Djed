@@ -24,7 +24,7 @@
             "name": "base",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -34,7 +34,7 @@
             "name": "baseColor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -44,7 +44,7 @@
             "name": "metalness",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -64,7 +64,7 @@
             "name": "specular",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -74,7 +74,7 @@
             "name": "specularRoughness",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -84,7 +84,7 @@
             "name": "transmission",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -94,7 +94,7 @@
             "name": "specularColor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -104,7 +104,7 @@
             "name": "transmissionColor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -114,7 +114,7 @@
             "name": "subsurface",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -124,7 +124,7 @@
             "name": "subsurfaceColor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -134,7 +134,7 @@
             "name": "subsurfaceRadius",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -144,7 +144,7 @@
             "name": "coat",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -154,7 +154,7 @@
             "name": "sheen",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -164,7 +164,7 @@
             "name": "sheencolor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -174,7 +174,7 @@
             "name": "emission",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -184,7 +184,7 @@
             "name": "emissioncolor",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -194,7 +194,7 @@
             "name": "opacity",
             "type": "color",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         }
       ]
@@ -220,7 +220,7 @@
             "name": "displacement",
             "type": "float",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -230,7 +230,7 @@
             "name": "displacement",
             "type": "float",
             "plug": "output",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         }
       ]
@@ -256,7 +256,7 @@
             "name": "input",
             "type": "vector3",
             "plug": "input",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         },
         {
@@ -266,7 +266,7 @@
             "name": "outValue",
             "type": "vector3",
             "plug": "output",
-            "inbetween": "{[]}"
+            "inbetween": "[{}]"
           }
         }
       ]
