@@ -7,6 +7,7 @@ Documentation:
 # ---------------------------------
 # Import Libraries
 import os
+import re
 import sys
 import json
 from collections import OrderedDict
@@ -51,6 +52,8 @@ class TextFiled(QWidget):
         h_layout = QHBoxLayout(self)
         self.setLayout(h_layout)
         self.label = QLabel(self)
+        self.label.setFixedWidth(155)
+        self.label.setAlignment(Qt.AlignRight)
         self.line_edit = QLineEdit(self)
 
         h_layout.addWidget(self.label)
@@ -139,7 +142,9 @@ class TableField(QWidget):
 
             c = 0
             for col, value in item_data.get('value', {}).items():
-                value = json.dumps(value)
+                if isinstance(value, list):
+                    value = str(json.dumps(value))
+                value = str(value)
                 vert_headers.append(col)
                 new_item = QTableWidgetItem(value)
                 new_item.setToolTip(value)
