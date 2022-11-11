@@ -31,8 +31,8 @@ importlib.reload(utils.file_manager)
 import pyblish.api
 
 from utils.file_manager import FileManager
-from utils.generic import material_conversion
 from utils.dialogs import message
+from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion
 
 from dcc.clarisse.api.cmds import Clarisse
 
@@ -103,14 +103,15 @@ class LoadAsset(pyblish.api.InstancePlugin):
             if not root_ctx:
                 return
         else:
-            root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
-            root_ctx = self.cl.create_context(root_ctx)
+            root_ctx = get_dcc_cfg('clarisse', 'configuration', 'asset_root')
+            root_ctx = root_ctx.replace("$assetName", asset_name)
 
         # get context cfg
-        geo_ctx = self.fm.get_user_json('clarisse', 'geo_root')
-        mtl_ctx = self.fm.get_user_json('clarisse', 'material_root')
-        tex_ctx = self.fm.get_user_json('clarisse', 'texture_root')
-        utils_ctx = self.fm.get_user_json('clarisse', 'utils_root')
+        geo_ctx = get_dcc_cfg('clarisse', 'configuration', 'geo_root')
+        mtl_ctx = get_dcc_cfg('clarisse', 'configuration', 'material_root')
+        tex_ctx = get_dcc_cfg('clarisse', 'configuration', 'texture_root')
+        utils_ctx = get_dcc_cfg('clarisse', 'configuration', 'utils_root')
+
 
         # resolve and create contexts
         if selected_ctx != 'selected':
@@ -129,9 +130,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
         asset_data = data.get('asset_data')
 
         # convert material data to clarisse engines
-        mtl_conversion = material_conversion(source_host, source_renderer, host, to_renderer)
-        plugs_conversion = mtl_conversion.get('plugs')
-        nodes_conversion = mtl_conversion.get('nodes')
+        plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
+        nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
         # materials data
         for sg in asset_data:

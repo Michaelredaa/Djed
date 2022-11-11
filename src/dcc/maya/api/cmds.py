@@ -22,6 +22,7 @@ from maya.app.general import fileTexturePathResolver
 
 # QT
 from PySide2.QtWidgets import QMessageBox, QWidget
+
 from shiboken2 import wrapInstance
 from utils.generic import merge_dicts
 
@@ -37,10 +38,11 @@ for sysPath in sysPaths:
 from dcc.maya.api.renderer import arnold
 
 from utils.file_manager import FileManager
+from utils.textures import list_textures, ck_udim, texture_type_from_name
 from utils.decorators import error
 from utils.dialogs import message, info
 from utils.assets_db import AssetsDB
-from utils.open_ports import OpenSocket
+from settings.settings import get_dcc_cfg, get_material_attrs, get_textures_settings, get_colorspace_settings
 
 # initialize database
 db = AssetsDB()
@@ -119,7 +121,7 @@ class Maya():
 
     @error(name=__name__)
     def get_export_path(self):
-        export_root = self.fm.get_cfg("maya").get("export_root")
+        export_root = get_dcc_cfg('maya', 'plugins', 'export_geometry', 'export_root')
         return self.convert_path(export_root)
 
     @error(name=__name__)
@@ -253,21 +255,23 @@ class Maya():
         """
         To import the texture inside maya
         """
-        hdr = self.fm.get_cfg("hdr")
+        hdr = get_textures_settings('hdr_extension')
         extension = tex_path.rsplit('.', 1)[-1]
         if colorspace == 'aces':
             if color:
-                if (extension in hdr):
-                    cs_config = self.fm.get_cfg("colorspace")["aces_color_hdr"]
+                if extension in hdr:
+                    cs_config = 'aces_color_hdr'
                 else:
-                    cs_config = self.fm.get_cfg("colorspace")["aces_color_ldr"]
+                    cs_config = 'aces_color_ldr'
             else:
-                cs_config = self.fm.get_cfg("colorspace")["aces_raw"]
+                cs_config = 'aces_raw'
         else:
             if color:
-                cs_config = self.fm.get_cfg("colorspace")["srgb"]
+                cs_config = 'srgb'
             else:
-                cs_config = self.fm.get_cfg("colorspace")["raw"]
+                cs_config = 'raw'
+
+        colorspace_value = get_colorspace_settings(cs_config)
 
         if not os.path.isfile(tex_path):
             cmds.warning("System Error: Can not import {} file. It not located.")
@@ -288,11 +292,11 @@ class Maya():
         cmds.setAttr(file_node + ".aiAutoTx", 0)
 
         # Ckeck UDIM
-        if self.fm.ck_udim(tex_path) and udim:
+        if ck_udim(tex_path) and udim:
             cmds.setAttr(file_node + ".uvTilingMode", 3)
 
         # colorspace
-        cmds.setAttr(file_node + ".colorSpace", cs_config, type="string")
+        cmds.setAttr(file_node + ".colorSpace", colorspace_value, type="string")
 
         # texture preview
         if color:
@@ -303,19 +307,18 @@ class Maya():
     @error(name=__name__)
     def create_material_with_texture(self, directory: str, material_type=None, colorspace="aces", sg_mtl=None,
                                      ckSG=True):
-        hdr = self.fm.get_cfg("hdr")
+        hdr = get_textures_settings('hdr_extension')
         if colorspace == "aces":
-            cs_h = self.fm.get_cfg("colorspace")["aces_color_hdr"]
-            cs_l = self.fm.get_cfg("colorspace")["aces_color_ldr"]
-            cs_r = self.fm.get_cfg("colorspace")["aces_raw"]
+            cs_h = get_colorspace_settings('aces_color_hdr')
+            cs_l = get_colorspace_settings('aces_color_ldr')
+            cs_r = get_colorspace_settings('aces_raw')
         else:
-            cs_h = self.fm.get_cfg("colorspace")["srgb"]
-            cs_r = self.fm.get_cfg("colorspace")["raw"]
+            cs_h = get_colorspace_settings('srgb')
+            cs_r = get_colorspace_settings('raw')
 
-        # mtl_attr = self.fm.get_cfg(self.renderer.name())
-        mtl_attr = self.fm.get_cfg('renderer')['arnold']
+        mtl_attr = get_material_attrs('maya', 'arnold')
 
-        textures = self.fm.list_images(directory)
+        textures = list_textures(directory)
 
         if material_type is not None:
             mtl_name, sg_name = self.create_material(material_type)
@@ -329,7 +332,7 @@ class Maya():
                 continue
 
             # check udim
-            if self.fm.ck_udim(tex_path):
+            if ck_udim(tex_path):
                 if not re.search(r"\.1001\.", tex_path):
                     continue
             # import textures
@@ -339,7 +342,7 @@ class Maya():
             cmds.setAttr(file_node + ".colorSpace", cs_r, type="string")
 
             # Ckeck Texture Type
-            tex_type = self.fm.ck_tex(tex)
+            tex_type = texture_type_from_name(tex)
             mtl_plug = mtl_name + mtl_attr[tex_type]
 
             if tex_type == "basecolor":
@@ -386,7 +389,7 @@ class Maya():
                 else:
                     disp_mtl = disp_name
                 cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                cmds.connectAttr(disp_mtl + '.displacement', sg_name + mtl_attr[tex_type], f=1)
+                cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' +mtl_attr[tex_type]['name'], f=1)
 
         self.arrangeHypershade()
 
@@ -407,7 +410,7 @@ class Maya():
 
         sgs = []
 
-        mtl_attr = self.fm.get_cfg('renderer')[renderer_name]
+        mtl_attr = get_material_attrs('maya', 'arnold')
         for sg in mtls:
             # create material
             mtl_name, sg_name = self.create_material(name=sg)
@@ -422,7 +425,7 @@ class Maya():
 
                 # create texture
                 file_node = self.import_texture(texture_path, udim_num, colorspace=colorspace, color=map_dtype == 'color')
-                mtl_plug = mtl_name + mtl_attr[map_type_name]
+                mtl_plug = mtl_name + '.' + mtl_attr[map_type_name]['name']
 
                 if map_type_name == "normal":
                     normal_name = file_node + '_normMap'
@@ -436,10 +439,10 @@ class Maya():
                     disp_name = file_node + '_displcShd'
                     disp_mtl = cmds.shadingNode('displacementShader', n=disp_name, asShader=1)
                     cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                    cmds.connectAttr(disp_mtl + '.displacement', sg_name + mtl_attr[map_type_name], f=1)
+                    cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' +mtl_attr[map_type_name]['name'], f=1)
                     continue
 
-                mtl_plug = mtl_name + mtl_attr[map_type_name]
+                mtl_plug = mtl_name + '.' +mtl_attr[map_type_name]['name']
 
                 if map_dtype == "float":
                     tex_plug = file_node + ".outColor.outColorR"
@@ -576,7 +579,7 @@ class Maya():
         if not export_dir:
             return
         self.fm.make_dirs(export_dir)
-        export_path, version = self.fm.version_up(export_dir)
+        export_path, version = self.fm.version_folder_up(export_dir)
         self.fm.make_dirs(export_path)
 
         export_path += f"/{asset_name}"
@@ -656,11 +659,6 @@ class Maya():
         if _message:
             info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
 
-        # maya_file_path = self.get_file_path()
-        # if maya_file_path:
-        #     self.fm.set_user_json(last_object_path=export_paths,
-        #                           last_maya_path=maya_file_path
-        #                           )
 
         return export_paths
 

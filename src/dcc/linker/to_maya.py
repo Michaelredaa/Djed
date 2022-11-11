@@ -6,6 +6,7 @@ Documentation:
 import re
 import traceback
 
+from settings.settings import get_dcc_cfg
 from utils.dialogs import message
 from utils.file_manager import FileManager
 from utils.open_ports import OpenSocket
@@ -14,7 +15,7 @@ fm = FileManager()
 
 def send_to_maya(data):
     try:
-        port = fm.get_user_json("maya", "command_port")
+        port = get_dcc_cfg("maya", 'configuration', "command_port")
         socket = OpenSocket(host='127.0.0.1', port=port)
 
         cmd_text = "## Djed Tools ##\n\n"

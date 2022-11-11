@@ -36,7 +36,7 @@ importlib.reload(dcc.linker.to_maya)
 ##################################
 
 
-
+from settings.settings import get_dcc_cfg, set_value
 from utils.dialogs import save_dialog, text_dialog, message
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
@@ -140,7 +140,7 @@ class SubstanceIntegration():
     def on_textures_export(self):
 
         # get presets
-        presets = self.fm.get_user_json("spp", "export_preset")
+        presets = get_dcc_cfg("substance_painter", "texture_export")
         self.js.set_export_preset_name(presets["preset"])
 
         # export textures
@@ -156,7 +156,7 @@ class SubstanceIntegration():
         # add texture to db
 
     def on_export_settings(self):
-        options = self.fm.get_user_json("spp", "export_preset")
+        options = get_dcc_cfg("substance_painter", "texture_export")
         options["path"] = os.path.dirname(self.get_export_texture_path())
 
         if (not options["preset"].endswith(".spexp")) and options["preset"].startswith('resource://'):
@@ -171,11 +171,13 @@ class SubstanceIntegration():
             new_preset = pipeline.get_preset_name_from_url(new_preset)
 
         new_presets = {
-            'path': self.js.get_export_path()+'/$version',
+            'path': self.js.get_export_path() + '/$version',
             'preset': new_preset,
             'format': self.js.get_current_export_option()['fileFormat']
         }
-        self.fm.set_user_json(spp={"export_preset": new_presets})
+
+        for key, value in new_preset.items():
+            set_value(value, "substance_painter", "texture_export", key)
 
         return
 
@@ -227,7 +229,7 @@ class SubstanceIntegration():
                     f"'{source_file_path}' is not an path\nIt seems you not save the source maya file.")
             return
 
-        save_root = self.fm.get_user_json("spp", "save_dir")
+        save_root = get_dcc_cfg("substance_painter", "configuration", "spp_save_directory")
 
         resolved_dir = self.fm.resolve_path(
             save_root,
@@ -243,7 +245,7 @@ class SubstanceIntegration():
                     f"'{source_file_path}' is not an path\nIt seems you not save the source maya file.")
             return
 
-        export_root = self.fm.get_user_json("spp", "export_preset").get("path")
+        export_root = get_dcc_cfg("substance_painter", "texture_export").get("path")
 
         resolved_path = self.fm.resolve_path(
             export_root,
@@ -252,7 +254,7 @@ class SubstanceIntegration():
 
         if "$version" in resolved_path:
             resolved_path = resolved_path.replace("$version", "")
-            resolved_path, version = self.fm.version_up(resolved_path)
+            resolved_path, version = self.fm.version_folder_up(resolved_path)
 
         save_path = str(resolved_path).replace("\\", "/")
 

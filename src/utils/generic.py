@@ -4,10 +4,6 @@ Documentation:
 """
 import time
 
-from utils.file_manager import FileManager
-
-fm = FileManager()
-
 def wait_until(somepredicate, timeout, period=0.25, **kwargs):
     mustend = time.time() + timeout
     while time.time() < mustend:
@@ -41,36 +37,10 @@ def merge_dicts(dict1, dict2):
         else:
             yield k, dict2[k]
 
-
-def material_conversion(from_host, from_renderer, to_host, to_renderer):
-
-    cfg = fm.get_cfg('renderer')
-    plugs = cfg.get('plugs')
-    nodes = cfg.get('nodes')
-
-    if (from_host == 'standard') or (from_renderer == 'standard'):
-        plugs_dict = {
-            plug_name: plugs[plug_name].get(to_host).get(to_renderer)
-            for plug_name in plugs
-        }
-        nodes_dict = {
-            node_name: nodes[node_name].get(to_host).get(to_renderer)
-            for node_name in nodes
-        }
-
-    else:
-        plugs_dict = {
-            plugs[plug_name].get(from_host).get(from_renderer).get('name'):
-                plugs[plug_name].get(to_host).get(to_renderer)
-            for plug_name in plugs
-        }
-        nodes_dict = {
-            nodes[node_name].get(from_host).get(from_renderer).get('name'):
-                nodes[node_name].get(to_host).get(to_renderer)
-            for node_name in nodes
-        }
-
-    return {"plugs": plugs_dict, "nodes": nodes_dict}
+def dict_depth(dictionary):
+    if isinstance(dictionary, dict):
+        return 1 + (max(map(dict_depth, dictionary.values())) if dictionary else 0)
+    return 0
 
 
 if __name__ == '__main__':

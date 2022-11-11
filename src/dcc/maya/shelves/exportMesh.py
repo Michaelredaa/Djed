@@ -34,6 +34,7 @@ for sysPath in sysPaths:
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 
+
 class ExportSettings(ToolSettingsBase):
     def __init__(self, parent=None):
         super(ExportSettings, self).__init__(parent, preset_name="export_preset")
@@ -117,6 +118,7 @@ class ExportSettings(ToolSettingsBase):
         process(path=export_path, extensions=extensions)
         # export_meshs = self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
 
+
 # Main function
 def main():
     es = ExportSettings(parent=maya_main_window())
@@ -127,6 +129,4 @@ def main():
 
 
 if __name__ == '__main__':
-    
     main()
-    

@@ -429,7 +429,7 @@ QComboBox QFrame:pressed,
 QComboBox QFrame:focus,
 QComboBox QFrame:on {
     border: 1px solid #EBEBEA;
-    background-color: #2B2B2B;
+    background-color: #1F1E1E;
     padding: 0px;
     margin: 0px;
 }
@@ -704,7 +704,7 @@ QComboBox::drop-down {
     border-left-style: solid;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
-    background-color: qlineargradient(spread:pad, x1:1, y1:0.8, x2:1, y2:0, stop:0 #7D4A20, stop:1 #fad57a);
+    background-color: #7D4A20;
 }
 
 QComboBox::down-arrow {

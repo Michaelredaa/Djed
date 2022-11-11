@@ -22,7 +22,7 @@ import pyblish.util
 
 # from dcc.maya.api.cmds import Maya
 from utils.file_manager import FileManager
-
+from utils.textures import list_textures, ck_udim, get_sgName_from_textures, texture_type_from_name
 
 # ---------------------------------
 # Variables
@@ -42,8 +42,8 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
 
     def process(self, context):
         # ma = Maya()
-        textures = fm.list_images(self.directory)
-        sgs = fm.get_sgName_from_textures(self.directory)
+        textures = list_textures(self.directory)
+        sgs = get_sgName_from_textures(self.directory)
         asset_data = {}
 
         for sg in sgs:
@@ -52,8 +52,8 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
             for tex in textures:
                 if sg in tex:
                     tex_name = sg + tex.split(sg)[-1].split('.')[0]
-                    tex_plug = fm.ck_tex(tex)
-                    if fm.ck_udim(tex):
+                    tex_plug = texture_type_from_name(tex)
+                    if ck_udim(tex):
                         if not re.search(r"\.1001\.", tex):
                             continue
                         udim = 1

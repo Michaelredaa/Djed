@@ -33,6 +33,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+from settings.settings import get_dcc_cfg
 from utils.dialogs import message
 from utils.generic import wait_until
 from dcc.linker.to_clarisse import send_to_clarisse
@@ -40,7 +41,6 @@ from dcc.clarisse.api.remote_connect import connect
 from dcc.maya.api.renderer import arnold
 from dcc.maya.plugins.create_asset import CreateAsset
 from utils.sys_process import is_process_running
-
 
 import pyblish.api
 import pyblish.util
@@ -156,13 +156,7 @@ class Maya2ClsSettings(ToolSettingsBase):
         self.onConnect()
 
     def onClarisseOpen(self):
-        cls_user_cfg = self.fm.get_user_json("clarisse")
-        if cls_user_cfg:
-            cls_exe = cls_user_cfg.get("clarisse_exe")
-            if not cls_exe:
-                cls_exe = self.fm.get_cfg("clarisse").get("clarisse_exe")
-        else:
-            cls_exe = self.fm.get_cfg("clarisse").get("clarisse_exe")
+        cls_exe = get_dcc_cfg('clarisse', 'configuration', 'executable')
 
         subprocess.Popen(f'"{cls_exe}" -flavor ifx')
 

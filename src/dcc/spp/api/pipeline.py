@@ -15,6 +15,7 @@ for sysPath in sysPaths:
 
 from utils.dialogs import message
 from utils.file_manager import FileManager
+from utils.textures import texture_type_from_name
 
 
 import substance_painter
@@ -230,7 +231,7 @@ def export_texture(tex_dir=None):
     if tex_dir is None:
         tex_dir = js.get_export_path()
 
-    tex_dir, version = fm.version_up(tex_dir)
+    tex_dir, version = fm.version_folder_up(tex_dir)
     Path(tex_dir).mkdir(parents=True, exist_ok=True)
 
     try:
@@ -326,7 +327,7 @@ def on_export_texture_finished(result):
 
         for file_path in selected_textures:
             info(file_path)
-            map_type = fm.ck_tex(os.path.basename(file_path))
+            map_type = texture_type_from_name(os.path.basename(file_path))
             tex_name = f'{sg}_{map_type}'
 
             if map_type == 'height':

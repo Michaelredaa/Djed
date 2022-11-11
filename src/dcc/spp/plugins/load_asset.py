@@ -5,6 +5,8 @@ Documentation:
 import os
 from pathlib import Path
 
+
+
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
 from dcc.spp.api.remote_connect import connect_spp
@@ -12,6 +14,7 @@ from utils.dialogs import message
 from src.utils.sys_process import is_process_running, execute_commmand
 from utils.file_manager import FileManager
 from utils.generic import wait_until
+from settings.settings import get_dcc_cfg
 
 import pyblish.api
 
@@ -37,7 +40,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         mesh_path = data.get('mesh_path', '')
         cfg = data.get('cfg', )
 
-        spp_exe = fm.get_cfg('spp')['spp_exe']
+        spp_exe = get_dcc_cfg("substance_painter", "configuration", "executable")
 
         if not spp_exe:
             message(None, 'Error', 'Please configure the substance painter executable first.')
@@ -54,7 +57,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
             self.process(instance)
 
     def open_spp_file(self, mesh_path, project_path=None, cfg=None, *args):
-        spp_exe = Path(fm.get_cfg('spp')['spp_exe'])
+        spp_exe = get_dcc_cfg("substance_painter", "configuration", "executable")
         if is_process_running(spp_exe.name):
             sp = connect_spp()
             if sp:

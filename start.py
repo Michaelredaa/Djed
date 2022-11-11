@@ -9,7 +9,6 @@ from pathlib import Path
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
-
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
@@ -19,6 +18,7 @@ for sysPath in sysPaths:
 from utils.startup.system_tray import DjedTray
 from utils.sys_process import create_shortcut, run_as_administrator
 from utils.file_manager import FileManager
+from settings.settings import get_dcc_cfg
 
 fm = FileManager()
 
@@ -62,11 +62,12 @@ def set_environment():
     run_as_administrator(bat_file_path)
 
 def create_spp_shortcut():
+    spp_exe = get_dcc_cfg("substance_painter", "configuration", "executable")
     create_shortcut(
         f'{os.getenv("PROGRAMDATA")}/Microsoft/Windows/Start Menu/Programs/Djed Adobe Substance 3D Painter.lnk',
-        fm.get_cfg('spp').get('spp_exe'),
+        spp_exe,
         '--enable-remote-scripting',
-        fm.get_cfg('spp').get('spp_exe'),
+        spp_exe,
     )
 
 

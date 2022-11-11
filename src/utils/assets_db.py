@@ -14,11 +14,12 @@ import site
 from functools import wraps
 from urllib.parse import unquote
 
-sysPaths = [os.getenv("DJED_ROOT"), os.getenv("DJED_ROOT")+"/src"]
+sysPaths = [os.getenv("DJED_ROOT"), os.getenv("DJED_ROOT") + "/src"]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+from settings.settings import get_textures_patterns
 
 # ---------------------------------
 # Variables
@@ -26,7 +27,6 @@ for sysPath in sysPaths:
 from utils.file_manager import FileManager
 
 fm = FileManager()
-
 
 
 def connect(db_file):
@@ -325,15 +325,20 @@ class AssetsDB(Connect):
 
     @Connect.db
     def update_texture_maps(self, conn):
-        map_types = fm.get_cfg("texture_types_new")
+        map_types = get_textures_patterns()
 
         for map_type in map_types:
             cur = conn.cursor()
+            if 'color' in map_type:
+                _type = 'color'
+            else:
+                _type = 'float'
+
             query = f'''
                     INSERT INTO map_type
                     (name, type) 
                     VALUES
-                    ("{map_type}", "{map_types.get(map_type, "")}")
+                    ("{map_type}", "{_type}")
                     ON CONFLICT(name) 
                     DO NOTHING
             '''
@@ -692,7 +697,4 @@ def main():
 
 
 if __name__ == '__main__':
-    
     main()
-    
-

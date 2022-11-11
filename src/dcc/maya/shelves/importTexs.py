@@ -44,6 +44,7 @@ from dcc.maya.api import renderer
 from dcc.maya.plugins import CreateMaterialFromTextures, LoadAsset
 from dcc.maya.plugins.load_asset import LoadAsset
 from dcc.maya.plugins.create_material_from_textures import CreateMaterialFromTextures
+from utils.textures import get_sgName_from_textures
 
 from dcc.maya.shelves.tool_settings import (
     ToolSettingsBase,
@@ -179,7 +180,7 @@ class CreateMtlTexs(ToolSettingsBase):
         if not os.path.isdir(tex_dir):
             os.makedirs(tex_dir)
 
-        sgs = self.fm.get_sgName_from_textures(tex_dir)
+        sgs = get_sgName_from_textures(tex_dir)
         sgs.insert(0, "All")
         self.com_mtls.addItems(sgs)
 

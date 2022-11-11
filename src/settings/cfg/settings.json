@@ -19,7 +19,7 @@
                   "value": "Utility - Linear - sRGB",
                   "type": "input_text",
                   "tooltip": "The high dynamic range textures color colorspace",
-                  "placeholder": "eg. 'Utility - Linear - sRGB'"
+                  "placeholder": "e.g. 'Utility - Linear - sRGB'"
                 },
                 {
                   "name": "aces_color_ldr",
@@ -28,7 +28,7 @@
                   "value": "Utility - sRGB - Texture",
                   "type": "input_text",
                   "tooltip": "The low dynamic range textures color colorspace",
-                  "placeholder": "eg. 'Utility - sRGB - Texture'"
+                  "placeholder": "e.g. 'Utility - sRGB - Texture'"
                 },
                 {
                   "name": "aces_raw",
@@ -37,7 +37,7 @@
                   "value": "Utility - Raw",
                   "type": "input_text",
                   "tooltip": "The texture data colorspace",
-                  "placeholder": "eg. 'Utility - Raw'"
+                  "placeholder": "e.g. 'Utility - Raw'"
                 },
                 {
                   "name": "srgb",
@@ -46,7 +46,7 @@
                   "value": "sRGB",
                   "type": "input_text",
                   "tooltip": "The texture color sRGB colorspace",
-                  "placeholder": "eg. 'sRGB'"
+                  "placeholder": "e.g. 'sRGB'"
                 },
                 {
                   "name": "raw",
@@ -55,7 +55,7 @@
                   "value": "Raw",
                   "type": "input_text",
                   "tooltip": "The texture color raw colorspace",
-                  "placeholder": "eg. 'Raw'"
+                  "placeholder": "e.g. 'Raw'"
                 }
               ]
             },
@@ -82,7 +82,7 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The acceptable textures extensions",
-                  "placeholder": "eg. '[\"exr\", \"png\", \"jpg\", \"jpeg\", \"tif\", ..]'"
+                  "placeholder": "e.g. '[\"exr\", \"png\", \"jpg\", \"jpeg\", \"tif\", ..]'"
                 },
                 {
                   "name": "hdr_extension",
@@ -99,10 +99,10 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The acceptable high dynamic range textures extensions",
-                  "placeholder": "eg. '[\"exr\", \"hdri\", \"hdr\", ..]'"
+                  "placeholder": "e.g. '[\"exr\", \"hdri\", \"hdr\", ..]'"
                 },
                 {
-                  "name": "basecolor",
+                  "name": "base_color",
                   "label": "Base Color",
                   "default_value": [
                     "(?i)base.*color",
@@ -116,7 +116,22 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The base color textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)base.*color\", \"(?i)diffuse\", \"(?i)albedo\", ..]'"
+                  "placeholder": "e.g. '[\"(?i)base.*color\", \"(?i)diffuse\", \"(?i)albedo\", ..]'"
+                },
+                {
+                  "name": "metallic",
+                  "label": "Metallic",
+                  "default_value": [
+                    "(?i)metallic",
+                    "(?i)metalness"
+                  ],
+                  "value": [
+                    "(?i)metallic",
+                    "(?i)metalness"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The metallic textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)metallic\", \"(?i)metalness\", ..]'"
                 },
                 {
                   "name": "roughness",
@@ -131,22 +146,163 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The roughness textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)roughness\", \"(?i)glossinss\", ...]'"
+                  "placeholder": "e.g. '[\"(?i)roughness\", \"(?i)glossinss\", ...]'"
                 },
                 {
-                  "name": "metallic",
-                  "label": "Metallic",
+                  "name": "specular_weight",
+                  "label": "Specular Weight",
                   "default_value": [
-                    "(?i)metallic",
-                    "(?i)metalness"
+                    "(?i)specular"
                   ],
                   "value": [
-                    "(?i)metallic",
-                    "(?i)metalness"
+                    "(?i)specular"
                   ],
                   "type": "input_text",
-                  "tooltip": "The metallic textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)metallic\", \"(?i)metalness\", ..]'"
+                  "tooltip": "The specular weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)specular\", ...]'"
+                },
+                {
+                  "name": "specular_color",
+                  "label": "Specular Color",
+                  "default_value": [
+                    "(?i)specular.*color"
+                  ],
+                  "value": [
+                    "(?i)specular.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The specular color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)specular.*color\", \"(?i)specularcolor\", ...]'"
+                },
+                {
+                  "name": "transmission_weight",
+                  "label": "Transmission Weight",
+                  "default_value": [
+                    "(?i)transmission"
+                  ],
+                  "value": [
+                    "(?i)transmission"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The transmission weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)transmission\", ..]'"
+                },
+                {
+                  "name": "transmission_color",
+                  "label": "Transmission Color",
+                  "default_value": [
+                    "(?i)transmission.*color"
+                  ],
+                  "value": [
+                    "(?i)transmission.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The transmission color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)transmission.*color\", ..]'"
+                },
+                {
+                  "name": "subsurface_scattering_weight",
+                  "label": "Subsurface Scattering Weight",
+                  "default_value": [
+                    "(?i)scattering"
+                  ],
+                  "value": [
+                    "(?i)scattering"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The subsurface scattering weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)scattering\", ..]'"
+                },
+                {
+                  "name": "subsurface_scattering_color",
+                  "label": "Subsurface Scattering Color",
+                  "default_value": [
+                    "(?i)scattering.*color"
+                  ],
+                  "value": [
+                    "(?i)scattering.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The subsurface scattering color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)scattering.*color\", ..]'"
+                },
+                {
+                  "name": "sheen_weight",
+                  "label": "Sheen Weight",
+                  "default_value": [
+                    "(?i)sheen"
+                  ],
+                  "value": [
+                    "(?i)sheen"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The sheen weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)sheen\", ..]'"
+                },
+                {
+                  "name": "sheen_color",
+                  "label": "Sheen Color",
+                  "default_value": [
+                    "(?i)sheen.*color"
+                  ],
+                  "value": [
+                    "(?i)sheen.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The sheen color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)sheen.*color\", ..]'"
+                },
+                {
+                  "name": "coat_weight",
+                  "label": "Coat Weight",
+                  "default_value": [
+                    "(?i)coat"
+                  ],
+                  "value": [
+                    "(?i)coat"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The coat weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)coat\", ..]'"
+                },
+                {
+                  "name": "coat_color",
+                  "label": "Coat Color",
+                  "default_value": [
+                    "(?i)coat.*color"
+                  ],
+                  "value": [
+                    "(?i)coat.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The coat color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)coat.*color\", ..]'"
+                },
+                {
+                  "name": "emission_weight",
+                  "label": "Emission Weight",
+                  "default_value": [
+                    "(?i)emission"
+                  ],
+                  "value": [
+                    "(?i)emission"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The emission weight textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)emission\", ..]'"
+                },
+                {
+                  "name": "emission_color",
+                  "label": "Emission Color",
+                  "default_value": [
+                    "(?i)emission.*color"
+                  ],
+                  "value": [
+                    "(?i)emission.*color"
+                  ],
+                  "type": "input_text",
+                  "tooltip": "The emission color textures patterns of material",
+                  "placeholder": "e.g. '[\"(?i)emission.*color\", ..]'"
                 },
                 {
                   "name": "normal",
@@ -159,33 +315,7 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The normal textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)normal\", ...]'"
-                },
-                {
-                  "name": "sss_weight",
-                  "label": "Subsurface Scattering Weight",
-                  "default_value": [
-                    "(?i)scattering"
-                  ],
-                  "value": [
-                    "(?i)scattering"
-                  ],
-                  "type": "input_text",
-                  "tooltip": "The subsurface scattering weight textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)scattering\", ..]'"
-                },
-                {
-                  "name": "sss_color",
-                  "label": "Subsurface Scattering Color",
-                  "default_value": [
-                    "(?i)scattering.*color"
-                  ],
-                  "value": [
-                    "(?i)scattering"
-                  ],
-                  "type": "input_text",
-                  "tooltip": "The subsurface scattering color textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)scattering.*color\", ..]'"
+                  "placeholder": "e.g. '[\"(?i)normal\", ...]'"
                 },
                 {
                   "name": "opacity",
@@ -198,22 +328,7 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The metallic textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)opacity\", ..]'"
-                },
-                {
-                  "name": "metallic",
-                  "label": "Metallic",
-                  "default_value": [
-                    "(?i)metallic",
-                    "(?i)metalness"
-                  ],
-                  "value": [
-                    "(?i)metallic",
-                    "(?i)metalness"
-                  ],
-                  "type": "input_text",
-                  "tooltip": "The metallic textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)metallic\", \"(?i)metalness\", ..]'"
+                  "placeholder": "e.g. '[\"(?i)opacity\", ..]'"
                 },
                 {
                   "name": "height",
@@ -230,7 +345,7 @@
                   ],
                   "type": "input_text",
                   "tooltip": "The metallic textures patterns of material",
-                  "placeholder": "eg. '[\"(?i)height\", \"(?i)bump\", \"(?i)displacement\", ..]'"
+                  "placeholder": "e.g. '[\"(?i)height\", \"(?i)bump\", \"(?i)displacement\", ..]'"
                 }
               ]
             }
@@ -253,7 +368,7 @@
               "value": "C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe",
               "type": "input_text",
               "tooltip": "Maya executable path",
-              "placeholder": "eg. C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe"
+              "placeholder": "e.g. C:/Program Files/Adobe/Adobe Substance 3D Painter/Adobe Substance 3D Painter.exe"
             },
             {
               "name": "spp_save_directory",
@@ -262,13 +377,13 @@
               "value": "../../../sur/substance/$asset_name",
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
-              "placeholder": "eg. ../../../sur/substance/$asset_name"
+              "placeholder": "e.g. ../../../sur/substance/$asset_name"
             }
           ]
         },
         {
           "name": "texture_export",
-          "label": "Textures Export",
+          "label": "Texture Export",
           "children": [
             {
               "name": "path",
@@ -277,7 +392,7 @@
               "value": "../../../sur/substance/textures",
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
-              "placeholder": "eg. \"../../../sur/substance/textures\""
+              "placeholder": "e.g. \"../../../sur/substance/textures\""
             },
             {
               "name": "preset",
@@ -286,16 +401,16 @@
               "value": "Arnold (AiStandard)",
               "type": "input_text",
               "tooltip": "The presets of exporting textures",
-              "placeholder": "eg. Arnold (AiStandard)"
+              "placeholder": "e.g. Arnold (AiStandard)"
             },
             {
-              "name": "texture_format",
-              "label": "Texture Format",
+              "name": "format",
+              "label": "Format",
               "default_value": "png",
               "value": "png",
               "type": "input_text",
               "tooltip": "The format of export textures",
-              "placeholder": "eg. png"
+              "placeholder": "e.g. png"
             }
           ]
         }
@@ -316,7 +431,7 @@
               "value": "C:/Program Files/Autodesk/Maya2023/bin/maya.exe",
               "type": "input_text",
               "tooltip": "Maya executable path",
-              "placeholder": "eg. 'C:/Program Files/Autodesk/Maya2023/bin/maya.exe'"
+              "placeholder": "e.g. 'C:/Program Files/Autodesk/Maya2023/bin/maya.exe'"
             },
             {
               "name": "command_port",
@@ -325,7 +440,7 @@
               "value": 4436,
               "type": "input_text",
               "tooltip": "Maya command port number to communicate with another programs",
-              "placeholder": "eg. '4436'"
+              "placeholder": "e.g. '4436'"
             },
             {
               "name": "export_dir",
@@ -334,7 +449,239 @@
               "value": "../Export/$selection",
               "type": "input_text",
               "tooltip": "The export path to export in relatives to the current file",
-              "placeholder": "eg. '../Export/$selection'"
+              "placeholder": "e.g. '../Export/$selection'"
+            }
+          ]
+        },
+        {
+          "name": "plugins",
+          "label": "Plugins",
+          "children": [
+            {
+              "name": "export_geometry",
+              "label": "Export Geometry",
+              "children": [
+                {
+                  "name": "export_root",
+                  "label": "Export Root",
+                  "default_value": "../Export/$selection",
+                  "value": "../Export/$selection",
+                  "type": "input_text",
+                  "tooltip": "The directory in which the maya will export geometry\\n relatives to maya file\"",
+                  "placeholder": "e.g. '../Export/$selection'"
+                },
+                {
+                  "name": "obj",
+                  "label": "OBJ",
+                  "default_value": true,
+                  "value": true,
+                  "type": "toggle_box",
+                  "tooltip": "Export obj format file when publish"
+                },
+                {
+                  "name": "fbx",
+                  "label": "FBX",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Export fbx format file when publish"
+                },
+                {
+                  "name": "abc",
+                  "label": "ABC",
+                  "default_value": true,
+                  "value": true,
+                  "type": "toggle_box",
+                  "tooltip": "Export alembic file when publish"
+                },
+                {
+                  "name": "usd",
+                  "label": "USD",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Export usd file when publish"
+                }
+              ]
+            },
+            {
+              "name": "maya_substance_painter",
+              "label": "Maya Substance Painter",
+              "children": [
+                {
+                  "name": "export_root",
+                  "label": "Export Root",
+                  "default_value": "../Export/$selection",
+                  "value": "../Export/$selection",
+                  "type": "input_text",
+                  "tooltip": "The directory in which the maya will export geometry\\n relatives to maya file\"",
+                  "placeholder": "e.g. '../Export/$selection'"
+                },
+                {
+                  "name": "default_texture_resolution",
+                  "label": "Default Texture Resolution",
+                  "menu_items": [
+                    "512",
+                    "1024",
+                    "2048",
+                    "4096"
+                  ],
+                  "default_value": "1024",
+                  "value": "1024",
+                  "type": "drop_menu",
+                  "tooltip": "The default texture resolution to open substance painter with it"
+                },
+                {
+                  "name": "normal_map_format",
+                  "label": "Normal Map Format",
+                  "menu_items": [
+                    "OpenGL",
+                    "DirectX"
+                  ],
+                  "default_value": "OpenGL",
+                  "value": "OpenGl",
+                  "type": "drop_menu",
+                  "tooltip": "The normal format"
+                },
+                {
+                  "name": "tangent_space_mode",
+                  "label": "Tangent Space Mode",
+                  "menu_items": [
+                    "PerVertex",
+                    "PerFragment"
+                  ],
+                  "default_value": "PerVertex",
+                  "value": "PerVertex",
+                  "type": "drop_menu",
+                  "tooltip": "The tangent space mode"
+                },
+                {
+                  "name": "project_workflow",
+                  "label": "Project Workflow",
+                  "menu_items": [
+                    "TextureSetPerUVTile",
+                    "UVTile"
+                  ],
+                  "default_value": "UVTile",
+                  "value": "UVTile",
+                  "type": "drop_menu",
+                  "tooltip": "The project workflow use UDIM or materials workflow"
+                },
+                {
+                  "name": "import_cameras",
+                  "label": "Import Cameras",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Export usd file when publish"
+                }
+              ]
+            },
+            {
+              "name": "maya_clarisse",
+              "label": "Maya Clarisse",
+              "children": [
+                {
+                  "name": "command_port",
+                  "label": "Command Port",
+                  "default_value": 55000,
+                  "value": 55000,
+                  "type": "input_text",
+                  "tooltip": "Clarisse command port number to communicate with maya",
+                  "placeholder": "e.g. '55000'"
+                },
+                {
+                  "name": "geometry_type",
+                  "label": "Geometry Type",
+                  "menu_items": [
+                    "Alembic Reference",
+                    "Alembic Bundle",
+                    "USD Reference",
+                    "USD Bundle"
+                  ],
+                  "default_value": "Alembic Bundle",
+                  "value": "Alembic Bundle",
+                  "type": "drop_menu",
+                  "tooltip": "The type to geometry to create in clarisse is it reference or bundle"
+                },
+                {
+                  "name": "mtls_from",
+                  "label": "Mtls From",
+                  "menu_items": ["Arnold"],
+                  "default_value": "Arnold",
+                  "value": "Arnold",
+                  "type": "drop_menu",
+                  "tooltip": "Convert material from renderer"
+                },
+                {
+                  "name": "mtls_to",
+                  "label": "Mtls To",
+                  "menu_items": ["Autodesk Standard Surface", "Disney Principles"],
+                  "default_value": "Autodesk Standard Surface",
+                  "value": "Autodesk Standard Surface",
+                  "type": "drop_menu",
+                  "tooltip": "Convert material to renderer in clarisse"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": ["sRGB", "ACES"],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                }
+              ]
+            },
+            {
+              "name": "material_from_textures",
+              "label": "Material From Textures",
+              "children": [
+                {
+                  "name": "textures_directory",
+                  "label": "Textures Directory",
+                  "default_value": "$project/Texture",
+                  "value": "$project/Texture",
+                  "type": "input_text",
+                  "tooltip": "The directory of textures",
+                  "placeholder": "e.g. '$project/Texture'"
+                },
+                {
+                  "name": "renderer",
+                  "label": "Renderer",
+                  "default_value": "Arnold",
+                  "value": "Arnold",
+                  "type": "input_text",
+                  "tooltip": "The render to create materials belongs it",
+                  "placeholder": "e.g. Arnold"
+                },
+                {
+                  "name": "materials",
+                  "label": "Materials",
+                  "default_value": "All",
+                  "value": "All",
+                  "type": "input_text",
+                  "tooltip": "Import specific materials form the texture directory\n, It list the available materials dynamically based on textures naming conventional",
+                  "placeholder": "e.g. 'All'"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": ["sRGB", "ACES"],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                },
+                {
+                  "name": "udim",
+                  "label": "UDIM",
+                  "default_value": true,
+                  "value": true,
+                  "type": "toggle_box",
+                  "tooltip": "To create textures with udims"
+                }
+              ]
             }
           ]
         },
@@ -362,7 +709,7 @@
               "value": "C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe",
               "type": "input_text",
               "tooltip": "clarisse executable path",
-              "placeholder": "eg. 'C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe'"
+              "placeholder": "e.g. 'C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe'"
             },
             {
               "name": "command_port",
@@ -371,7 +718,7 @@
               "value": 55000,
               "type": "input_text",
               "tooltip": "Clarisse command port number to communicate with another programs",
-              "placeholder": "eg. '55000'"
+              "placeholder": "e.g. '55000'"
             },
             {
               "name": "asset_root",
@@ -380,7 +727,7 @@
               "value": "build://project/Assets/$assetName",
               "type": "input_text",
               "tooltip": "The directory root of in which the assets imported",
-              "placeholder": "eg. 'build://project/Assets/$assetName'"
+              "placeholder": "e.g. 'build://project/Assets/$assetName'"
             },
             {
               "name": "material_root",
@@ -389,7 +736,7 @@
               "value": "../mtls",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the materials created.\n '../' mean relative to asset root",
-              "placeholder": "eg. '../mtls'"
+              "placeholder": "e.g. '../mtls'"
             },
             {
               "name": "texture_root",
@@ -398,7 +745,7 @@
               "value": "../texs",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the textures created.\n '../' mean relative to asset root",
-              "placeholder": "eg. '../texs'"
+              "placeholder": "e.g. '../texs'"
             },
             {
               "name": "utils_root",
@@ -407,7 +754,7 @@
               "value": "../utils",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the material utilities created.\n '../' mean relative to asset root",
-              "placeholder": "eg. '../utils'"
+              "placeholder": "e.g. '../utils'"
             }
           ]
         },

@@ -22,6 +22,7 @@ for sysPath in sysPaths:
 
 from utils.file_manager import FileManager
 from utils.decorators import error
+from settings.settings import get_dcc_cfg, get_value, get_textures_settings, get_colorspace_settings, get_shading_nodes
 
 
 # ---------------------------------
@@ -130,7 +131,6 @@ class Clarisse:
         else:
             self.working_geo_type = "abc_ref"
 
-
     def create_ref(self, cntx, name, path, update_existence=True):
         if ix.item_exists(f'{cntx}/{name}_ref') and update_existence:
             ref_cntx = ix.get_item(f'{cntx}/{name}_ref')
@@ -169,7 +169,8 @@ class Clarisse:
         return bundle_item
 
     @error(name=__name__)
-    def import_geo(self, geo_path, asset_name=None, context="build://project", geo_type='abc_ref', update_existence=True):
+    def import_geo(self, geo_path, asset_name=None, context="build://project", geo_type='abc_ref',
+                   update_existence=True):
         geo_path = unquote(geo_path)
 
         _types = {
@@ -184,7 +185,6 @@ class Clarisse:
             asset_name = os.path.basename(geo_path).rsplit('.', 1)[-1]
 
         geo_item = _types[geo_type](geo_cntx, asset_name, geo_path, update_existence)
-
 
         ix.application.check_for_events()
 
@@ -236,23 +236,24 @@ class Clarisse:
             return
         tex_path = node.attrs.filename[0]
 
-        hdr = self.fm.get_cfg("hdr")
+        hdr = get_textures_settings('hdr_extension')
         extension = tex_path.rsplit('.', 1)[-1]
         if colorspace == 'aces':
             if color:
-                if (extension in hdr):
-                    cs_config = self.fm.get_cfg("colorspace")["aces_color_hdr"]
+                if extension in hdr:
+                    cs_config = 'aces_color_hdr'
                 else:
-                    cs_config = self.fm.get_cfg("colorspace")["aces_color_ldr"]
+                    cs_config = 'aces_color_ldr'
             else:
-                cs_config = self.fm.get_cfg("colorspace")["aces_raw"]
+                cs_config = 'aces_raw'
         else:
             if color:
-                cs_config = self.fm.get_cfg("colorspace")["srgb"]
+                cs_config = 'srgb'
             else:
-                cs_config = self.fm.get_cfg("colorspace")["raw"]
+                cs_config = 'raw'
 
-        node.attrs.file_color_space[0] = cs_config
+        colorspace_value = get_colorspace_settings(cs_config)
+        node.attrs.file_color_space[0] = colorspace_value
 
     def get_shading_group(self, bundle):
         """
@@ -290,15 +291,17 @@ class Clarisse:
 
         abc_file = geos.get('abc_file')
 
-        material_attrs = self.fm.get_user_json('renderer', self.material_type)
+        material_attrs = get_shading_nodes('clarisse', self.material_type)
 
         # create contexts
-        mtl_ctx = self.fm.get_user_json('clarisse', 'material_root')
-        tex_ctx = self.fm.get_user_json('clarisse', 'texture_root')
-        utils_ctx = self.fm.get_user_json('clarisse', 'utils_root')
+        mtl_ctx = get_dcc_cfg('clarisse', 'configuration', 'material_root')
+        tex_ctx = get_dcc_cfg('clarisse', 'configuration', 'texture_root')
+        utils_ctx = get_dcc_cfg('clarisse', 'configuration', 'utils_root')
 
         # root
-        root_ctx = self.fm.get_user_json('clarisse', 'asset_root').replace("$assetName", asset_name)
+        root_ctx = get_dcc_cfg('clarisse', 'configuration', 'asset_root')
+        root_ctx = root_ctx.replace("$assetName", asset_name)
+
         if ix.item_exists(root_ctx):
             ix.ix.log_error(f"[Djed] Asset already exists at: '{root_ctx}'")
             return
@@ -376,8 +379,6 @@ class Clarisse:
                         for shape in shapes:
                             if re.search(shape, sg):
                                 ix.cmds.SetValues([str(abc_bundle) + f".materials[{index}]"], [str(mtl_node)])
-
-
 
 
 # Main Function

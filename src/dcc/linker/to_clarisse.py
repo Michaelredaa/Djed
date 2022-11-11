@@ -17,6 +17,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+from settings.settings import get_dcc_cfg
 from utils.dialogs import message
 from utils.file_manager import FileManager
 from dcc.clarisse.api.remote_connect import connect
@@ -31,7 +32,7 @@ fm = FileManager()
 def send_to_clarisse(data, port_num=None):
     try:
         if not port_num:
-            port_num = fm.get_user_json("clarisse", "command_port")
+            port_num = get_dcc_cfg("clarisse", 'configuration', "command_port")
         port = connect(ip='localhost', port_num=port_num)
 
         cmd_text = "## Djed Tools ##\n\n"

@@ -3,7 +3,6 @@
 Documentation:
 """
 
-
 # ---------------------------------
 # import libraries
 import subprocess
@@ -15,9 +14,10 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
+from settings.settings import get_dcc_cfg
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 Icons = DJED_ROOT.joinpath('src', 'utils', 'resources', 'icons')
-
 
 sysPaths = [str(DJED_ROOT), str(DJED_ROOT.joinpath('src'))]
 
@@ -28,6 +28,7 @@ for sysPath in sysPaths:
 ###########################
 import importlib
 import dcc.maya.api.cmds
+
 importlib.reload(dcc.maya.api.cmds)
 
 ################################
@@ -36,7 +37,7 @@ importlib.reload(dcc.maya.api.cmds)
 from utils.file_manager import FileManager
 from utils.assets_db import AssetsDB
 from utils.dialogs import browse_dirs
-
+from settings.settings import get_value, set_value, reset_value
 from dcc.maya.api.cmds import Maya, maya_main_window
 
 from dcc.maya.shelves.ui import (
@@ -44,6 +45,7 @@ from dcc.maya.shelves.ui import (
     Completer,
     ClickedLabel
 )
+
 maya_main_window()
 
 db = AssetsDB()
@@ -68,8 +70,6 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
         self.fm = FileManager()
         self.ma = Maya()
 
-        self.maya_cfg = self.fm.get_cfg("maya")
-
         self.switch_text = None
         self.toggle = False
 
@@ -84,15 +84,15 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
     def set_icon(self, icon):
         self.setWindowIcon(QIcon(str(Icons.joinpath(icon))))
 
+    def get_cfg(self):
+        maya_plugins_cfg = get_value('plugins', 'maya', 'plugins').get('children', [])
+        preset = {x.get('name'): x.get('value') for x in self.presets_name if x.get('name') == self.presets_name}
+        return preset
+
     def _startup(self):
         self._connectEvents()
-        maya_user_cfg = self.fm.get_user_json("maya")
-        if maya_user_cfg:
-            preset = maya_user_cfg.get(self.presets_name)
-            if not preset:
-                preset = self.maya_cfg.get(self.presets_name)
-        else:
-            preset = self.maya_cfg.get(self.presets_name)
+
+        preset = self.get_cfg()
         self.set_presets(preset)
         self.startup()
 
@@ -154,20 +154,20 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
         pass
 
     def _onSaveSettings(self):
-        maya_user_cfg = self.fm.get_user_json("maya")
-        maya_user_cfg[self.presets_name] = self.get_presets()
-        self.fm.set_user_json(maya=maya_user_cfg)
+        for key, value in self.get_presets().items():
+            set_value(value, 'maya', 'plugins', self.presets_name, key)
+
         self.onSaveSettings()
 
     def onSaveSettings(self):
         pass
 
     def _onRestSettings(self):
-        maya_user_cfg = self.fm.get_user_json("maya")
-        presets = self.maya_cfg.get(self.presets_name)
-        maya_user_cfg[self.presets_name] = presets
-        self.set_presets(presets)
-        self.fm.set_user_json(maya=maya_user_cfg)
+        preset = self.get_cfg()
+        for key, value in preset:
+            set_value(value, 'maya', 'plugins', self.presets_name, key)
+            reset_value(key, "maya", "plugins", self.presets_name, key)
+
         self.onRestSettings()
 
     def onRestSettings(self):
@@ -252,7 +252,6 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
         completer = Completer()
         completer.setModel(completeModel)
         lineedit.setCompleter(completer)
-
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ for sysPath in sysPaths:
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 from utils.dialogs import browse_files
+from settings.settings import get_dcc_cfg, get_textures_settings
 
 from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot, add_checkable_action
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
@@ -506,7 +507,8 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         if not geo_path:
             geo_path = ""
 
-        _filter = " ".join(["*." + x for x in FileManager().get_cfg("texture_extensions")])
+        tex_extensions = get_textures_settings("extensions")
+        _filter = " ".join(["*." + x for x in tex_extensions])
 
         new_thumb = browse_files(self, "Select thumbnail", os.path.dirname(geo_path), f"Images ({_filter})")
         if not new_thumb:
@@ -559,7 +561,6 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             self.names_filter_cb.setChecked(False)
             self.tags_filter_cb.setChecked(False)
             self.projects_filter_cb.setChecked(False)
-
 
         self.lw_assets.filter_model.search_filter = {
             'names': self.names_filter_cb.isChecked(),

@@ -19,6 +19,7 @@ for sysPath in sysPaths:
 
 
 from utils.file_manager import FileManager
+from settings.settings import get_dcc_cfg
 from utils import clarisse_net as ix
 # ---------------------------------
 # Variables
@@ -29,7 +30,7 @@ fm = FileManager()
 # Start Here
 def set_port_num(port_num=None):
     if port_num is None:
-        port_num = fm.get_user_json("clarisse", "command_port")
+        port_num = get_dcc_cfg("clarisse", 'configuration', "command_port")
     return port_num
 
 

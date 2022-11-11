@@ -30,7 +30,7 @@ importlib.reload(utils.file_manager)
 
 import pyblish.api
 from dcc.maya.api.cmds import Maya
-from utils.generic import material_conversion
+from settings.settings import material_attrs_conversion, shading_nodes_conversion
 from utils.file_manager import FileManager
 
 import maya.cmds as cmds
@@ -73,9 +73,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
         source_renderer = data.get('source_renderer', 'standard')
 
         # conversions
-        mtl_conversion = material_conversion(source_host, source_renderer, host, to_renderer)
-        plugs_conversion = mtl_conversion.get('plugs')
-        nodes_conversion = mtl_conversion.get('nodes')
+        plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
+        nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
         asset_data = data.get('asset_data')
         for sg in asset_data:

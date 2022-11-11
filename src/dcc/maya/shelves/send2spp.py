@@ -30,7 +30,6 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 from dcc.linker.to_spp import send_to_spp
@@ -138,8 +137,5 @@ def main():
         m2s.onApply()
 
 
-
-
 if __name__ == '__main__':
     main()
-
