@@ -56,6 +56,7 @@ def set_settings_data(data_list):
 def error_on_reading(key, dict_name):
     # popup message with error
     message(None, 'Error', f'Corrupted settings file.\nCan not get "{key}" from "{dict_name}" dict settings')
+    raise Exception(f'Can not get settings of "{key}" from "{dict_name}"')
 
 
 def get_dict(base_list, key):
