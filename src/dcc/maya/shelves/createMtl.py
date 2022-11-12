@@ -53,6 +53,8 @@ def main():
         txt = cmds.promptDialog(query=True, text=True)
     else:
         return
+    txt = "".join([x.capitalize() for x in txt.split("_")])
+    txt = txt[0].lower() + txt[1:]
 
     mtl_name = re.findall(r'(?i)mtl', txt)
     if not mtl_name:
@@ -62,7 +64,7 @@ def main():
         txt = re.sub(r'(?i)mtl', mtl_name[0].upper(), txt)
 
     # remove underscore
-    txt = "".join([x.capitalize() for x in txt.split("_")])
+
 
     ma_fn.assignMaterial(n=txt)
 
