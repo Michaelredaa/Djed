@@ -79,7 +79,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
                             sg+"_displacement": {
                                 'type': "displacement",
                                 "attrs": {},
-                                "texs": texs_dis_dict
+                                "texs": {tex_name: texs_dis_dict}
                             }
                         }
                         continue
