@@ -3,20 +3,20 @@
 Documentation: 
 """
 
-
 # ---------------------------------
 # Import Libraries
 import os
 import sys
+import site
 from pathlib import Path
-
-
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT.joinpath('src').as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
+
+site.addsitedir(DJED_ROOT.joinpath('venv', 'python39', 'Lib', 'site-packages').as_posix())
 
 import pyblish.api
 import pyblish.util
@@ -30,6 +30,7 @@ import maya.cmds as cmds
 # ---------------------------------
 # Variables
 db = AssetsDB()
+
 
 # ---------------------------------
 # Start Here
@@ -53,8 +54,10 @@ class CreateAsset(pyblish.api.ContextPlugin):
 
         # export mesh
         cmds.select(selection, r=1)
-        geo_paths = ma.export_selection(asset_dir=None, asset_name=asset_name, export_type=["obj", "abc", "usd"], _message=False)
-        geo_paths = db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="")
+        geo_paths = ma.export_selection(asset_dir=None, asset_name=asset_name, export_type=["obj", "abc", "usd"],
+                                        _message=False)
+        geo_paths = db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
+                                    source_file="")
         cmds.select(selection, r=1)
 
         instance = context.create_instance(
@@ -75,7 +78,7 @@ def main():
 
     instance = pyblish.util.collect()[0]
 
-    #pyblish.util.publish()
+    # pyblish.util.publish()
 
 
 if __name__ == '__main__':
