@@ -3,7 +3,6 @@
 Documentation:
 """
 
-
 import importlib
 # ---------------------------------
 # import libraries
@@ -34,12 +33,10 @@ for sysPath in sysPaths:
     if not sysPath in sys.path:
         sys.path.append(sysPath)
 
-
 from dcc.maya.api.renderer import arnold
 
 from utils.file_manager import FileManager
 from utils.textures import list_textures, ck_udim, texture_type_from_name
-from utils.decorators import error
 from utils.dialogs import message, info
 from utils.assets_db import AssetsDB
 from settings.settings import get_dcc_cfg, get_material_attrs, get_textures_settings, get_colorspace_settings
@@ -58,7 +55,6 @@ def maya_main_window():
 
 # ---------------------------------
 class Maya():
-    
     publish_plugins = ["AbcExport.mll", "fbxmaya.mll", "AbcImport.mll", "objExport.mll", "mayaUsdPlugin.mll"]
 
     def __init__(self, renderer=None):
@@ -74,19 +70,14 @@ class Maya():
 
         self.startup()
 
-    @error(name=__name__)
     def startup(self):
         # self.renameDuplicates()
         self.load_all_plugins()
 
-
-    @error(name=__name__)
     def load_plugin(self, plugin_name="AbcExport.mll"):
         if not cmds.pluginInfo(plugin_name, q=True, loaded=True):
             cmds.loadPlugin(plugin_name)
 
-
-    @error(name=__name__)
     def load_all_plugins(self):
         for plugin in self.publish_plugins:
             try:
@@ -94,7 +85,6 @@ class Maya():
             except:
                 pass
 
-    @error(name=__name__)
     def convert_path(self, path):
         file_path = self.get_file_path()
         if not file_path:
@@ -119,22 +109,18 @@ class Maya():
         export_dir = export_dir.replace("$selection", self.selection()[0])
         return export_dir.replace("\\", "/")
 
-    @error(name=__name__)
     def get_export_path(self):
         export_root = get_dcc_cfg('maya', 'plugins', 'export_geometry', 'export_root')
         return self.convert_path(export_root)
 
-    @error(name=__name__)
     def get_project_name(self):
         project_dir = self.get_project_dir()
         if os.path.isdir(project_dir):
             return project_dir.split("/")[-2]
 
-    @error(name=__name__)
     def get_project_dir(self):
         return cmds.workspace(q=1, rd=1)
 
-    @error(name=__name__)
     def get_file_path(self):
         file_path = cmds.file(q=1, sn=1)
         if file_path:
@@ -146,12 +132,10 @@ class Maya():
         if self.get_file_path():
             return os.path.dirname(self.get_file_path())
 
-    @error(name=__name__)
     def get_file_name(self):
         if self.get_file_path():
             return os.path.basename(self.get_file_path())
 
-    @error(name=__name__)
     def selection(self):
         selection = cmds.ls(sl=1)
         if selection:
@@ -161,17 +145,17 @@ class Maya():
 
         return []
 
-    @error(name=__name__)
+    def select(self, *args):
+        cmds.select(args, r=1)
+
     def current_frame(self):
         return cmds.currentTime(q=True)
 
-    @error(name=__name__)
     def materials(self):
         self.vaildate_renderer()
         material_type = self.renderer.material_type
         return cmds.ls(sl=1, type=material_type)
 
-    @error(name=__name__)
     def get_renderer(self):
         """
         To get the renderer name
@@ -196,7 +180,6 @@ class Maya():
     def closeHypershade(self):
         mel.eval('deleteUI hyperShadePanel1Window;')
 
-    @error(name=__name__)
     def vaildate_renderer(self):
         material_type = self.renderer.material_type
         if not self.renderer.name == self.get_renderer():
@@ -242,7 +225,6 @@ class Maya():
             cmds.sets(objects, e=True, forceElement=sg_name)
 
             return True
-
 
     def connect_attr(self, src, dist, force=True):
         cmds.connectAttr(src, dist, f=force)
@@ -304,7 +286,6 @@ class Maya():
 
         return tex_name
 
-    @error(name=__name__)
     def create_material_with_texture(self, directory: str, material_type=None, colorspace="aces", sg_mtl=None,
                                      ckSG=True):
         hdr = get_textures_settings('hdr_extension')
@@ -389,11 +370,10 @@ class Maya():
                 else:
                     disp_mtl = disp_name
                 cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' +mtl_attr[tex_type]['name'], f=1)
+                cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' + mtl_attr[tex_type]['name'], f=1)
 
         self.arrangeHypershade()
 
-    @error(name=__name__)
     def create_material_with_texture(self, asset: dict, colorspace="aces"):
         '''
         To create material linked with textures (uber material) from the dictionary
@@ -424,7 +404,8 @@ class Maya():
                 map_dtype = textures.get("type", "")
 
                 # create texture
-                file_node = self.import_texture(texture_path, udim_num, colorspace=colorspace, color=map_dtype == 'color')
+                file_node = self.import_texture(texture_path, udim_num, colorspace=colorspace,
+                                                color=map_dtype == 'color')
                 mtl_plug = mtl_name + '.' + mtl_attr[map_type_name]['name']
 
                 if map_type_name == "normal":
@@ -439,10 +420,10 @@ class Maya():
                     disp_name = file_node + '_displcShd'
                     disp_mtl = cmds.shadingNode('displacementShader', n=disp_name, asShader=1)
                     cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                    cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' +mtl_attr[map_type_name]['name'], f=1)
+                    cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' + mtl_attr[map_type_name]['name'], f=1)
                     continue
 
-                mtl_plug = mtl_name + '.' +mtl_attr[map_type_name]['name']
+                mtl_plug = mtl_name + '.' + mtl_attr[map_type_name]['name']
 
                 if map_dtype == "float":
                     tex_plug = file_node + ".outColor.outColorR"
@@ -479,7 +460,6 @@ class Maya():
                 data[sg]["meshes"]["shape"] = meshes
         return data
 
-    @error(name=__name__)
     def get_asset_data(self, node):
         """
         To gather all selection data meshes, attributes, materials, textures,
@@ -525,8 +505,6 @@ class Maya():
                     _type = "displacementShader"
                     tex = self.get_texs_from_mtl(sg, {"displacement": ""})
 
-
-
                 if tex:
                     data[sg]["displacements"][displace] = {}
                     data[sg]["displacements"][displace]["type"] = _type
@@ -548,8 +526,6 @@ class Maya():
 
         return data
 
-
-    @error(name=__name__)
     def export_selection(self, asset_dir=None, asset_name=None, export_type=["abc"], _message=True):
 
         """
@@ -659,10 +635,8 @@ class Maya():
         if _message:
             info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
 
-
         return export_paths
 
-    @error(name=__name__)
     def import_geo(self, geo_path):
         '''
         To import geometry into maya scene
@@ -678,14 +652,12 @@ class Maya():
         imported_nodes = list(set(after) - set(before))
         return imported_nodes
 
-    @error(name=__name__)
     def add_attribute(self, geo, attr_name):
         try:
             cmds.getAttr(geo + "." + attr_name)
         except:
             cmds.addAttr(geo, longName=attr_name, dataType='string', keyable=1)
 
-    @error(name=__name__)
     def add_attr_to_shapes(self, objects, attr_name):
         for object in objects:
             for shape in self.list_all_dag_meshes(object, om.MFn.kMesh):
@@ -693,7 +665,6 @@ class Maya():
                 self.add_attribute(shape, attr_name)
                 cmds.setAttr(shape + "." + attr_name, ";".join(sgs), type="string")
 
-    @error(name=__name__)
     def list_all_DG_nodes(self, inNode, node_type=om.MFn.kShadingEngine, direction=om.MItDependencyGraph.kDownstream):
         """
         To get the all connection nodes by type
@@ -732,7 +703,6 @@ class Maya():
 
         return nodes
 
-    @error(name=__name__)
     def ck_parents_vis(self, nodeFn):
         """
         check if one of node parent is hidden
@@ -750,7 +720,6 @@ class Maya():
                 return False
         return True
 
-    @error(name=__name__)
     def list_all_dag_meshes(self, node=None, shape=True, fullPath=True, type=om.MFn.kMesh, hidden=False):
         """
         list all objects in children by type on selection
@@ -802,7 +771,6 @@ class Maya():
                 dag_iter.next()
         return objectsList
 
-    @error(name=__name__)
     def get_materials_from_sg(self, sgName, _type="material"):
         """
         To get the materials names from the shading group name
@@ -857,9 +825,6 @@ class Maya():
                             attrs[attr_fn.name] = cmds.getAttr(plug.name())
         return attrs
 
-
-
-    @error(name=__name__)
     def get_texs_from_mtl(self, mtlNode, mtl_data=None):
         """
         To get the nodes that finally plugs in material node.
@@ -880,12 +845,10 @@ class Maya():
         type_file = om.MFn.kFileTexture
         search_direction = om.MItDependencyGraph.kUpstream
 
-
         if mtl_data is None:
             output_files = self.get_attrs(mtlNode, connected=True)
         else:
             output_files = list(mtl_data.keys())
-
 
         mtl_selectionList = om.MSelectionList()
         mtl_selectionList.add(mtlNode)
@@ -1103,7 +1066,6 @@ class Maya():
                 else:
                     grp = cmds.group(em=1, w=1, n=transform + "_grp")
 
-
                 for sg in sgs:
                     # duplicate the original
                     mesh_duplicated = cmds.duplicate(mesh, n=transform + "_sep#")[0]
@@ -1113,7 +1075,7 @@ class Maya():
 
                     if not selected_faces:
                         cmds.delete(mesh_duplicated)
-                        #cmds.delete(temp_set)
+                        # cmds.delete(temp_set)
                     else:
                         cmds.select(selected_faces, r=1)
                         cmds.select(mesh_duplicated + ".f[*]", toggle=1)
@@ -1158,10 +1120,8 @@ class Maya():
 
         # cmds.makeIdentity(shape_node, a=1, n=1, r=1, s=1, t=1)
 
-
     def get_file_colorspace(self):
         return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)
-
 
     def assignMaterial(self, n="newMtl#", objects=None, new=True):
         """
@@ -1186,7 +1146,4 @@ def main():
 
 
 if __name__ == '__main__':
-    
     main()
-    
-
