@@ -54,7 +54,7 @@ def maya_main_window():
 
 
 # ---------------------------------
-class Maya():
+class Maya:
     publish_plugins = ["AbcExport.mll", "fbxmaya.mll", "AbcImport.mll", "objExport.mll", "mayaUsdPlugin.mll"]
 
     def __init__(self, renderer=None):
@@ -126,7 +126,8 @@ class Maya():
         if file_path:
             return file_path
         else:
-            message(None, "Error", "You must save the file first.")
+            ''
+            # message(None, "Error", "You must save the file first.")
 
     def get_file_dir(self):
         if self.get_file_path():
@@ -152,7 +153,7 @@ class Maya():
         return cmds.currentTime(q=True)
 
     def materials(self):
-        self.vaildate_renderer()
+        self.validate_renderer()
         material_type = self.renderer.material_type
         return cmds.ls(sl=1, type=material_type)
 
@@ -177,7 +178,7 @@ class Maya():
     def closeHypershade(self):
         mel.eval('deleteUI hyperShadePanel1Window;')
 
-    def vaildate_renderer(self):
+    def validate_renderer(self):
         material_type = self.renderer.material_type
         if not self.renderer.name == self.get_renderer():
             raise (f"Set the current renderer to {self.renderer.name} frist")
@@ -188,7 +189,7 @@ class Maya():
         :param name: (str) the name of material
         :return:(list(str)) material name
         """
-        self.vaildate_renderer()
+        self.validate_renderer()
         material_type = self.renderer.material_type
         name = re.sub(r"(?i)sg$", "MTL", name)
         mat = cmds.shadingNode(material_type, name=name, asShader=True)
@@ -202,24 +203,6 @@ class Maya():
         cmds.connectAttr(mat + ".outColor", sg + ".surfaceShader", f=1)
 
         return mat, sg
-
-    def assign_material(self, objects, mtl_name=None, sg_name=None):
-        """
-        TO assign materials to objects by given material name or shading group name
-        :param objects: (list) list of objetcs names
-        :param mtl_name: (str) the material name
-        :param sg_name: (str) the shading group name
-        :return:(bool) the status of assignment
-        """
-        if sg_name:
-            cmds.sets(objects, e=True, forceElement=sg_name)
-            return True
-
-        if mtl_name:
-            sg_name = cmds.listConnections(mtl_name, d=1, s=0, type="shadingEngine")[0]
-            cmds.sets(objects, e=True, forceElement=sg_name)
-
-            return True
 
     def connect_attr(self, src, dist, force=True):
         cmds.connectAttr(src, dist, f=force)
@@ -279,154 +262,6 @@ class Maya():
             mel.eval(f'generateUvTilePreview {file_node};')
 
         return tex_name
-
-    def create_material_with_texture(self, directory: str, material_type=None, colorspace="aces", sg_mtl=None,
-                                     ckSG=True):
-        hdr = get_textures_settings('hdr_extension')
-        if colorspace == "aces":
-            cs_h = get_colorspace_settings('aces_color_hdr')
-            cs_l = get_colorspace_settings('aces_color_ldr')
-            cs_r = get_colorspace_settings('aces_raw')
-        else:
-            cs_h = get_colorspace_settings('srgb')
-            cs_r = get_colorspace_settings('raw')
-
-        mtl_attr = get_material_attrs('maya', 'arnold')
-
-        textures = list_textures(directory)
-
-        if material_type is not None:
-            mtl_name, sg_name = self.create_material(material_type)
-        else:
-            mtl_name, sg_name = sg_mtl
-
-        for tex in textures:
-            tex_path = os.path.join(directory, tex)
-
-            if not (ckSG and (sg_name in tex_path)):
-                continue
-
-            # check udim
-            if ck_udim(tex_path):
-                if not re.search(r"\.1001\.", tex_path):
-                    continue
-            # import textures
-            file_node = self.import_texture(tex_path)
-
-            # colorspace
-            cmds.setAttr(file_node + ".colorSpace", cs_r, type="string")
-
-            # Ckeck Texture Type
-            tex_type = texture_type_from_name(tex)
-            mtl_plug = mtl_name + mtl_attr[tex_type]
-
-            if tex_type == "basecolor":
-                cmds.connectAttr(file_node + ".outColor", mtl_plug, f=1)
-
-                if colorspace == "aces":
-                    if tex.split(".")[-1] in hdr:
-                        cmds.setAttr(file_node + ".colorSpace", cs_h, type="string")
-                    else:
-                        cmds.setAttr(file_node + ".colorSpace", cs_l, type="string")
-                else:
-                    cmds.setAttr(file_node + ".colorSpace", cs_h, type="string")
-
-            if tex_type == "roughness":
-                cmds.connectAttr(file_node + ".outColor.outColorR", mtl_plug, f=1)
-                cmds.setAttr(file_node + ".alphaIsLuminance", 1)
-
-            if tex_type == "metallic":
-                cmds.connectAttr(file_node + ".outColor.outColorR", mtl_plug, f=1)
-                cmds.setAttr(file_node + ".alphaIsLuminance", 1)
-
-            if tex_type == "opacity":
-                cmds.connectAttr(file_node + ".outColor.outColorR", mtl_plug, f=1)
-                cmds.setAttr(file_node + ".alphaIsLuminance", 1)
-
-            if tex_type == "sss":
-                cmds.connectAttr(file_node + ".outColor.outColorR", mtl_plug, f=1)
-                cmds.setAttr(file_node + ".alphaIsLuminance", 1)
-
-            if tex_type == "normal":
-                normal_name = file_node + '_normMap'
-                cmds.setAttr(file_node + ".alphaIsLuminance", 0)
-                if not cmds.objExists(normal_name):
-                    normal_map = cmds.shadingNode('aiNormalMap', n=normal_name, asUtility=1)
-                else:
-                    normal_map = normal_name
-                cmds.connectAttr(file_node + '.outColor', normal_map + '.input', f=1)
-                cmds.connectAttr(normal_map + '.outValue', mtl_plug, f=1)
-
-            if tex_type == "height":
-                disp_name = file_node + '_displcShd'
-                if not cmds.objExists(disp_name):
-                    disp_mtl = cmds.shadingNode('displacementShader', n=disp_name, asShader=1)
-                else:
-                    disp_mtl = disp_name
-                cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' + mtl_attr[tex_type]['name'], f=1)
-
-        self.arrangeHypershade()
-
-    def create_material_with_texture(self, asset: dict, colorspace="aces"):
-        '''
-        To create material linked with textures (uber material) from the dictionary
-        :param asset :(dict) asset dictionary
-        :param colorspace :(str) the colorspace of textures
-        :return: (list) list of created shadingGroup
-        '''
-
-        asset_name = asset["name"]
-        geos = asset["geos"]
-        mtls = asset["mtls"]
-
-        renderer_name = self.renderer.name
-
-        sgs = []
-
-        mtl_attr = get_material_attrs('maya', 'arnold')
-        for sg in mtls:
-            # create material
-            mtl_name, sg_name = self.create_material(name=sg)
-            sgs.append(sg_name)
-
-            for map_type_name in mtls.get(sg, {}):
-                textures = mtls.get(sg, {}).get(map_type_name, {})
-                texture_path = textures.get("texture_path", "")
-                udim_num = textures.get("udim_num", 0)
-                res = textures.get("res", "")
-                map_dtype = textures.get("type", "")
-
-                # create texture
-                file_node = self.import_texture(texture_path, udim_num, colorspace=colorspace,
-                                                color=map_dtype == 'color')
-                mtl_plug = mtl_name + '.' + mtl_attr[map_type_name]['name']
-
-                if map_type_name == "normal":
-                    normal_name = file_node + '_normMap'
-                    cmds.setAttr(file_node + ".alphaIsLuminance", 0)
-                    normal_map = cmds.shadingNode('aiNormalMap', n=normal_name, asUtility=1)
-                    cmds.connectAttr(file_node + '.outColor', normal_map + '.input', f=1)
-                    cmds.connectAttr(normal_map + '.outValue', mtl_plug, f=1)
-                    continue
-
-                elif map_type_name == "height":
-                    disp_name = file_node + '_displcShd'
-                    disp_mtl = cmds.shadingNode('displacementShader', n=disp_name, asShader=1)
-                    cmds.connectAttr(file_node + '.outColor.outColorR', disp_mtl + '.displacement', f=1)
-                    cmds.connectAttr(disp_mtl + '.displacement', sg_name + '.' + mtl_attr[map_type_name]['name'], f=1)
-                    continue
-
-                mtl_plug = mtl_name + '.' + mtl_attr[map_type_name]['name']
-
-                if map_dtype == "float":
-                    tex_plug = file_node + ".outColor.outColorR"
-                else:
-                    tex_plug = file_node + ".outColor"
-
-                cmds.connectAttr(tex_plug, mtl_plug, f=1)
-        self.arrangeHypershade()
-        return sgs
 
     def get_mesh_data(self, node):
         """
@@ -1117,9 +952,19 @@ class Maya():
     def get_file_colorspace(self):
         return cmds.colorManagementPrefs(q=True, renderingSpaceNames=True)
 
-    def assignMaterial(self, n="newMtl#", objects=None, new=True):
+    def set_file_colorspace(self, ocio_filepath):
+        cmds.colorManagementPrefs(e=True, cmEnabled=True)
+        cmds.colorManagementPrefs(e=True, cmConfigFileEnabled=True)
+        cmds.colorManagementPrefs(e=True, configFilePath=ocio_filepath)
+        cmds.colorManagementPrefs(e=True, ocioRulesEnabled=True)
+        cmds.colorManagementPrefs(e=True, cmConfigFileEnabled=True)
+        cmds.colorManagementPrefs(e=1, vtn="Rec.709 (ACES)")
+        cmds.colorManagementPrefs(e=True, refresh=True)
+        cmds.SavePreferences()
+
+    def create_and_assign_material(self, n="newMtl#", objects=None, new=True):
         """
-        TO assign material to objects or selections and apply presets
+        TO assign material to objects or selections
         @param n: (str) name of created material
         @param objects: (list) the objects to assign
         @return:
@@ -1132,6 +977,24 @@ class Maya():
         sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=n.replace("MTL", "SG"))
         cmds.connectAttr(mat + ".outColor", sg + ".surfaceShader")
         cmds.sets(objects, e=True, forceElement=sg)
+
+    def assign_material(self, objects, mtl_name=None, sg_name=None):
+        """
+        TO assign materials to objects by given material name or shading group name
+        :param objects: (list) list of objetcs names
+        :param mtl_name: (str) the material name
+        :param sg_name: (str) the shading group name
+        :return:(bool) the status of assignment
+        """
+        if sg_name:
+            cmds.sets(objects, e=True, forceElement=sg_name)
+            return True
+
+        if mtl_name:
+            sg_name = cmds.listConnections(mtl_name, d=1, s=0, type="shadingEngine")[0]
+            cmds.sets(objects, e=True, forceElement=sg_name)
+
+            return True
 
 
 # Main function
