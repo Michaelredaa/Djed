@@ -30,7 +30,7 @@ importlib.reload(utils.file_manager)
 
 import pyblish.api
 from dcc.maya.api.cmds import Maya
-from settings.settings import material_attrs_conversion, shading_nodes_conversion
+from settings.settings import material_attrs_conversion, shading_nodes_conversion, get_material_attrs
 from utils.file_manager import FileManager
 
 import maya.cmds as cmds
@@ -58,6 +58,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
         # import geo
         geo_type = data.get('geo_type', '')
         geo_paths = data.get('geo_paths', {})
+        colorspace = data.get('colorspace')
+
         geo_path = geo_paths.get(geo_type)
         if geo_path:
             ma.import_geo(geo_path)
@@ -73,8 +75,12 @@ class LoadAsset(pyblish.api.InstancePlugin):
         source_renderer = data.get('source_renderer', 'standard')
 
         # conversions
-        plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
-        nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
+        if source_host == 'standard' or source_renderer == 'standard':
+            # standard material
+            plugs_conversion = get_material_attrs(host, to_renderer)
+        else:
+            plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
+            nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
         asset_data = data.get('asset_data')
         for sg in asset_data:
@@ -102,18 +108,21 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 textures = materials[mtl].get('texs')
                 for tex_name, tex_dict in textures.items():
                     plug_name = tex_dict.get('plugs')[0]
-
+                    if not plug_name:
+                        continue
                     tex_type = tex_dict.get('type')
                     to_plug = plugs_conversion.get(plug_name)
                     if not to_plug:
                         continue
                     plug_type = to_plug.get('type')  # float color, vector
 
+                    if colorspace is None:
+                        colorspace = tex_dict.get('colorspace', 'aces')
                     # create texture
                     tex_node = ma.import_texture(
                         tex_dict.get('filepath'),
                         tex_dict.get('udim'),
-                        tex_dict.get('colorspace', 'aces'),
+                        colorspace,
                         plug_type == 'color',
                         tex_name
 
@@ -129,7 +138,9 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     # inbetween nodes
                     connected_node = tex_node
                     connected_plug = tex_plug
-                    for inbetween_dict in to_plug.get("inBetween"):
+                    for inbetween_dict in to_plug.get("inbetween"):
+                        if inbetween_dict == [{}] or not inbetween_dict:
+                            continue
                         inbetween_node = mtl + inbetween_dict.get('name')
                         if not cmds.objExists(inbetween_node):
                             inbetween_node = ma.create_util_node(inbetween_dict.get('type'), inbetween_node)
@@ -155,10 +166,12 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                 for tex_name, tex_dict in displacement_dict.get('texs', {}).items():
                     # create texture
+                    if colorspace is None:
+                        colorspace = tex_dict.get('colorspace', 'aces')
                     tex_node = ma.import_texture(
                         tex_dict.get('filepath'),
                         tex_dict.get('udim'),
-                        tex_dict.get('colorspace', 'aces'),
+                        colorspace,
                         False,
                         tex_name
                     )
