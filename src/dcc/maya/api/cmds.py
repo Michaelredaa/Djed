@@ -163,7 +163,6 @@ class Maya():
         """
         return cmds.getAttr('defaultRenderGlobals.currentRenderer')
 
-    @error(__name__)
     def deleteUnsedNodes(self):
         """
         To delete unused nodes in hypershade
@@ -171,12 +170,10 @@ class Maya():
         mel.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
         mel.eval('MLdeleteUnused;')
 
-    @error(__name__)
     def arrangeHypershade(self):
         mel.eval('HypershadeWindow;')
         mel.eval('hyperShadePanelGraphCommand("hyperShadePanel1", "rearrangeGraph");')
 
-    @error(__name__)
     def closeHypershade(self):
         mel.eval('deleteUI hyperShadePanel1Window;')
 
@@ -185,7 +182,6 @@ class Maya():
         if not self.renderer.name == self.get_renderer():
             raise (f"Set the current renderer to {self.renderer.name} frist")
 
-    @error(__name__)
     def create_material(self, name="materialMTL#", sg=None):
         """
         To creates material with given type
@@ -207,7 +203,6 @@ class Maya():
 
         return mat, sg
 
-    @error(__name__)
     def assign_material(self, objects, mtl_name=None, sg_name=None):
         """
         TO assign materials to objects by given material name or shading group name
@@ -232,7 +227,6 @@ class Maya():
     def create_util_node(self, _type, name):
         return cmds.shadingNode(_type, asUtility=True, n=name)
 
-    @error(__name__)
     def import_texture(self, tex_path, udim=None, colorspace='aces', color=False, tex_name=None):
         """
         To import the texture inside maya
