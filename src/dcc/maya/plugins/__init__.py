@@ -8,7 +8,7 @@ from .create_material_from_textures import CreateMaterialFromTextures
 from .load_asset import LoadAsset
 from .collect_model import CollectMesh
 from .vaildate_mesh import ValidateNormals, ValidateTopology
-from .validate_materials import ValidateShadingGroups, SelectInvalidMTLNodes, SplitPerMaterials
+from .validate_materials import ValidateShadingGroups, ValidateMultipleMaterialAssign, SelectInvalidMTLNodes, SplitPerMaterials
 from .validate_uvs import ValidateUVBoarders, ValidateUVSets, SelectInvalidUVSetsNodes, SelectInvalidUVNodes, FixUVSets
 from .validate_names import ValidateNamespaces, ValidateNaming, SelectInvalidNameNodes
 from .extract_model import ExtractModel
@@ -24,6 +24,7 @@ __all__ = [
     'ValidateTopology',
     'ValidateUVBoarders',
     'ValidateShadingGroups',
+    'ValidateMultipleMaterialAssign',
     'ValidateNamespaces',
     'ValidateNaming',
     'ExtractModel',
