@@ -27,7 +27,7 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from dcc.maya.api.cmds import Maya
-from dcc.linker.to_spp import send_to_spp
+from dcc.linker.to_spp import update_spp
 
 
 # Main function
@@ -45,7 +45,7 @@ def main():
     instance['host'] = 'spp'
     instance['mesh_path'] = mesh_path
 
-    send_to_spp(instance)
+    update_spp(instance)
 
 
 
