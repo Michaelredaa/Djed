@@ -38,10 +38,10 @@ Settings = {
 
 }
 
-default_project = {
+Default_Project_settings = {
     "import_cameras": False,
     "default_texture_resolution": 1024,
-    "normal_map_format": Settings["DirectX"],
+    "normal_map_format": Settings["OpenGL"],
     "project_workflow": Settings["UVTile"],
     "tangent_space_mode": Settings["PerVertex"]
 
@@ -139,20 +139,19 @@ def create_project(mesh_file, project_path=None, cfg=None):
     """
 
     if not cfg:
-        cfg = default_project
+        settings = Default_Project_settings
     else:
-        cfg = {}
-        cfg["import_cameras"] = cfg["import_cameras"]
-        cfg["default_texture_resolution"] = cfg["default_texture_resolution"]
-        cfg["normal_map_format"] = Settings[cfg["normal_map_format"]]
-        cfg["project_workflow"] = Settings[cfg["project_workflow"]]
-        cfg["tangent_space_mode"] = Settings[cfg["tangent_space_mode"]]
-
+        settings = {}
+        settings["import_cameras"] = cfg["import_cameras"]
+        settings["default_texture_resolution"] = cfg["default_texture_resolution"]
+        settings["normal_map_format"] = Settings[cfg["normal_map_format"]]
+        settings["project_workflow"] = Settings[cfg["project_workflow"]]
+        settings["tangent_space_mode"] = Settings[cfg["tangent_space_mode"]]
     # open project
     if substance_painter.project.is_open():
         substance_painter.project.close()
 
-    substance_painter.project.create(mesh_file_path=mesh_file, settings=substance_painter.project.Settings(**cfg))
+    substance_painter.project.create(mesh_file_path=mesh_file, settings=substance_painter.project.Settings(**settings))
     if substance_painter.project.is_open():
         print("The project was successfully created.")
 
