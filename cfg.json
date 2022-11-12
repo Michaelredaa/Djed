@@ -145,19 +145,19 @@
           "arnold": {
             "name": "base",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "base_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "base_multiply",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -166,19 +166,19 @@
           "arnold": {
             "name": "baseColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "base_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "base_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -187,19 +187,19 @@
           "arnold": {
             "name": "metalness",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "metalness",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "metallic",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -208,19 +208,19 @@
           "arnold": {
             "name": "normalCamera",
             "type": "vector3",
-            "inBetween": [{"name": "_normal","type": "aiNormalMap", "inplug": "input", "outplug": "outValue"}]
+            "inbetween": [{"name": "_normal","type": "aiNormalMap", "inplug": "input", "outplug": "outValue"}]
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "normal_input",
             "type": "vector3",
-            "inBetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
+            "inbetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
           },
           "disney": {
             "name": "normal_input",
             "type": "vector3",
-            "inBetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
+            "inbetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
           }
         }
     },
@@ -229,19 +229,19 @@
           "arnold": {
             "name": "specular",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "specular_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "specular",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -250,19 +250,19 @@
           "arnold": {
             "name": "specularRoughness",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "specular_roughness",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "roughness",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -271,19 +271,19 @@
           "arnold": {
             "name": "transmission",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "transmission_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "transmission",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -292,19 +292,19 @@
           "arnold": {
             "name": "specularColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "specular_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "specular_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -313,19 +313,19 @@
           "arnold": {
             "name": "transmissionColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "transmission_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "transmission_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -334,19 +334,19 @@
           "arnold": {
             "name": "subsurface",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "subsurface_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "subsurface",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -355,19 +355,19 @@
           "arnold": {
             "name": "subsurfaceColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "subsurface_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "subsurface_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -376,19 +376,19 @@
           "arnold": {
             "name": "subsurfaceRadius",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "subsurface_radius",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "subsurface_radius",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -397,19 +397,19 @@
           "arnold": {
             "name": "coat",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "coat_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "clear_coat",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -418,19 +418,19 @@
           "arnold": {
             "name": "sheen",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "sheen_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "sheen",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -439,19 +439,19 @@
           "arnold": {
             "name": "sheenColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "sheen_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "sheen_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -460,19 +460,19 @@
           "arnold": {
             "name": "emission",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "emission_weight",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "emission",
             "type": "float",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -481,19 +481,19 @@
           "arnold": {
             "name": "emissionColor",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "emission_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "emission_color",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     },
@@ -502,19 +502,19 @@
           "arnold": {
             "name": "opacity",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         },
         "clarisse": {
           "standardSurface": {
             "name": "opacity",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           },
           "disney": {
             "name": "opacity",
             "type": "color",
-            "inBetween": []
+            "inbetween": []
           }
         }
     }
