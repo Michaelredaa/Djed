@@ -21,6 +21,7 @@ class ValidateNormals(pyblish.api.InstancePlugin):
         ma = Maya()
         for shape_node in instance:
             ma.recalculate_normals(shape_node)
+        ma.select(instance)
 
 
 class ValidateTopology(pyblish.api.InstancePlugin):
@@ -41,3 +42,4 @@ class ValidateTopology(pyblish.api.InstancePlugin):
         ma = Maya()
         for shape_node in instance:
             ma.claenup_mesh(shape_node)
+        ma.select(instance)
