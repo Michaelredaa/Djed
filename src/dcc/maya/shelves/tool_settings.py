@@ -17,7 +17,6 @@ from PySide2.QtWidgets import *
 from settings.settings import get_dcc_cfg
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-Icons = DJED_ROOT.joinpath('src', 'utils', 'resources', 'icons')
 
 sysPaths = [str(DJED_ROOT), str(DJED_ROOT.joinpath('src'))]
 
@@ -37,16 +36,15 @@ importlib.reload(dcc.maya.api.cmds)
 from utils.file_manager import FileManager
 from utils.assets_db import AssetsDB
 from utils.dialogs import browse_dirs
+from utils.resources.style_rc import *
 from settings.settings import get_value, set_value, reset_value
-from dcc.maya.api.cmds import Maya, maya_main_window
+from dcc.maya.api.cmds import Maya
 
 from dcc.maya.shelves.ui import (
     Ui_ToolSettings,
     Completer,
     ClickedLabel
 )
-
-maya_main_window()
 
 db = AssetsDB()
 
@@ -82,11 +80,12 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
         self.setWindowTitle(title)
 
     def set_icon(self, icon):
-        self.setWindowIcon(QIcon(str(Icons.joinpath(icon))))
+        self.setWindowIcon(QIcon(f':/icons/{icon}'))
 
     def get_cfg(self):
         maya_plugins_cfg = get_value('plugins', 'maya', 'plugins').get('children', [])
-        preset = {x.get('name'): x.get('value') for x in self.presets_name if x.get('name') == self.presets_name}
+        current_preset_list = [x.get('children') for x in maya_plugins_cfg if x.get('name') == self.presets_name][0]
+        preset = {x.get('name'): x.get('value') for x in current_preset_list}
         return preset
 
     def _startup(self):
@@ -112,7 +111,7 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
         self.le_dir = QLineEdit()
         self.setCompleter(self.le_dir)
         self.pb_browse = QPushButton("")
-        self.pb_browse.setIcon(QIcon(Icons.joinpath('folder.png').as_posix()))
+        self.pb_browse.setIcon(QIcon(':/icons/folder.png'))
         self.pb_browse.setIconSize(QSize(20, 20))
         self.pb_browse.setFlat(True)
 
@@ -164,10 +163,12 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
 
     def _onRestSettings(self):
         preset = self.get_cfg()
-        for key, value in preset:
+        for key, value in preset.items():
             set_value(value, 'maya', 'plugins', self.presets_name, key)
             reset_value(key, "maya", "plugins", self.presets_name, key)
 
+        preset = self.get_cfg()
+        self.set_presets(preset)
         self.onRestSettings()
 
     def onRestSettings(self):
