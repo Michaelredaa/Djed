@@ -28,5 +28,6 @@ class ExtractModel(pyblish.api.InstancePlugin):
         export_meshs = ma.export_selection(
             asset_dir=data.get('path'),
             asset_name=data.get('name'),
-            export_type=data.get('extensions', [])
+            export_type=data.get('extensions', []),
+            _message=False,
         )
