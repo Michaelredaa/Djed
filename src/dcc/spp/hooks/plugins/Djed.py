@@ -41,11 +41,10 @@ from utils.dialogs import save_dialog, text_dialog, message
 from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 from utils.generic import merge_dicts
+from utils.resources.style_rc import *
 from dcc.spp.api import pipeline
 from dcc.linker.to_maya import send_to_maya
 from dcc.linker.to_clarisse import send_to_clarisse
-
-Icons = DJED_ROOT.joinpath("src", "utils", "resources", "icons")
 
 INTEGRATION_PLUGIN = None
 
@@ -76,21 +75,26 @@ class SubstanceIntegration():
         asset_action = self.menu.addAction(self.asset_name)
         self.menu.addSeparator()
 
-        save_action = self.menu.addAction(QIcon(str(Icons.joinpath('save.png'))), "&Save")
+        save_action = self.menu.addAction(QIcon(':/icons/save.png'), "&Save")
         # save_incremental_action = self.menu.addAction(QIcon(str(Icons.joinpath('increment.png'))), "&Save incremental")
-        save_backup_action = self.menu.addAction(QIcon(str(Icons.joinpath('backup.png'))), "&Save Backup")
-        open_action = self.menu.addAction(QIcon(str(Icons.joinpath('folder.png'))), "&Open Location")
+        save_backup_action = self.menu.addAction(QIcon(':/icons/backup.png'), "&Save Backup")
+        open_action = self.menu.addAction(QIcon(':/icons/folder.png'), "&Open Location")
         self.menu.addSeparator()
-        export_action = self.menu.addAction(QIcon(str(Icons.joinpath('export.png'))), "&Fast Export")
+        export_action = self.menu.addAction(QIcon(':/icons/export.png'), "&Fast Export")
         self.menu.addSeparator()
-        maya_action = self.menu.addAction(QIcon(str(Icons.joinpath('maya.png'))), "&To Maya")
-        clarisse_action = self.menu.addAction(QIcon(str(Icons.joinpath('settings.png'))), "&To Clarisse")
+        maya_action = self.menu.addAction(QIcon(':/icons/maya.png'), "&To Maya")
+        clarisse_action = self.menu.addAction(QIcon(':/icons/clarisse.png'), "&To Clarisse")
 
         self.menu.addSeparator()
-        settings_menu = self.menu.addMenu(QIcon(str(Icons.joinpath('settings.png'))), "&Settings")
+        settings_menu = self.menu.addMenu(QIcon(':/icons/settings.png'), "&Settings")
         export_texture_action = settings_menu.addAction("&Texture Export")
         self.menu.addSeparator()
-        about_action = self.menu.addAction(QIcon(str(Icons.joinpath('about.png'))), "&About")
+
+        # recent
+        self.recent_menu = self.menu.addMenu("&Recent")
+        self.populate_recent_files()
+
+        about_action = self.menu.addAction(QIcon(':/icons/about.png'), "&About")
 
         sp.ui.add_menu(self.menu)
 
@@ -103,6 +107,7 @@ class SubstanceIntegration():
         maya_action.triggered.connect(self.on_send_to_maya)
         clarisse_action.triggered.connect(self.on_send_to_clarisse)
         export_texture_action.triggered.connect(self.on_export_settings)
+        self.recent_menu.triggered.connect(self.on_recent_clicked)
 
         about_action.triggered.connect(self.on_about)
 
@@ -122,6 +127,10 @@ class SubstanceIntegration():
         pipeline.save_incremental(str(save_path))
 
         db.add_geometry(asset_name=self.asset_name, substance_file=save_path)
+
+        # add to recent
+        self.add_to_recent(save_path)
+
 
     def on_save_backup(self):
         comment = text_dialog(self.main_window)
@@ -259,6 +268,32 @@ class SubstanceIntegration():
         save_path = str(resolved_path).replace("\\", "/")
 
         return save_path
+
+    def add_to_recent(self, filepath):
+        recent_list = self.fm.get_user_json('spp', 'recent')
+        if not recent_list:
+            self.fm.set_user_json(spp={'recent': []})
+
+        recent_list = self.fm.get_user_json('spp', 'recent')
+        recent_list.append(filepath)
+        if len(recent_list) > 10:
+            recent_list = recent_list[len(recent_list)-10:]
+        self.fm.set_user_json(spp={'recent': recent_list})
+
+        self.populate_recent_files()
+
+    def populate_recent_files(self):
+        [self.recent_menu.removeAction(x) for x in self.recent_menu.findChildren(QAction)]
+        recent_list = self.fm.get_user_json('spp', 'recent')
+        if not recent_list:
+            return
+
+        for item_path in reversed(recent_list):
+            recent_action = self.recent_menu.addAction(item_path)
+
+    def on_recent_clicked(self, action):
+        path = action.text()
+        pipeline.open_file(path)
 
 
 def start_plugin():
