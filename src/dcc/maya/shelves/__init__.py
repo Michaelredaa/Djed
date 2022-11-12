@@ -31,7 +31,7 @@ Shelf_Items = [["exportMesh"],
                ["send2spp", "updateSpp"],  # "updateSpp", "updateExitSpp"],
                ["send2clarisse"],
                ["importTexs", "createMtl"],
-               ["setting"]
+               ["about"]
                ]
 
 
