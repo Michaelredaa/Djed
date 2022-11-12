@@ -30,6 +30,18 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+import importlib
+
+import dcc.maya.shelves.tool_settings
+importlib.reload(dcc.maya.shelves.tool_settings)
+
+import dcc.linker.to_spp
+importlib.reload(dcc.linker.to_spp)
+#############################################################
+##############################################################
+
+
+
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 from dcc.linker.to_spp import send_to_spp
@@ -37,14 +49,13 @@ from dcc.linker.to_spp import send_to_spp
 
 class Maya2SppSettings(ToolSettingsBase):
     def __init__(self, parent=None):
-        super(Maya2SppSettings, self).__init__(parent, preset_name="maya_spp_presets")
+        super(Maya2SppSettings, self).__init__(parent, preset_name="maya_substance_painter")
         self.setupUi(self)
 
         self.set_title("Open selection in Substance Painter Setting")
         self.set_icon("sendSubstace.png")
 
         self._init_ui()
-        self._connectEvents()
         self._startup()
 
     def init_ui(self):
@@ -71,7 +82,7 @@ class Maya2SppSettings(ToolSettingsBase):
         gbox.addWidget(self.rb_tangent_fragment, 2, 3, 1, 1)
         gbox.addItem(QSpacerItem(40, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Minimum), 2, 4)
 
-        tiles = ["UVTile"]
+        tiles = ["UVTile", "TextureSetPerUVTile"]
         self.com_tiles = QComboBox()
         self.com_tiles.addItems(tiles)
         gbox.addWidget(QLabel("Workflow Tiles: "), 3, 1, 1, 1, Qt.AlignRight)
