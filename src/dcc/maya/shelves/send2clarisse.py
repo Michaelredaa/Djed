@@ -36,11 +36,14 @@ for sysPath in sysPaths:
 from settings.settings import get_dcc_cfg
 from utils.dialogs import message
 from utils.generic import wait_until
+from utils.sys_process import is_process_running
+from utils.assets_db import AssetsDB
+from utils.resources.style_rc import *
 from dcc.linker.to_clarisse import send_to_clarisse
 from dcc.clarisse.api.remote_connect import connect
 from dcc.maya.api.renderer import arnold
 from dcc.maya.plugins.create_asset import CreateAsset
-from utils.sys_process import is_process_running
+from dcc.maya.api.cmds import maya_main_window, Maya
 
 import pyblish.api
 import pyblish.util
@@ -48,14 +51,15 @@ import pyblish.util
 from dcc.maya.shelves.tool_settings import (
     ToolSettingsBase,
     ScreenWidth,
-    Icons,
-    maya_main_window
 )
+
+db = AssetsDB()
+ma = Maya()
 
 
 class Maya2ClsSettings(ToolSettingsBase):
     def __init__(self, parent=None):
-        super(Maya2ClsSettings, self).__init__(parent, preset_name="maya_clarisse_presets")
+        super(Maya2ClsSettings, self).__init__(parent, preset_name="maya_clarisse")
         self.setupUi(self)
 
         self.set_title("Send Selection to Clarisse Settings")
@@ -79,7 +83,7 @@ class Maya2ClsSettings(ToolSettingsBase):
         self.pb_connect = QPushButton()
         self.pb_connect.setFlat(True)
         self.pb_connect.setFixedSize(QSize(20, 20))
-        ic = QIcon(os.path.join(Icons, "reload.png"))
+        ic = QIcon(":/icons/reload.png")
         self.pb_connect.setIcon(ic)
         self.pb_connect.setIconSize(QSize(20, 20))
         gbox.addWidget(self.pb_connect, 0, 4, 1, 1, Qt.AlignRight)
@@ -95,7 +99,7 @@ class Maya2ClsSettings(ToolSettingsBase):
         self.pb_cls = QPushButton()
         self.pb_cls.setFlat(True)
         self.pb_cls.setFixedSize(QSize(35, 35))
-        ic = QIcon(os.path.join(Icons, "sendClarisse.png"))
+        ic = QIcon(":/icons/sendClarisse.png")
         self.pb_cls.setIcon(ic)
         self.pb_cls.setIconSize(QSize(35, 35))
         gbox.addWidget(self.pb_cls, 1, 2, 1, 1, Qt.AlignLeft)
@@ -143,6 +147,12 @@ class Maya2ClsSettings(ToolSettingsBase):
         hbox.addWidget(self.rb_srgb)
         gbox.addLayout(hbox, 8, 2, 1, 1)
 
+        # Use published geometry
+        gbox.addWidget(QLabel(""), 9, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Use published geometry: "), 10, 1, 1, 1, Qt.AlignRight)
+        self.cb_latest_published = QCheckBox("")
+        gbox.addWidget(self.cb_latest_published, 10, 2, 1, 1)
+
         self.vl_space.addLayout(gbox)
         self.vl_space.addItem(QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding))
 
@@ -180,24 +190,26 @@ class Maya2ClsSettings(ToolSettingsBase):
 
     def get_presets(self):
         preset = {}
-        preset["port_num"] = int(self.le_port_num.text())
-        preset["geo_type"] = self.com_geo.currentText()
+        preset["command_port"] = int(self.le_port_num.text())
+        preset["geometry_type"] = self.com_geo.currentText()
         preset["mtls_from"] = self.com_mat_from.currentText()
         preset["mtls_to"] = self.com_mat_to.currentText()
+        preset["use_latest_publish"] = self.cb_latest_published.isChecked()
         if self.rb_aces.isChecked():
-            preset["colorspace"] = "aces"
+            preset["colorspace"] = "ACES"
         else:
-            preset["colorspace"] = "srgb"
+            preset["colorspace"] = "sRGB"
 
         return preset
 
     def set_presets(self, preset):
-        self.le_port_num.setText(str(preset["port_num"]))
-        self.com_geo.setCurrentText(preset["geo_type"])
+        self.le_port_num.setText(str(preset["command_port"]))
+        self.com_geo.setCurrentText(preset["geometry_type"])
         self.com_mat_from.setCurrentText(preset["mtls_from"])
         self.com_mat_to.setCurrentText(preset["mtls_to"])
+        self.cb_latest_published.setChecked(preset["use_latest_publish"])
 
-        if preset["colorspace"] == "aces":
+        if preset["colorspace"].lower() == "aces":
             self.rb_aces.setChecked(True)
         else:
             self.rb_srgb.setChecked(True)
@@ -211,7 +223,7 @@ class Maya2ClsSettings(ToolSettingsBase):
         }
 
         renderer_types = {
-            "Autodesk Standard Surface": 'standardSurface',
+            "Autodesk Standard Surface": 'autodesk_standard_surface',
             "Disney Principles": 'disney'
         }
 
@@ -234,12 +246,27 @@ class Maya2ClsSettings(ToolSettingsBase):
             colorspace = "srgb"
 
         # publishing
-        pyblish.api.register_host("maya")
-        pyblish.api.register_plugin(CreateAsset)
-        instance = pyblish.util.collect()[0]
+        if self.cb_latest_published.isChecked():
+            asset_name = ma.selection()[0]
+            geo_paths = db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
+                                        source_file="")
+            data = {
+                "name": asset_name,
+                "family": "asset",
+                "file_color_space": ma.get_file_colorspace(),
+                "renderer": ma.get_renderer(),
+                "host": "maya",
+                "geo_paths": geo_paths,
+                "asset_data": ma.get_asset_data(asset_name)
+            }
 
-        data = instance.data
-        data['geo_type'] = geo_types.get(geo_type)
+        else:
+            pyblish.api.register_host("maya")
+            pyblish.api.register_plugin(CreateAsset)
+            instance = pyblish.util.collect()[0]
+            data = instance.data
+
+        data['geometry_type'] = geo_types.get(geo_type)
         data['to_renderer'] = renderer_types.get(mtl_to)
         data['renderer'] = mtl_from
         data['colorspace'] = colorspace
