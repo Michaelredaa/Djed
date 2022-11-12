@@ -61,6 +61,9 @@ def main():
     else:
         txt = re.sub(r'(?i)mtl', mtl_name[0].upper(), txt)
 
+    # remove underscore
+    txt = "".join([x.capitalize() for x in txt.split("_")])
+
     ma_fn.assignMaterial(n=txt)
 
 
