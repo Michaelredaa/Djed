@@ -35,11 +35,12 @@ def get_sgName_from_textures(directory):
     # to extract the sg name form list of images
     sgs = []
     for img in list_textures(directory):
+        img = img.split(' ')[0]
         items = re.findall(r"_[a-zA-Z0-9]*", img)
         sg = items[-2][1:]
-        if len(sg) <= 3:
+        if len(sg) >= 4:
             try:
-                sg = items[-3][1:] + "_" + items[-2][1:]
+                sg = items[-4][1:] + "_" + items[-3][1:]
             except:
                 pass
 
