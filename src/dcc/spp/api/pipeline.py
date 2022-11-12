@@ -7,6 +7,8 @@ import re
 import sys
 from pathlib import Path
 
+from PySide2.QtWidgets import QMessageBox
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT, DJED_ROOT.joinpath('src')]
 for sysPath in sysPaths:
@@ -196,6 +198,25 @@ def save_file(file_path):
     if not file_path.endswith('.spp'):
         error_('The substance painter file must endswith ".spp"')
     return substance_painter.project.save_as(file_path, substance_painter.project.ProjectSaveMode.Full)
+
+def open_file(file_path):
+    if Path(file_path).is_file():
+        if substance_painter.project.is_open():
+            if substance_painter.project.needs_saving():
+                result = QMessageBox.question(
+                    main_window(),
+                    'Need to save',
+                    'Do you want to save the current project?',
+                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel
+                )
+                if result == QMessageBox.Yes:
+                    substance_painter.project.save(substance_painter.project.ProjectSaveMode.Incremental)
+                elif result == QMessageBox.Cancel:
+                    return
+
+            substance_painter.project.close()
+
+        substance_painter.project.open(file_path)
 
 
 def save_copy(file_path):
