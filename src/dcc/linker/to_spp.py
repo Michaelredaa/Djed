@@ -16,12 +16,16 @@ importlib.reload(dcc.spp.plugins.load_asset)
 
 from dcc.linker.instance import create_instance
 from dcc.spp.plugins.load_asset import LoadAsset
+from dcc.spp.plugins.update_asset import UpdateAsset
 
 
 def send_to_spp(data):
     instance = create_instance(data)
     LoadAsset().process(instance)
 
+def update_spp(data):
+    instance = create_instance(data)
+    UpdateAsset().process(instance)
 
 # Main function
 def main():
