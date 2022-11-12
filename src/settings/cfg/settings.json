@@ -471,6 +471,14 @@
                   "placeholder": "e.g. '../Export/$selection'"
                 },
                 {
+                  "name": "use_pyblish",
+                  "label": "Use Pyblish",
+                  "default_value": true,
+                  "value": true,
+                  "type": "toggle_box",
+                  "tooltip": "Use pyblish validator on export geometry"
+                },
+                {
                   "name": "obj",
                   "label": "OBJ",
                   "default_value": true,
@@ -573,7 +581,15 @@
                   "default_value": false,
                   "value": false,
                   "type": "toggle_box",
-                  "tooltip": "Export usd file when publish"
+                  "tooltip": "import camera in substance painter"
+                },
+                {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
                 }
               ]
             },
@@ -607,7 +623,9 @@
                 {
                   "name": "mtls_from",
                   "label": "Mtls From",
-                  "menu_items": ["Arnold"],
+                  "menu_items": [
+                    "Arnold"
+                  ],
                   "default_value": "Arnold",
                   "value": "Arnold",
                   "type": "drop_menu",
@@ -616,7 +634,10 @@
                 {
                   "name": "mtls_to",
                   "label": "Mtls To",
-                  "menu_items": ["Autodesk Standard Surface", "Disney Principles"],
+                  "menu_items": [
+                    "Autodesk Standard Surface",
+                    "Disney Principles"
+                  ],
                   "default_value": "Autodesk Standard Surface",
                   "value": "Autodesk Standard Surface",
                   "type": "drop_menu",
@@ -625,11 +646,22 @@
                 {
                   "name": "colorspace",
                   "label": "Colorspace",
-                  "menu_items": ["sRGB", "ACES"],
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
                   "default_value": "ACES",
                   "value": "ACES",
                   "type": "drop_menu",
                   "tooltip": "The colorspace of textures in clarisse"
+                },
+                {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
                 }
               ]
             },
@@ -667,7 +699,10 @@
                 {
                   "name": "colorspace",
                   "label": "Colorspace",
-                  "menu_items": ["sRGB", "ACES"],
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
                   "default_value": "ACES",
                   "value": "ACES",
                   "type": "drop_menu",
@@ -730,9 +765,18 @@
               "placeholder": "e.g. 'build://project/Assets/$assetName'"
             },
             {
+              "name": "geometry_root",
+              "label": "Geometry Root",
+              "default_value": "../geos",
+              "value": "../geos",
+              "type": "input_text",
+              "tooltip": "The directory root of clarisse in which the geometry created.\n '../' mean relative to asset root",
+              "placeholder": "e.g. '../geos'"
+            },
+            {
               "name": "material_root",
               "label": "Material Root",
-              "default_value": "../Mtls",
+              "default_value": "../mtls",
               "value": "../mtls",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the materials created.\n '../' mean relative to asset root",
@@ -741,20 +785,20 @@
             {
               "name": "texture_root",
               "label": "Texture Root",
-              "default_value": "../texs",
-              "value": "../texs",
+              "default_value": "../mtls/texs",
+              "value": "../mtls/texs",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the textures created.\n '../' mean relative to asset root",
-              "placeholder": "e.g. '../texs'"
+              "placeholder": "e.g. '../mtls/texs'"
             },
             {
               "name": "utils_root",
               "label": "Utils Root",
-              "default_value": "../utils",
-              "value": "../utils",
+              "default_value": "../mtls/utils",
+              "value": "../mtls/utils",
               "type": "input_text",
               "tooltip": "The directory root of clarisse in which the material utilities created.\n '../' mean relative to asset root",
-              "placeholder": "e.g. '../utils'"
+              "placeholder": "e.g. '../mtls/utils'"
             }
           ]
         },
