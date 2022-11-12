@@ -34,24 +34,23 @@ for sysPath in sysPaths:
 import importlib
 import dcc.maya.plugins.load_asset
 import dcc.maya.plugins.create_material_from_textures
+
 importlib.reload(dcc.maya.plugins.load_asset)
 importlib.reload(dcc.maya.plugins.create_material_from_textures)
 #########################################
 
 
-
 from dcc.maya.api import renderer
-from dcc.maya.plugins import CreateMaterialFromTextures, LoadAsset
 from dcc.maya.plugins.load_asset import LoadAsset
+from dcc.maya.api.cmds import maya_main_window
 from dcc.maya.plugins.create_material_from_textures import CreateMaterialFromTextures
 from utils.textures import get_sgName_from_textures
+from utils.resources.style_rc import *
 
 from dcc.maya.shelves.tool_settings import (
     ToolSettingsBase,
     ClickedLabel,
-    Icons,
-    ScreenWidth,
-    maya_main_window
+    ScreenWidth
 )
 
 import pyblish.api
@@ -62,7 +61,7 @@ import maya.cmds as cmds
 
 class CreateMtlTexs(ToolSettingsBase):
     def __init__(self, parent=None):
-        super(CreateMtlTexs, self).__init__(parent, preset_name="create_mtl_tex_presets")
+        super(CreateMtlTexs, self).__init__(parent, preset_name="material_from_textures")
         self.setupUi(self)
         self.set_title("Create Material From Texture Setting")
         self.set_icon("mtlTexture.png")
@@ -78,7 +77,7 @@ class CreateMtlTexs(ToolSettingsBase):
         self.le_dir = QLineEdit()
         self.setCompleter(self.le_dir)
         self.pb_browse = QPushButton("")
-        self.pb_browse.setIcon(QIcon(os.path.join(Icons, "folder.png")))
+        self.pb_browse.setIcon(QIcon(":/icons/folder.png"))
         self.pb_browse.setIconSize(QSize(20, 20))
         self.pb_browse.setFlat(True)
 
@@ -91,7 +90,7 @@ class CreateMtlTexs(ToolSettingsBase):
 
         l = QLabel('Use tokens like $selection, $project,..\nClick on "Export Directory" to evaluate the directory')
         vbox_ = QHBoxLayout(self)
-        vbox_.addItem(QSpacerItem(ScreenWidth * 0.07, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
+        vbox_.addItem(QSpacerItem(ScreenWidth * 0.06, 20, QSizePolicy.Minimum, QSizePolicy.Fixed))
         vbox_.addWidget(l)
         self.vl_space.addLayout(vbox_)
 
@@ -101,69 +100,70 @@ class CreateMtlTexs(ToolSettingsBase):
 
         # renderers
         renderers = ["arnold", ]
-        gbox.addWidget(QLabel("Renderer: "), 0, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Renderer: "), 0, 0, 1, 1, Qt.AlignRight)
         self.com_rend = QComboBox()
         self.com_rend.setMinimumSize(QSize(150, 20))
         self.com_rend.addItems(renderers)
-        gbox.addWidget(self.com_rend, 0, 2, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.com_rend, 0, 1, 1, 1, Qt.AlignLeft)
 
         # udims
-        gbox.addWidget(QLabel("Use UDIM Workflow: "), 1, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Use UDIM Workflow: "), 1, 0, 1, 1, Qt.AlignRight)
         self.cb_udim = QCheckBox()
-        gbox.addWidget(self.cb_udim, 1, 2, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.cb_udim, 1, 1, 1, 1, Qt.AlignLeft)
 
         l_naming = QLabel("$mesh_$materialName_$mapType.<UIDM>.ext")
         l_naming_h = QLabel("Naming Conventional: ")
-        gbox.addWidget(l_naming_h, 2, 1, 1, 1, Qt.AlignRight)
-        gbox.addWidget(l_naming, 2, 2, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(l_naming_h, 2, 0, 1, 1, Qt.AlignRight)
+        gbox.addWidget(l_naming, 2, 1, 1, 1, Qt.AlignLeft)
         l_naming.setStyleSheet("color: gray")
         l_naming_h.setStyleSheet("color: gray")
 
         # materials
-        gbox.addWidget(QLabel("Materials to Creates: "), 3, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Materials to Creates: "), 3, 0, 1, 1, Qt.AlignRight)
         self.com_mtls = QComboBox()
         self.com_mtls.setMinimumSize(QSize(150, 20))
-        gbox.addWidget(self.com_mtls, 3, 2, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.com_mtls, 3, 1, 1, 1, Qt.AlignLeft)
 
         # color space
-        gbox.addWidget(QLabel("Convert Colorspace: "), 8, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Convert Colorspace: "), 8, 0, 1, 1, Qt.AlignRight)
         hbox = QHBoxLayout()
         self.rb_aces = QRadioButton("Aces")
         self.rb_srgb = QRadioButton("sRGB")
         hbox.addWidget(self.rb_aces)
         hbox.addWidget(self.rb_srgb)
-        gbox.addLayout(hbox, 8, 2, 1, 1)
+        gbox.addLayout(hbox, 8, 1, 1, 1)
 
         self.vl_space.addLayout(gbox)
         self.vl_space.addItem(QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding))
 
     def connectEvents(self):
         self.cb_udim.toggled.connect(self.onChangeUdim)
+        self.le_dir.editingFinished.connect(self.onChangeUdim)
 
     def startup(self):
         self.onChangeUdim()
 
     def get_presets(self):
         preset = {}
-        preset["tex_dir"] = self.le_dir.text()
+        preset["textures_directory"] = self.le_dir.text()
         preset["renderer"] = self.com_rend.currentText()
-        preset["mtls"] = "All"
+        preset["materials"] = "All"
         preset["udim"] = self.cb_udim.isChecked()
         if self.rb_aces.isChecked():
-            preset["colorspace"] = "aces"
+            preset["colorspace"] = "ACES"
         else:
-            preset["colorspace"] = "srgb"
+            preset["colorspace"] = "sRGB"
 
         return preset
 
     def set_presets(self, preset):
-        self.le_dir.setText(preset["tex_dir"])
+        self.le_dir.setText(preset["textures_directory"])
         self.com_rend.setCurrentText(preset["renderer"])
-        self.com_mtls.setCurrentText(preset["mtls"])
+        self.com_mtls.setCurrentText(preset["materials"])
         self.cb_udim.setChecked(preset["udim"])
         self.cb_udim.setDisabled(True)
 
-        if preset["colorspace"] == "aces":
+        if preset["colorspace"].lower() == "aces":
             self.rb_aces.setChecked(True)
         else:
             self.rb_srgb.setChecked(True)
@@ -188,7 +188,7 @@ class CreateMtlTexs(ToolSettingsBase):
         renderer_name = self.com_rend.currentText()
         tex_dir = self.convert_text_tokens(self.le_dir.text())
 
-        if renderer_name == "arnold":
+        if renderer_name.lower() == "arnold":
             active_renderer = renderer.arnold
         else:
             return
@@ -205,10 +205,10 @@ class CreateMtlTexs(ToolSettingsBase):
         else:
             colorspace = "srgb"
 
-
         context = pyblish.api.Context()
         instance_obj = CreateMaterialFromTextures(tex_dir)
         instance = instance_obj.process(context)
+        instance.data['colorspace'] = colorspace
         LoadAsset().process(instance)
 
 
