@@ -45,7 +45,9 @@ importlib.reload(dcc.linker.to_spp)
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
 from dcc.linker.to_spp import send_to_spp
+from utils.assets_db import AssetsDB
 
+db = AssetsDB()
 
 class Maya2SppSettings(ToolSettingsBase):
     def __init__(self, parent=None):
@@ -92,6 +94,10 @@ class Maya2SppSettings(ToolSettingsBase):
         gbox.addWidget(QLabel(""), 4, 1, 1, 1, Qt.AlignRight)
         gbox.addWidget(self.cb_cam, 4, 2, 1, 1)
 
+        self.cb_latest_published = QCheckBox("Use latest published geometry")
+        gbox.addWidget(QLabel(""), 5, 1, 1, 1, Qt.AlignRight)
+        gbox.addWidget(self.cb_latest_published, 5, 2, 1, 1)
+
         self.vl_space.addLayout(gbox)
 
         self.vl_space.addItem(QSpacerItem(40, 20, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
@@ -108,6 +114,7 @@ class Maya2SppSettings(ToolSettingsBase):
 
         preset["project_workflow"] = self.com_tiles.currentText()
         preset["import_cameras"] = self.cb_cam.isChecked()
+        preset["use_latest_publish"] = self.cb_latest_published.isChecked()
         return preset
 
     def set_presets(self, preset):
@@ -118,17 +125,22 @@ class Maya2SppSettings(ToolSettingsBase):
         self.rb_tangent_fragment.setChecked(preset["tangent_space_mode"] == "PerFragment")
         self.com_normals.setCurrentText(preset["project_workflow"])
         self.cb_cam.setChecked(preset["import_cameras"])
+        self.cb_latest_published.setChecked(preset["use_latest_publish"])
 
     def onApply(self):
         cfg = self.get_presets()
         data = {}
         asset_name = self.ma.selection()[0]
-        mesh_path = self.ma.export_selection(
-            asset_dir=self.le_dir.text(),
-            asset_name=asset_name,
-            export_type=["obj", "abc"],
-            _message=False
-        )["obj"]
+
+        if self.cb_latest_published.isChecked():
+            mesh_path = db.get_geometry(asset_name=asset_name, obj_file="")['obj_file']
+        else:
+            mesh_path = self.ma.export_selection(
+                asset_dir=self.le_dir.text(),
+                asset_name=asset_name,
+                export_type=["obj", "abc"],
+                _message=False
+            )["obj"]
 
         data['name'] = asset_name
         data['family'] = 'asset'
