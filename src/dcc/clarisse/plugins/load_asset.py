@@ -82,7 +82,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         if geo_paths:
             # get the geometry types  (abc_ref, usd_ref, abc_bundle, usd_bundle)
-            geo_type = data.get('geo_type', 'abc_ref')
+            geo_type = data.get('geometry_type', 'abc_ref')
             if 'abc' in geo_type:
                 geo_path = geo_paths.get('abc_file')
             elif 'usd' in geo_type:
@@ -107,11 +107,10 @@ class LoadAsset(pyblish.api.InstancePlugin):
             root_ctx = root_ctx.replace("$assetName", asset_name)
 
         # get context cfg
-        geo_ctx = get_dcc_cfg('clarisse', 'configuration', 'geo_root')
+        geo_ctx = get_dcc_cfg('clarisse', 'configuration', 'geometry_root')
         mtl_ctx = get_dcc_cfg('clarisse', 'configuration', 'material_root')
         tex_ctx = get_dcc_cfg('clarisse', 'configuration', 'texture_root')
         utils_ctx = get_dcc_cfg('clarisse', 'configuration', 'utils_root')
-
 
         # resolve and create contexts
         if selected_ctx != 'selected':
@@ -137,12 +136,11 @@ class LoadAsset(pyblish.api.InstancePlugin):
         for sg in asset_data:
             # materials
             materials = asset_data.get(sg, {}).get('materials', {})
-
             material_items = []
             displacement_items = []
             for mtl in materials:
                 from_renderer = materials[mtl].get('type')
-                mtl_type = nodes_conversion.get(from_renderer).get('name')
+                mtl_type = nodes_conversion.get(from_renderer)
 
                 # create material
                 mtl_item = self.cl.create_node(mtl, mtl_type, cntx=mtl_ctx)
@@ -181,8 +179,10 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     tex_attr = mtl_item.get_attribute(to_plug.get('name'))
 
                     connected_item = tex_item
+                    for inbetween_dict in to_plug.get("inbetween"):
+                        if inbetween_dict == [{}] or not inbetween_dict:
+                            continue
 
-                    for inbetween_dict in to_plug.get("inBetween"):
                         inbetween_node_name = mtl + inbetween_dict.get('name')
                         inbetween_item = self.cl.create_node(inbetween_node_name, inbetween_dict.get('type'),
                                                              cntx=utils_ctx)
@@ -212,6 +212,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     )
                     # displacement_item.attrs.front_value = str(tex_item)
                     ix.cmds.SetTexture([f"{displacement_item}.front_value"], str(tex_item))
+                    # turn off displacement
+                    ix.cmds.SetTexture([f"{displacement_item}.active"], ["0"])
 
             if not geo_item:
                 continue
