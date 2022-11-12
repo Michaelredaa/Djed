@@ -16,7 +16,7 @@ import pyblish.api
 fm = FileManager()
 
 
-class updateAsset(pyblish.api.InstancePlugin):
+class UpdateAsset(pyblish.api.InstancePlugin):
     label = "update asset inside substance painter"
     order = pyblish.api.ExtractorOrder
     hosts = ["spp"]
