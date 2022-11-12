@@ -42,7 +42,7 @@ def main():
     ma_fn = Maya(renderer)
 
     result = cmds.promptDialog(
-        title='{} ()'.format(ren_name.capitalize(), ren_mtl),
+        title='{} ({})'.format(ren_name.capitalize(), ren_mtl),
         message='Material Name',
         button=['Assign', 'Cancel'],
         defaultButton='OK',
