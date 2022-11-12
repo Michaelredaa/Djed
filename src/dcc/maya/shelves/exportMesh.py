@@ -31,13 +31,21 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+import importlib
+
+import dcc.maya.shelves.tool_settings
+importlib.reload(dcc.maya.shelves.tool_settings)
+
+
+##############################################################
+
 from dcc.maya.shelves.tool_settings import ToolSettingsBase
 from dcc.maya.api.cmds import maya_main_window
-
+from utils.resources.style_rc import *
 
 class ExportSettings(ToolSettingsBase):
     def __init__(self, parent=None):
-        super(ExportSettings, self).__init__(parent, preset_name="export_preset")
+        super(ExportSettings, self).__init__(parent, preset_name="export_geometry")
         self.setupUi(self)
 
         self.set_title("Export Selection Setting")
@@ -54,6 +62,7 @@ class ExportSettings(ToolSettingsBase):
     def get_presets(self):
         preset = {}
         preset["export_root"] = self.le_dir.text()
+        preset["use_pyblish"] = self.cb_pyblish.isChecked()
         preset["obj"] = self.cb_obj.isChecked()
         preset["fbx"] = self.cb_fbx.isChecked()
         preset["abc"] = self.cb_abc.isChecked()
@@ -62,6 +71,7 @@ class ExportSettings(ToolSettingsBase):
 
     def set_presets(self, preset):
         self.le_dir.setText(preset["export_root"])
+        self.cb_pyblish.setChecked(preset["use_pyblish"])
         self.cb_obj.setChecked(preset["obj"])
         self.cb_fbx.setChecked(preset["fbx"])
         self.cb_abc.setChecked(preset["abc"])
@@ -72,21 +82,26 @@ class ExportSettings(ToolSettingsBase):
         gbox = QGridLayout(self)
         gbox.addWidget(QLabel(""), 0, 0, 1, 1, Qt.AlignRight)
 
+        gbox.addWidget(QLabel("Run pyblish Validator"), 1, 0, 1, 1, Qt.AlignRight)
+        self.cb_pyblish = QCheckBox("")
+        self.cb_pyblish.setIcon(QIcon(":/icons/pyblish.png"))
+        gbox.addWidget(self.cb_pyblish, 1, 1, 1, 1, Qt.AlignLeft)
+
         l_export = QLabel("Export Selected Geometry as: ")
-        gbox.addWidget(l_export, 1, 0, 1, 1, Qt.AlignRight)
+        gbox.addWidget(l_export, 2, 0, 1, 1, Qt.AlignRight)
         gbox.addItem(QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.Minimum), 1, 1)
 
         self.cb_obj = QCheckBox("obj")
-        gbox.addWidget(self.cb_obj, 2, 1, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.cb_obj, 3, 1, 1, 1, Qt.AlignLeft)
 
         self.cb_fbx = QCheckBox("fbx")
-        gbox.addWidget(self.cb_fbx, 3, 1, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.cb_fbx, 4, 1, 1, 1, Qt.AlignLeft)
 
         self.cb_abc = QCheckBox("abc")
-        gbox.addWidget(self.cb_abc, 4, 1, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.cb_abc, 5, 1, 1, 1, Qt.AlignLeft)
 
         self.cb_usd = QCheckBox("usd")
-        gbox.addWidget(self.cb_usd, 5, 1, 1, 1, Qt.AlignLeft)
+        gbox.addWidget(self.cb_usd, 6, 1, 1, 1, Qt.AlignLeft)
 
         self.vl_space.addLayout(gbox)
         self.vl_space.addItem(QSpacerItem(40, 20, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
@@ -114,9 +129,11 @@ class ExportSettings(ToolSettingsBase):
 
         export_path = self.le_dir.text()
 
-        from dcc.maya.shelves.pyblish_launch import process
-        process(path=export_path, extensions=extensions)
-        # export_meshs = self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
+        if self.cb_pyblish.isChecked():
+            from dcc.maya.shelves.pyblish_launch import process
+            process(path=export_path, extensions=extensions)
+        else:
+            self.ma.export_selection(asset_dir=export_path, asset_name=None, export_type=extensions)
 
 
 # Main function
