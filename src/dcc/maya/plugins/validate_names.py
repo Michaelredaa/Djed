@@ -17,8 +17,8 @@ class SelectInvalidNameNodes(pyblish.api.Action):
         for result in context.data["results"]:
             if result["error"]:
                 instance = result['instance']
-                shape_node = instance.data.get("output", {}).get('node')
-                cmds.select(shape_node)
+                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                cmds.select([x.get('node') for x in invalid_nodes if x])
 
 
 class ValidateNamespaces(pyblish.api.InstancePlugin):
@@ -57,19 +57,19 @@ class ValidateNaming(pyblish.api.InstancePlugin):
     def process(self, instance):
         self.log.info("Initialize naming conventional")
 
+        # Not allowed names
         invalid_names = ["polySurface", "StandardSurface"]
-
+        invalid_nodes_names = []
         ma = Maya()
         for shape_node in instance:
             shape_name = shape_node.rsplit('|', 1)[-1]
 
             for name in invalid_names:
                 if re.findall(r"(?i)" + name, shape_name):
-                    instance.set_data("output", {'node': shape_node})
-                    msg = f"'{shape_name}' name is not allowed!"
-                    self.log.error(msg)
-                    raise pyblish.api.ValidationError(msg)
+                    invalid_nodes = {'node': shape_node}
+                    invalid_nodes_names.append(invalid_nodes)
 
+            # rename all shadings groups
             sgs = ma.list_all_DG_nodes(shape_node)
             for sg_node in sgs:
                 # add suffix SG
@@ -86,3 +86,9 @@ class ValidateNaming(pyblish.api.InstancePlugin):
                 new_name = "".join([x.capitalize() for x in new_name.split("_")])
 
                 cmds.rename(sg_node, new_name)
+
+        if invalid_nodes_names:
+            instance.set_data("output", invalid_nodes_names)
+            msg = f"'Some nodes names is not allowed! '{invalid_nodes_names}'"
+            self.log.error(msg)
+            raise pyblish.api.ValidationError(msg)
