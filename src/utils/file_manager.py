@@ -74,6 +74,8 @@ class FileManager:
             return json.load(f)
 
     def write_json(self, json_path, data):
+        json_path = Path(str(json_path))
+        json_path.parent.mkdir(parents=True, exist_ok=True)
         with open(json_path, 'w') as f:
             return json.dump(data, f, indent=4)
 
