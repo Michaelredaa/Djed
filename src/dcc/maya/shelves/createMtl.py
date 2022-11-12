@@ -66,7 +66,7 @@ def main():
     # remove underscore
 
 
-    ma_fn.assignMaterial(n=txt)
+    ma_fn.create_and_assign_material(n=txt)
 
 
 
