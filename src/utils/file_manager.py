@@ -64,6 +64,35 @@ class FileManager:
         data = self.read_json(cfg_path)
         return data[key]
 
+    def get_user_json(self, key, key1=None):
+        json_path = self.user_documents.joinpath("Djed.json")
+
+        data = {}
+
+        if not json_path.is_file():
+            self.user_documents.mkdir(parents=True, exist_ok=True)
+            self.write_json(json_path, data)
+
+        user_data = self.read_json(json_path)
+        returned_data = user_data.get(key)
+        if key1 and returned_data:
+            return returned_data.get(key1)
+
+        return returned_data
+
+    def set_user_json(self, **kwargs):
+        json_path = self.user_documents.joinpath("Djed.json")
+
+        if json_path.is_file():
+            data = self.read_json(json_path)
+        else:
+            data = {}
+        for key in kwargs:
+            data[key] = kwargs[key]
+
+        self.write_json(json_path, data)
+
+
     def read_json(self, json_path):
         """
         To read json file
