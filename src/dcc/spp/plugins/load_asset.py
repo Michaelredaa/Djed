@@ -3,11 +3,17 @@
 Documentation:
 """
 import os
+import sys
 from pathlib import Path
 
 
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
+
+sysPaths = [DJED_ROOT, DJED_ROOT.joinpath('src')]
+for sysPath in sysPaths:
+    if str(sysPath) not in sys.path:
+        sys.path.append(str(sysPath))
 
 from dcc.spp.api.remote_connect import connect_spp
 from utils.dialogs import message
@@ -32,7 +38,6 @@ class LoadAsset(pyblish.api.InstancePlugin):
     def process(self, instance):
         if self.trying_depth == 0:
             return
-
         asset_name = instance.name
         data = instance.data
 
@@ -51,7 +56,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         open_flag = wait_until(self.open_spp_file, 90, period=0.25, mesh_path=mesh_path, cfg=cfg)
         if open_flag:
-            self.open_spp_file(mesh_path, project_path=None, cfg=None)
+            pass
+            # self.open_spp_file(mesh_path, project_path=None, cfg=cfg)
         else:
             self.trying_depth -= 1
             self.process(instance)
@@ -80,4 +86,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
 
 if __name__ == '__main__':
+    data = {'name': 'portal', 'family': 'asset', 'host': 'spp',
+     'mesh_path': 'D:/3D/working/projects/Generic/03_Workflow/Assets/portal/Export/portal/v0022/portal.obj',
+     'cfg': {'export_root': '../Export/$selection', 'default_texture_resolution': 512, 'normal_map_format': 'OpenGL',
+             'tangent_space_mode': 'PerVertex', 'project_workflow': 'TextureSetPerUVTile', 'import_cameras': False}}
+
+    context = pyblish.api.Context()
+    instance = context.create_instance(**data)
+    LoadAsset().process(instance)
+
+
     print(__name__)
