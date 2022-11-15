@@ -5,7 +5,7 @@ from maya import cmds
 
 
 class SelectInvalidUVSetsNodes(pyblish.api.Action):
-    label = "Select node"
+    label = "Select nodes"
     on = "failed"
     icon = "hand-o-up"
 
@@ -14,12 +14,13 @@ class SelectInvalidUVSetsNodes(pyblish.api.Action):
         for result in context.data["results"]:
             if result["error"]:
                 instance = result['instance']
-                shape_node = instance.data.get("output", {}).get('node')
-                cmds.select(shape_node, r=1)
+                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                cmds.select([x.get('node') for x in invalid_nodes if x], r=1)
+
 
 
 class SelectInvalidUVNodes(pyblish.api.Action):
-    label = "Select node"
+    label = "Select nodes"
     on = "failed"
     icon = "hand-o-up"
 
@@ -29,15 +30,12 @@ class SelectInvalidUVNodes(pyblish.api.Action):
             if result["error"]:
                 instance = result['instance']
 
-                print(instance.data)
-                uvs_on_boarders = instance.data.get("output", {}).get('uvs_on_boarders')
-                print("uvs_on_boarders: ", uvs_on_boarders)
-                if uvs_on_boarders:
-                    cmds.select(uvs_on_boarders, r=1)
+                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                cmds.select([x.get('uvs_on_boarders') for x in invalid_nodes if x], r=1)
 
 
 class FixUVSets(pyblish.api.Action):
-    label = "Fix invalid node"
+    label = "Fix invalid nodes"
     on = "failed"
     icon = "wrench"
 
@@ -48,19 +46,23 @@ class FixUVSets(pyblish.api.Action):
         for result in context.data["results"]:
             if result["error"]:
                 instance = result['instance']
-                shape_node = instance.data.get("output", {}).get('node')
-                uv_sets = instance.data.get("output", {}).get('uv_sets')
-                print(instance.data)
-                print("sets: ", uv_sets)
-                if not uv_sets:
-                    return
 
-                for uv_set in uv_sets[1:]:
-                    ma.delete_uv_set(shape_node, uv_set)
-                uv_name = uv_sets[0]
+                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
 
-                if uv_name != "map1":
-                    ma.rename_uv_set(shape_node, "map1")
+                for node_dict in invalid_nodes:
+                    shape_node = node_dict.get('node')
+                    uv_sets = node_dict.get('uv_sets')
+                    print(instance.data)
+                    print("sets: ", uv_sets)
+                    if not uv_sets:
+                        return
+
+                    for uv_set in uv_sets[1:]:
+                        ma.delete_uv_set(shape_node, uv_set)
+                    uv_name = uv_sets[0]
+
+                    if uv_name != "map1":
+                        ma.rename_uv_set(shape_node, "map1")
 
 
 class ValidateUVSets(pyblish.api.InstancePlugin):
@@ -82,27 +84,41 @@ class ValidateUVSets(pyblish.api.InstancePlugin):
         self.log.info("Initialize validation of uv sets")
 
         ma = Maya()
-        for shape_node in instance:
-            shape_name = shape_node.rsplit('|', 1)[-1]
 
+        no_uv_sets = []
+        more_uv_sets = []
+        invalid_uv_set_names = []
+        for shape_node in instance:
             # check uv_sets
             uv_sets = ma.uv_sets(shape_node)
-            msg = ''
+
             if len(uv_sets) == 0:
-                instance.set_data("output", {'node': shape_node, 'uv_sets': uv_sets})
-                msg = f"'{shape_name}' have no uvSets."
+                invalid_nodes = {'node': shape_node, 'uv_sets': uv_sets}
+                no_uv_sets.append(invalid_nodes)
 
             elif len(uv_sets) != 1:
-                instance.set_data("output", {'node': shape_node, 'uv_sets': uv_sets})
-                msg = f"'{shape_name}' have more than uvSets."
+                invalid_nodes = {'node': shape_node, 'uv_sets': uv_sets}
+                more_uv_sets.append(invalid_nodes)
+
 
             elif uv_sets[0] != "map1":
-                instance.set_data("output", {'node': shape_node, 'uv_sets': uv_sets})
-                msg = f"'{shape_name}' uv set name must have the uv set name 'map1'."
+                invalid_nodes = {'node': shape_node, 'uv_sets': uv_sets}
+                invalid_uv_set_names.append(invalid_nodes)
 
-            if msg:
-                self.log.error(msg)
-                raise pyblish.api.ValidationError(msg)
+        if no_uv_sets:
+            instance.set_data("output", {'invalid_nodes': no_uv_sets})
+            msg = f"Some nodes have no uvSets'{no_uv_sets}'"
+            raise pyblish.api.ValidationError(msg)
+
+        if more_uv_sets:
+            instance.set_data("output", {'invalid_nodes': more_uv_sets})
+            msg = f"Some nodes have more than uvSets'{more_uv_sets}'"
+            raise pyblish.api.ValidationError(msg)
+
+        if invalid_uv_set_names:
+            instance.set_data("output", {'invalid_nodes': invalid_uv_set_names})
+            msg = f"uv set name must have the uv set name 'map1' '{invalid_uv_set_names}'"
+            raise pyblish.api.ValidationError(msg)
 
 
 class ValidateUVBoarders(pyblish.api.InstancePlugin):
@@ -122,12 +138,18 @@ class ValidateUVBoarders(pyblish.api.InstancePlugin):
 
         self.log.info("Initialize validation of uv shells on boarders")
 
+        overlapped = []
+
         ma = Maya()
         for shape_node in instance:
             # check uv shells
             validate_result = ma.validate_uv_shells(shape_node)
 
             if validate_result is not True:
-                instance.set_data("output", {'node': shape_node, 'uvs_on_boarders': validate_result[1]})
-                self.log.error(validate_result[0])
-                raise pyblish.api.ValidationError(validate_result[0])
+                invalid_nodes = {'node': shape_node, 'uvs_on_boarders': validate_result[1]}
+                overlapped.append(invalid_nodes)
+
+        if overlapped:
+            msg = f"Some uv shells has intersection with border '{overlapped}'"
+            self.log.error(msg)
+            raise pyblish.api.ValidationError(msg)
