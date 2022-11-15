@@ -37,17 +37,19 @@ def set_port_num(port_num=None):
 def connect(ip='localhost', port_num=None):
     try:
         port_num = set_port_num(port_num)
-        port = ix.ClarisseNet(ip, port_num)
-        return port
+        socket = ix.ClarisseNet(ip, port_num)
+        return socket
     except Exception as e:
         print(e)
         pass
     return
 
 
+
 # Main Function
 def main():
-    pass
+    socket = connect()
+    socket.run('print("Hello")')
 
 
 if __name__ == '__main__':
