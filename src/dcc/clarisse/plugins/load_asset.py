@@ -32,7 +32,8 @@ import pyblish.api
 
 from utils.file_manager import FileManager
 from utils.dialogs import message
-from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion
+from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion, get_material_attrs, \
+    get_shading_nodes
 
 from dcc.clarisse.api.cmds import Clarisse
 
@@ -75,7 +76,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         host = 'clarisse'
 
         # renderer
-        to_renderer = data.get('to_renderer', 'standardSurface')  # clarisse
+        to_renderer = data.get('to_renderer', 'standard_surface')  # clarisse
         source_renderer = data.get('renderer', 'standard')
 
         geo_paths = data.get('geo_paths')
@@ -129,8 +130,13 @@ class LoadAsset(pyblish.api.InstancePlugin):
         asset_data = data.get('asset_data')
 
         # convert material data to clarisse engines
-        plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
-        nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
+        if source_host == 'standard' or source_renderer == 'standard':
+            # standard material
+            plugs_conversion = get_material_attrs(host, to_renderer)
+            nodes_conversion = get_shading_nodes(host, to_renderer)
+        else:
+            plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
+            nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
         # materials data
         for sg in asset_data:
@@ -141,7 +147,6 @@ class LoadAsset(pyblish.api.InstancePlugin):
             for mtl in materials:
                 from_renderer = materials[mtl].get('type')
                 mtl_type = nodes_conversion.get(from_renderer)
-
                 # create material
                 mtl_item = self.cl.create_node(mtl, mtl_type, cntx=mtl_ctx)
                 material_items.append(mtl_item)
