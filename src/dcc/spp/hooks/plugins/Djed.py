@@ -131,7 +131,6 @@ class SubstanceIntegration():
         # add to recent
         self.add_to_recent(save_path)
 
-
     def on_save_backup(self):
         comment = text_dialog(self.main_window)
 
@@ -153,7 +152,12 @@ class SubstanceIntegration():
         self.js.set_export_preset_name(presets["preset"])
 
         # export textures
-        tex_data, version = pipeline.export_texture(tex_dir=os.path.dirname(presets["path"]))
+        tex_dir = presets["path"]
+        tex_dir = self.fm.resolve_path(
+            tex_dir,
+            relatives_to=pipeline.get_file_path(),
+        )
+        tex_data, version = pipeline.export_texture(tex_dir=tex_dir)
 
         # update database
         old_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
@@ -166,7 +170,7 @@ class SubstanceIntegration():
 
     def on_export_settings(self):
         options = get_dcc_cfg("substance_painter", "texture_export")
-        options["path"] = os.path.dirname(self.get_export_texture_path())
+        options["path"] = self.get_export_texture_path()
 
         if (not options["preset"].endswith(".spexp")) and options["preset"].startswith('resource://'):
             options["preset"] = sp.resource.ResourceID(context="allegorithmic", name=options["preset"]).url()
@@ -216,7 +220,7 @@ class SubstanceIntegration():
             'name': self.asset_name,
             'host': 'spp',
             'renderer': 'arnold',
-            'to_renderer': 'standardSurface',
+            'to_renderer': 'autodesk_standard_surface',
             'source_renderer': 'standard',
             'colorspace': 'aces',
             'geo_type': 'abc_bundle',
@@ -248,17 +252,11 @@ class SubstanceIntegration():
         return resolved_path
 
     def get_export_texture_path(self):
-        source_file_path = db.get_geometry(asset_name=self.asset_name, source_file="")["source_file"]
-        if not (source_file_path and os.path.isfile(source_file_path)):
-            message(self.main_window, "Error",
-                    f"'{source_file_path}' is not an path\nIt seems you not save the source maya file.")
-            return
-
         export_root = get_dcc_cfg("substance_painter", "texture_export").get("path")
 
         resolved_path = self.fm.resolve_path(
             export_root,
-            relatives_to=source_file_path,
+            relatives_to=pipeline.get_file_path(),
             variables={"$asset_name": self.asset_name, "$project": self.project_dir})
 
         if "$version" in resolved_path:
@@ -277,7 +275,7 @@ class SubstanceIntegration():
         recent_list = self.fm.get_user_json('spp', 'recent')
         recent_list.append(filepath)
         if len(recent_list) > 10:
-            recent_list = recent_list[len(recent_list)-10:]
+            recent_list = recent_list[len(recent_list) - 10:]
         self.fm.set_user_json(spp={'recent': recent_list})
 
         self.populate_recent_files()
