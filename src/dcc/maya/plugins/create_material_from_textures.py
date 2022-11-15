@@ -87,7 +87,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
             asset_data[sg]["materials"] = {}
             mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
             asset_data[sg]["materials"][mtl_name] = {
-                "type": "standardSurface",
+                "type": "standard_surface",
                 "attrs": {},
                 "texs": texs_dict
 

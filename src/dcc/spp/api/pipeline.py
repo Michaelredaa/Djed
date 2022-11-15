@@ -325,7 +325,7 @@ def on_export_texture_finished(result):
         textures_data[sg] = {
             'materials': {
                 mtl_name: {
-                    'type': 'standardSurface',
+                    'type': 'standard_surface',
                     'attrs': {},
                     'texs': {}
                 }

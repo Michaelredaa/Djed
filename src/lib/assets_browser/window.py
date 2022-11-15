@@ -449,7 +449,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         asset['family'] = 'asset'
         asset['colorspace'] = 'aces'
-        asset['to_renderer'] = 'standardSurface'
+        asset['to_renderer'] = 'standard_surface'
         asset['geo_type'] = 'abc_bundle'
 
         send_to_clarisse(asset)

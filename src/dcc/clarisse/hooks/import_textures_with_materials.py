@@ -37,7 +37,7 @@ def process():
         return
 
     colorspace = "aces"
-    to_renderer = 'standardSurface'
+    to_renderer = 'standard_surface'
 
     context = pyblish.api.Context()
     instance_obj = CreateMaterialFromTextures(
