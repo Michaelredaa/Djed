@@ -373,11 +373,11 @@
             {
               "name": "spp_save_directory",
               "label": "SPP save directory",
-              "default_value": "../../../sur/substance/$asset_name",
-              "value": "../../../sur/substance/$asset_name",
+              "default_value": "../../sur/substance",
+              "value": "../../sur/substance",
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
-              "placeholder": "e.g. ../../../sur/substance/$asset_name"
+              "placeholder": "e.g. ../../sur/substance"
             }
           ]
         },
@@ -388,11 +388,11 @@
             {
               "name": "path",
               "label": "Path",
-              "default_value": "../../../sur/substance/textures",
-              "value": "../../../sur/substance/textures",
+              "default_value": "../../textures",
+              "value": "../../textures",
               "type": "input_text",
-              "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
-              "placeholder": "e.g. \"../../../sur/substance/textures\""
+              "tooltip": "The directory in which the spp file will be saves\n relatives to the texturing file",
+              "placeholder": "e.g. \"../../textures\""
             },
             {
               "name": "preset",
