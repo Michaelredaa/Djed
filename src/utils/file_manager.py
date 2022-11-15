@@ -43,6 +43,8 @@ class FileManager:
         if source_path.count("../") > 0:
             resolved_path = resolved_path.parents[source_path.count("../") - 1]
             resolved_path = resolved_path.joinpath(source_path.rsplit("../", 1)[-1])
+        else:
+            resolved_path = source_path
 
         variables = kwargs.get('variables', {})
         for var in variables:
