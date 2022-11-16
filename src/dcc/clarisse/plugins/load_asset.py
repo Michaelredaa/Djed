@@ -218,7 +218,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     # displacement_item.attrs.front_value = str(tex_item)
                     ix.cmds.SetTexture([f"{displacement_item}.front_value"], str(tex_item))
                     # turn off displacement
-                    ix.cmds.SetTexture([f"{displacement_item}.active"], ["0"])
+                    ix.cmds.SetValues([f"{displacement_item}.active"], ["0"])
 
             if not geo_item:
                 continue
