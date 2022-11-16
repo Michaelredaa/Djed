@@ -902,6 +902,65 @@
           ]
         },
         {
+          "name": "plugins",
+          "label": "Plugins",
+          "children": [
+            {
+              "name": "material_from_textures",
+              "label": "Material From Textures",
+              "children": [
+                {
+                  "name": "textures_directory",
+                  "label": "Textures Directory",
+                  "default_value": "$project/Texture",
+                  "value": "$project/Texture",
+                  "type": "input_text",
+                  "tooltip": "The directory of textures",
+                  "placeholder": "e.g. '$project/Texture'"
+                },
+                {
+                  "name": "geometry_type",
+                  "label": "Geometry Type",
+                  "menu_items": [
+                    "Alembic Reference",
+                    "Alembic Bundle",
+                    "USD Reference",
+                    "USD Bundle"
+                  ],
+                  "default_value": "Alembic Bundle",
+                  "value": "Alembic Bundle",
+                  "type": "drop_menu",
+                  "tooltip": "The type of geometry to create in clarisse, is it reference or bundle"
+                },
+                {
+                  "name": "material_type",
+                  "label": "Material Type",
+                  "menu_items": [
+                    "Autodesk Standard Surface",
+                    "Disney Principles"
+                  ],
+                  "default_value": "Autodesk Standard Surface",
+                  "value": "Autodesk Standard Surface",
+                  "type": "drop_menu",
+                  "tooltip": "Convert material to renderer in clarisse"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "renderers",
           "label": "Renderers",
           "children": [
