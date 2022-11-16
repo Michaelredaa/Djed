@@ -52,7 +52,7 @@ def texture_type_from_name(texture_name):
     texture_types = get_textures_patterns()
 
     # reversed to take the color before weight e.g. specular_color before specular
-    for _type in reversed(texture_types):
+    for _type in reversed(list(texture_types.keys())):
         if not isinstance(texture_types[_type], list):
             continue
         for regex in texture_types[_type]:
