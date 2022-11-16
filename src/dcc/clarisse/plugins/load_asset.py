@@ -30,7 +30,6 @@ importlib.reload(utils.file_manager)
 
 import pyblish.api
 
-from utils.file_manager import FileManager
 from utils.dialogs import message
 from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion, get_material_attrs, \
     get_shading_nodes
@@ -60,7 +59,6 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         self.log.info("-initialize loading asset into clarisse")
-        self.fm = FileManager()
         self.cl = Clarisse()
 
         asset_name = instance.name
