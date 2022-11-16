@@ -378,6 +378,14 @@
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
               "placeholder": "e.g. ../../sur/substance"
+            },
+            {
+              "name": "use_latest_textures",
+              "label": "Use Latest Textures",
+              "default_value": true,
+              "value": true,
+              "type": "toggle_box",
+              "tooltip": "To use the latest exported textures of substance painter"
             }
           ]
         },
@@ -411,6 +419,97 @@
               "type": "input_text",
               "tooltip": "The format of export textures",
               "placeholder": "e.g. png"
+            }
+          ]
+        },
+        {
+          "name": "plugins",
+          "label": "Plugins",
+          "children": [
+            {
+              "name": "substance_painter_maya",
+              "label": "Substance Painter Maya",
+              "children": [
+                {
+                  "name": "geometry_type",
+                  "label": "Geometry Type",
+                  "menu_items": [
+                    "<none>",
+                    "Import Geometry"
+                  ],
+                  "default_value": "<none>",
+                  "value": "<none>",
+                  "type": "drop_menu",
+                  "tooltip": "The type to geometry to create in maya, <none> to import material only"
+                },
+                {
+                  "name": "use_material",
+                  "label": "Use Material",
+                  "menu_items": [
+                    "arnold"
+                  ],
+                  "default_value": "arnold",
+                  "value": "arnold",
+                  "type": "drop_menu",
+                  "tooltip": "Convert material to renderer in maya"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                }
+              ]
+            },
+            {
+              "name": "substance_painter_clarisse",
+              "label": "Substance Painter Clarisse",
+              "children": [
+                {
+                  "name": "geometry_type",
+                  "label": "Geometry Type",
+                  "menu_items": [
+                    "Alembic Reference",
+                    "Alembic Bundle",
+                    "USD Reference",
+                    "USD Bundle"
+                  ],
+                  "default_value": "Alembic Bundle",
+                  "value": "Alembic Bundle",
+                  "type": "drop_menu",
+                  "tooltip": "The type to geometry to create in clarisse is it reference or bundle"
+                },
+                {
+                  "name": "use_material",
+                  "label": "Use Material",
+                  "menu_items": [
+                    "Autodesk Standard Surface",
+                    "Disney Principles"
+                  ],
+                  "default_value": "Autodesk Standard Surface",
+                  "value": "Autodesk Standard Surface",
+                  "type": "drop_menu",
+                  "tooltip": "Convert material to renderer in clarisse"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                }
+              ]
             }
           ]
         }
