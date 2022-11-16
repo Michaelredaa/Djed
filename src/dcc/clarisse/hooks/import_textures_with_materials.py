@@ -3,7 +3,6 @@
 Documentation: 
 """
 
-
 # ---------------------------------
 # Import Libraries
 import os
@@ -21,8 +20,11 @@ for sysPath in sysPaths:
 from dcc.clarisse.plugins.create_material_from_textures import CreateMaterialFromTextures
 from dcc.clarisse.plugins.load_asset import LoadAsset
 
+from settings.settings import get_dcc_cfg
+
 import pyblish.api
 import pyblish.util
+
 
 # ---------------------------------
 # Variables
@@ -36,8 +38,11 @@ def process():
     if not tex_dir:
         return
 
-    colorspace = "aces"
-    to_renderer = 'standard_surface'
+    settings = get_dcc_cfg('clarisse', 'plugins', 'material_from_textures')
+
+    colorspace = settings.get('colorspace').lower()
+    to_renderer = settings.get('material_type')
+    to_renderer = '_'.join(to_renderer.lower().split(' '))
 
     context = pyblish.api.Context()
     instance_obj = CreateMaterialFromTextures(
