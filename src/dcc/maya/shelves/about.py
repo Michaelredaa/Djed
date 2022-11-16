@@ -10,8 +10,6 @@ import os
 from pathlib import Path
 import maya.cmds as cmds
 
-from PySide2.QtWidgets import QMessageBox
-from PySide2.QtGui import QPixmap, QIcon
 
 # ---------------------------------
 # MetaData
@@ -28,32 +26,12 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from src.version import version
+from src import about
 from dcc.maya.api.cmds import maya_main_window
-from utils.resources.style_rc import *
 
 # Main function
 def main():
-    about = QMessageBox(maya_main_window())
-    about.setWindowTitle("Djed Tools")
-    about.setWindowIcon(QIcon(":/icons/about.png"))
-    about.setInformativeText(f'''
-<blockquote skip="true">
-    <h2><strong>Djed Tools</strong></h2>
-</blockquote>
-<p>Open-source assets pipeline that can manage the assets workflow.</p>
-<p><a href="https://github.com/Michaelredaa/Djed">https://github.com/Michaelredaa/Djed</a></p>
-<pstyle="margin-left: 40px;">Version: {version}</p>
-<pre>2022 Djed, All rights reserved</pre>
-<p><br></p>
-    ''')
-    pixmap = QPixmap(":/icons/djed.ico")
-    pixmap.scaled(20, 20)
-
-    about.setIconPixmap(pixmap)
-    about.show()
-    about.exec_()
-    # cmds.confirmDialog(title='Djed Tools', message=version)
+    about.message(maya_main_window())
 
 
 if __name__ == '__main__':

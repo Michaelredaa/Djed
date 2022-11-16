@@ -45,6 +45,8 @@ from utils.resources.style_rc import *
 from dcc.spp.api import pipeline
 from dcc.linker.to_maya import send_to_maya, is_maya_connected
 from dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
+import about
+
 
 INTEGRATION_PLUGIN = None
 
@@ -115,6 +117,10 @@ class SubstanceIntegration():
         self.recent_menu.triggered.connect(self.on_recent_clicked)
 
         about_action.triggered.connect(self.on_about)
+
+        # reload the plugin
+        reload_action = self.menu.addAction("&Reload")
+        reload_action.triggered.connect(self.on_reload_plugin())
 
     def on_save(self):
 
@@ -272,8 +278,9 @@ class SubstanceIntegration():
                     "Can not connect to clarisse.\nMake sure you open clarisse session or clarisse command port is open.")
 
     def on_about(self):
+        about.message(self.main_window)
 
-        sys.path.append(DJED_ROOT.joinpath("src", "dcc", "spp", "hooks", "plugins").as_posix())
+    def on_reload_plugin(self):
         plugin = importlib.import_module("Djed")
         substance_painter_plugins.reload_plugin(plugin)
 
