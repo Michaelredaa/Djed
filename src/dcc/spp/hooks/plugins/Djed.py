@@ -43,8 +43,8 @@ from utils.file_manager import FileManager
 from utils.generic import merge_dicts
 from utils.resources.style_rc import *
 from dcc.spp.api import pipeline
-from dcc.linker.to_maya import send_to_maya
-from dcc.linker.to_clarisse import send_to_clarisse
+from dcc.linker.to_maya import send_to_maya, is_maya_connected
+from dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
 
 INTEGRATION_PLUGIN = None
 
@@ -80,7 +80,7 @@ class SubstanceIntegration():
         save_backup_action = self.menu.addAction(QIcon(':/icons/backup.png'), "&Save Backup")
         open_action = self.menu.addAction(QIcon(':/icons/folder.png'), "&Open Location")
         self.menu.addSeparator()
-        export_action = self.menu.addAction(QIcon(':/icons/export.png'), "&Fast Export")
+        export_action = self.menu.addAction(QIcon(':/icons/export.png'), "&Export Textures")
         self.menu.addSeparator()
         maya_action = self.menu.addAction(QIcon(':/icons/maya.png'), "&To Maya")
         clarisse_action = self.menu.addAction(QIcon(':/icons/clarisse.png'), "&To Clarisse")
@@ -88,6 +88,11 @@ class SubstanceIntegration():
         self.menu.addSeparator()
         settings_menu = self.menu.addMenu(QIcon(':/icons/settings.png'), "&Settings")
         export_texture_action = settings_menu.addAction("&Texture Export")
+        # latest textures
+        self.use_latest_textures_action = settings_menu.addAction("&Use Latest Textures on DCC")
+        self.use_latest_textures_action.setCheckable(True)
+        latest_texture_status = get_dcc_cfg("substance_painter", "configuration", 'use_latest_textures')
+        self.use_latest_textures_action.setChecked(latest_texture_status)
         self.menu.addSeparator()
 
         # recent
@@ -195,39 +200,76 @@ class SubstanceIntegration():
         return
 
     def on_send_to_maya(self):
-        self.on_textures_export()
 
-        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
-        asset_data = json.loads(asset_data)
-        data = {
-            'name': self.asset_name,
-            'host': 'spp',
-            'to_renderer': 'arnold',
-            'source_renderer': 'standard',
-            'asset_data': asset_data,
-        }
-        send_to_maya(data)
+        if is_maya_connected():
+            if not self.use_latest_textures_action.isChecked():
+                self.on_textures_export()
+
+            settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_maya')
+
+            asset_data = db.get_geometry(
+                asset_name=self.asset_name,
+                obj_file="",
+                usd_geo_file="",
+                abc_file="",
+                fbx_file="",
+                source_file="",
+                mesh_data=""
+            )
+
+            import_type = settings.get('geometry_type')
+
+            data = {
+                'name': self.asset_name,
+                'host': 'spp',
+                'to_renderer': settings.get('use_material'),
+                'source_renderer': 'standard',
+                'colorspace': settings.get('colorspace'),
+                'geo_type': 'abc_file',
+                'import_type': import_type,
+                'geo_paths': asset_data,
+                'asset_data': json.loads(asset_data.get('mesh_data')),
+            }
+            send_to_maya(data)
+        else:
+            message(self.main_window, "Error",
+                    "Can not connect to maya.\nMake sure you open maya or maya command port is open.")
 
     def on_send_to_clarisse(self):
-        self.on_textures_export()
+        if is_clarisse_connected():
+            if not self.use_latest_textures_action.isChecked():
+                self.on_textures_export()
 
-        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
-        asset_data = json.loads(asset_data)
-        geo_paths = db.get_geometry(asset_name=self.asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
-                                    source_file="")
+            settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
+            to_render = settings.get('use_material')
+            to_render = '_'.join(to_render.lower().split(' '))
 
-        data = {
-            'name': self.asset_name,
-            'host': 'spp',
-            'renderer': 'arnold',
-            'to_renderer': 'autodesk_standard_surface',
-            'source_renderer': 'standard',
-            'colorspace': 'aces',
-            'geo_type': 'abc_bundle',
-            'geo_paths': geo_paths,
-            'asset_data': asset_data,
-        }
-        send_to_clarisse(data)
+            asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+            asset_data = json.loads(asset_data)
+            geo_paths = db.get_geometry(
+                asset_name=self.asset_name,
+                obj_file="",
+                usd_geo_file="",
+                abc_file="",
+                fbx_file="",
+                source_file="")
+
+            data = {
+                'name': self.asset_name,
+                'host': 'spp',
+                'renderer': 'arnold',
+                'to_renderer': to_render,
+                'source_renderer': 'standard',
+                'colorspace': settings.get('colorspace'),
+                'geo_type': settings.get('geometry_type'),
+                'geo_paths': geo_paths,
+                'asset_data': asset_data,
+            }
+            send_to_clarisse(data)
+            print(data)
+        else:
+            message(self.main_window, "Error",
+                    "Can not connect to clarisse.\nMake sure you open clarisse session or clarisse command port is open.")
 
     def on_about(self):
 
