@@ -13,10 +13,19 @@ from utils.open_ports import OpenSocket
 
 fm = FileManager()
 
-def send_to_maya(data):
+
+def is_maya_connected(port_num=None):
+    if not port_num:
+        port_num = get_dcc_cfg("maya", 'configuration', "command_port")
+    socket = OpenSocket(host='127.0.0.1', port=port_num)
+    return socket
+
+
+def send_to_maya(data, port_num=None):
     try:
-        port = get_dcc_cfg("maya", 'configuration', "command_port")
-        socket = OpenSocket(host='127.0.0.1', port=port)
+        if not port_num:
+            port_num = get_dcc_cfg("maya", 'configuration', "command_port")
+        socket = OpenSocket(host='127.0.0.1', port=port_num)
 
         cmd_text = "## Djed Tools ##\n\n"
         cmd_text += "print('## Djed Tools ##')\n"
@@ -35,7 +44,8 @@ def send_to_maya(data):
         socket.send('''{}'''.format(cmd_text))
 
     except Exception as e:
-        message(None, "Error", str(e))
+        message(None, "Error", str(e) + '\n Make sure you open maya or maya command port is open.')
+
 
 if __name__ == '__main__':
     print(__name__)
