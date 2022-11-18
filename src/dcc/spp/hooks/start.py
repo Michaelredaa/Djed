@@ -41,7 +41,7 @@ def add_spp_startup():
 
     try:
         shutil.copy(source_file, dist_file)
-        return True
+        return "Done"
     except:
         return 'Unable to add integration to substance painter'
 

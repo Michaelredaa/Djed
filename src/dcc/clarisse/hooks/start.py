@@ -16,14 +16,14 @@ def add_clarisse_shelf(env_path=None):
             for line in fh:
                 if "IX_SHELF_CONFIG_FILE" in line:
                     if shelf_path in line:
-                        return True
+                        return "Done"
                     else:
                         text.append(line.strip() + ";" + shelf_path + "\n")
                 else:
                     text.append(line)
         with open(env_path, "w") as fh2:
             fh2.writelines(text)
-        return True
+        return "Done"
 
     except Exception as e:
         return str(e)

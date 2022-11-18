@@ -25,7 +25,7 @@ def add_maya_module(maya_module_path=None):
         with mod_file.open('w') as f:
             f.write(cmd)
 
-        return True
+        return "Done"
     except Exception as e:
         return str(e)
 
