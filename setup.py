@@ -26,17 +26,11 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 executables = [
-    Executable("start.py", base=base, targetName="Djed", icon=f"{DJED_ROOT.as_posix()}/src/utils/resources/icons/djed.ico")
+    Executable("start.py", base=base, targetName="Djed",
+               icon=f"{DJED_ROOT.as_posix()}/src/utils/resources/icons/djed.ico")
 ]
 
 include_files = [
-    "docs",
-    "src",
-    "venv",
-    "start.py",
-    "start.bat",
-    "cfg.json",
-    "README.md"
 ]
 
 build_options = {
