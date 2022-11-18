@@ -140,7 +140,7 @@ QMenu::right-arrow {
 QMenu::item {
     color: #DEE0E2;
     background-color: #2B2B2B;
-    padding: 2px 15px 2px 15px;
+    padding: 4px 15px 4px 15px;
     border: 1px solid #2B2B2B; /* reserve space for selection border */
 }
 
@@ -1538,7 +1538,7 @@ QSplitter::handle:vertical {
 }
 
 QSplitter::handle:horizontal {
-    background-image: url(:/icons/splitter_horizontal_dark.png);
+    background-image: url(:/icons/splitter_vertical_dark.png);
     background-position: center center;
     background-repeat: none;
     margin: 10px 2px 10px 2px;
