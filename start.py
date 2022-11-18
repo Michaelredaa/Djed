@@ -16,6 +16,8 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from startup.system_tray import DjedTray
+from utils.resources.style_rc import *
+
 
 def run_tray():
     if not QApplication.instance():
@@ -24,18 +26,15 @@ def run_tray():
         app = QApplication.instance()
 
     parent = QWidget()
-    icon_path = f"{DJED_ROOT}/src/utils/resources/icons/djed.png"
-    tray = DjedTray(QIcon(icon_path), parent)
+    tray = DjedTray(QIcon(":/icons/djed.png"), parent)
 
     sys.exit(app.exec_())
+
 
 def main():
     run_tray()
 
 
-
-
 if __name__ == '__main__':
     print("Starting Djed")
     main()
-
