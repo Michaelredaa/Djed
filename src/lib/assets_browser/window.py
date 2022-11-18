@@ -28,6 +28,7 @@ from lib.assets_browser.ui.promoted_widgets import ItemRoles, WScreenShot, add_c
 from lib.assets_browser.ui import Ui_AssetBrowserWindow, Ui_addTagWidget
 
 from utils.resources.style_rc import *
+from utils.resources.stylesheet import get_stylesheet
 
 # ---------------------------------
 # Variables
@@ -154,7 +155,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.fm = FileManager()
         self.tags_win = None
 
-        self.setStyleSheet(open(DJED_ROOT.joinpath('src/utils/resources/stylesheet.qss')).read())
+        self.setStyleSheet(get_stylesheet())
 
         self.init_win()
         self.connect_events()
@@ -296,12 +297,13 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             index = indexes[0]
             # thumbnail
             thum_path = index.data(ItemRoles.Thumbnail)
-            preview = QPixmap(thum_path)
-            preview = preview.scaled(QSize(1024, 1024), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.label_preview0.setPixmap(preview)
-            self.label_preview0.setScaledContents(True)
+            self.pixmap_preview = QPixmap(thum_path)
+            self.pixmap_preview = self.pixmap_preview.scaled(QSize(1024, 1024), Qt.KeepAspectRatio,
+                                                             Qt.SmoothTransformation)
+            self.label_preview0.setPixmap(self.pixmap_preview)
             self.label_preview0.setAlignment(Qt.AlignLeft | Qt.AlignTop)
             self.label_preview0.setMargin(10)
+            self.label_preview0.installEventFilter(self)
 
             # table data
             self.table_data.clear()
@@ -449,7 +451,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         asset['family'] = 'asset'
         asset['colorspace'] = 'aces'
-        asset['to_renderer'] = 'standard_surface'
+        asset['to_renderer'] = 'autodesk_standard_surface'
         asset['geo_type'] = 'abc_bundle'
 
         send_to_clarisse(asset)
@@ -574,6 +576,15 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         self.destroy()
 
+    def eventFilter(self, widget, event):
+        if event.type() == QtCore.QEvent.Resize and widget is self.label_preview0:
+            self.label_preview0.setPixmap(
+                self.pixmap_preview.scaled(
+                    self.label_preview0.width(),
+                    self.label_preview0.height(),
+                    Qt.KeepAspectRatio))
+            return True
+        return super(AssetViewWindow, self).eventFilter(widget, event)
 
 # Main Function
 def main():

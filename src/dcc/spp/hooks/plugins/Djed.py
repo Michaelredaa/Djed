@@ -42,6 +42,7 @@ from utils.assets_db import AssetsDB
 from utils.file_manager import FileManager
 from utils.generic import merge_dicts
 from utils.resources.style_rc import *
+from utils.resources.stylesheet import get_stylesheet
 from dcc.spp.api import pipeline
 from dcc.linker.to_maya import send_to_maya, is_maya_connected
 from dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
@@ -59,7 +60,7 @@ class SubstanceIntegration():
         self.js = pipeline.JS()
 
         self.menu = QMenu("DJED")
-        self.menu.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
+        self.menu.setStyleSheet(get_stylesheet())
         self.main_window = pipeline.main_window()
 
         self.asset_name = ''

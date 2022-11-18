@@ -28,6 +28,7 @@ from utils.file_manager import FileManager
 from utils.dialogs import message
 from settings.widgets import *
 
+from utils.resources.stylesheet import get_stylesheet
 from utils.resources.style_rc import *
 
 # ---------------------------------
@@ -49,7 +50,7 @@ class SettingsWindow(QMainWindow):
 
         self.connect_events()
 
-        self.setting_tree.expandAll()
+        # self.setting_tree.expandAll()
 
     def connect_events(self):
 
@@ -85,17 +86,7 @@ class SettingsWindow(QMainWindow):
         self.setWindowTitle(title)
         self.setMinimumSize(screen_width * 0.45, screen_height * 0.5)
 
-        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
-
-        # set Font
-        font = QFont()
-        font.setFamily("DejaVu Sans Condensed")
-        font.setPointSize(20)
-        font.setBold(True)
-        font.setWeight(50)
-        font.setKerning(True)
-
-        # setFont(self.font)
+        self.setStyleSheet(get_stylesheet())
 
         # Update table
         ui_data = self.get_settings_data()
@@ -124,23 +115,6 @@ class SettingsWindow(QMainWindow):
         color = QColor(45, 45, 45)
         display_color = QColor(127, 127, 127)
         darkPalette.setColor(QPalette.Window, color)
-
-        # darkPalette.setColor(QPalette.WindowText, Qt.white)
-        # darkPalette.setColor(QPalette.Base, QColor(18, 18, 18))
-        # darkPalette.setColor(QPalette.AlternateBase, display_color)
-        # darkPalette.setColor(QPalette.ToolTipBase, Qt.white)
-        # darkPalette.setColor(QPalette.ToolTipText, Qt.white)
-        # darkPalette.setColor(QPalette.Text, Qt.white)
-        # darkPalette.setColor(QPalette.Disabled, QPalette.Text, display_color)
-        # darkPalette.setColor(QPalette.Button, color)
-        # darkPalette.setColor(QPalette.ButtonText, Qt.white)
-        # darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, display_color)
-        # darkPalette.setColor(QPalette.BrightText, Qt.red)
-        # darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
-        #
-        # darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-        # darkPalette.setColor(QPalette.HighlightedText, Qt.black)
-        # darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, display_color)
 
         self.setPalette(darkPalette)
 

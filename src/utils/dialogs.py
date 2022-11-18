@@ -7,17 +7,24 @@ Documentation:
 # import libraries
 import sys
 import os
+from pathlib import Path
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
-DJED_ROOT = os.getenv('DJED_ROOT')
+DJED_ROOT = Path(os.getenv("DJED_ROOT"))
+sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
+
+from utils.resources.stylesheet import get_stylesheet
+
 
 class Message(QtWidgets.QMessageBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setSizeGripEnabled(True)
-        self.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
-
+        self.setStyleSheet(get_stylesheet())
 
     def event(self, event):
         if event.type() in (event.LayoutRequest, event.Resize):
@@ -38,7 +45,7 @@ class Message(QtWidgets.QMessageBox):
 def text_dialog(parent=None):
     inp = QtWidgets.QInputDialog(parent)
 
-    inp.setStyleSheet(open(f"{DJED_ROOT}/src/utils/resources/stylesheet.qss").read())
+    inp.setStyleSheet(get_stylesheet())
 
     ##### SOME SETTINGS
     inp.setInputMode(QtWidgets.QInputDialog.TextInput)
