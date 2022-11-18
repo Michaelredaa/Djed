@@ -19,9 +19,9 @@ from dcc.clarisse.hooks.start import add_clarisse_shelf
 
 def add_djed_integration():
     msg = []
-    msg.append(f'<p><span style="font-size: 20px;">Maya integration: </span> {add_maya_module()}</p>')
-    msg.append(f'<p><span style="font-size: 20px;">Substance painter integration: </span> {add_spp_startup()}</p>')
-    msg.append(f'<p><span style="font-size: 20px;">Clarisse integration: </span> {add_clarisse_shelf()}</p>')
+    msg.append(f'<p><span>Maya integration: </span> {add_maya_module()}</p>')
+    msg.append(f'<p><span>Substance painter integration: </span> {add_spp_startup()}</p>')
+    msg.append(f'<p><span>Clarisse integration: </span> {add_clarisse_shelf()}</p>')
 
     return '\n'.join(msg)
 
