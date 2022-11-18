@@ -9,20 +9,6 @@ def open_commandPort():
     if not cmds.commandPort(":4436", query=True):
         cmds.commandPort(name=":4436", sourceType="python")
 
-def register_plugins():
-    from pathlib import Path
-    import os
-    import pyblish.api
-    import pyblish.util
-
-    DJED_ROOT = Path(os.getenv('DJED_ROOT'))
-
-    plugin_path = DJED_ROOT.joinpath('src/dcc/maya/plugin')
-    pyblish.util.plugin.deregister_all_plugins()
-    pyblish.api.deregister_plugin_path(plugin_path.as_posix())
-    pyblish.api.register_plugin_path(plugin_path.as_posix())
-
-
 
 def init_djed():
     import traceback
