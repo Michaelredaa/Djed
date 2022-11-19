@@ -64,7 +64,7 @@ class SubstanceIntegration():
         self.main_window = pipeline.main_window()
 
         self.asset_name = ''
-        self.project_dir = ''
+        self.project_dir = self.fm.get_user_json('general', 'project')
         self.exported_textures = dict()
 
         self.init_menus()
