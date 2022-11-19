@@ -2,8 +2,6 @@
 Djed Tools
 ====
 
-[![documentation]()]()
-
 
 Introduction
 ------------
@@ -15,9 +13,9 @@ Djed provide some facilities to assets workflow like assets validation and asset
 Djed provide to you all sources and the database locally to manage it as well as the full control to customize every
 thing through global settings.
 
-![img_1.png](docs/screenshots/main_diagram.png)
+![main_diagram](docs/screenshots/main_diagram.png)
 
-To get more information,
+[**Get more information**](docs/basic_doc.md)
 
 Requirements
 ------------
