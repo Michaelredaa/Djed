@@ -396,7 +396,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             send_action = menu.addMenu("Send to")
             send_to_maya_action = send_action.addAction("Maya")
             send_to_clarisse_action = send_action.addAction("Clarisse")
-            send_to_spp_action = send_action.addAction("Substance Painter")
+            # send_to_spp_action = send_action.addAction("Substance Painter")
 
             edit_action = menu.addAction("Edit asset")
 
@@ -407,7 +407,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             # signals
             send_to_maya_action.triggered.connect(self.on_open_maya)
             send_to_clarisse_action.triggered.connect(self.on_open_clarisse)
-            send_to_spp_action.triggered.connect(self.on_open_spp)
+            # send_to_spp_action.triggered.connect(self.on_open_spp)
             tag_action.triggered.connect(self.on_add_tag_window)
             edit_action.triggered.connect(self.on_edit_asset)
 
@@ -453,7 +453,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         asset['family'] = 'asset'
         asset['colorspace'] = 'aces'
         asset['to_renderer'] = 'autodesk_standard_surface'
-        asset['geo_type'] = 'abc_bundle'
+        asset['geometry_type'] = 'abc_bundle'
 
         send_to_clarisse(asset)
 
