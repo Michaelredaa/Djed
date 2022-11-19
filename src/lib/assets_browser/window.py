@@ -438,6 +438,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         asset['colorspace'] = 'aces'
         asset['to_renderer'] = 'arnold'
         asset['geo_type'] = 'abc_file'
+        asset['import_type'] = 'Import Geometry'
 
         send_to_maya(asset)
 
