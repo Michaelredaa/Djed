@@ -53,7 +53,7 @@ Source: "{#ROOT}\venv\*"; Excludes: "__pycache__"; DestDir: "{app}\venv"; Flags:
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
-Root: "HKLM"; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DJED_ROOT"; ValueData: "{autopf}\{#MyAppName}"; Flags: createvalueifdoesntexist preservestringtype
+Root: "HKLM"; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DJED_ROOT"; ValueData: "{autopf}\{#MyAppName}"; Flags: preservestringtype deletevalue
 
 
 
