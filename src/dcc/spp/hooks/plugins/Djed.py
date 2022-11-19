@@ -94,7 +94,10 @@ class SubstanceIntegration():
         # latest textures
         self.use_latest_textures_action = settings_menu.addAction("&Use Latest Textures on DCC")
         self.use_latest_textures_action.setCheckable(True)
-        latest_texture_status = get_dcc_cfg("substance_painter", "configuration", 'use_latest_textures')
+        try:
+            latest_texture_status = get_dcc_cfg("substance_painter", "configuration", 'use_latest_textures')
+        except:
+            latest_texture_status = True
         self.use_latest_textures_action.setChecked(latest_texture_status)
         self.menu.addSeparator()
 
@@ -120,8 +123,8 @@ class SubstanceIntegration():
         about_action.triggered.connect(self.on_about)
 
         # reload the plugin
-        reload_action = self.menu.addAction("&Reload")
-        reload_action.triggered.connect(self.on_reload_plugin())
+        # reload_action = self.menu.addAction("&Reload")
+        # reload_action.triggered.connect(self._on_reload_plugin())
 
     def on_save(self):
 
@@ -281,7 +284,7 @@ class SubstanceIntegration():
     def on_about(self):
         about.message(self.main_window)
 
-    def on_reload_plugin(self):
+    def _on_reload_plugin(self):
         plugin = importlib.import_module("Djed")
         substance_painter_plugins.reload_plugin(plugin)
 
