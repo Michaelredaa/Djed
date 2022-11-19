@@ -231,13 +231,22 @@ class ToolSettingsBase(QMainWindow, Ui_ToolSettings):
 
         tokens_text = text
         if self.ma.selection():
-            tokens_text = text.replace("$selection", self.ma.selection()[0])
-        if self.ma.get_project_dir():
-            export_dir = tokens_text.replace("$project", self.ma.get_project_dir())
+            current_selection = self.ma.selection()[0]
+        else:
+            current_selection = ''
+
+        tokens_text = text.replace("$selection", current_selection)
+
+        current_project = self.fm.get_user_json('general', 'project')
+
+        if not current_project:
+            current_project = ''
+        export_dir = tokens_text.replace("$project", current_project)
 
         export_root = self.ma.get_file_path()
         if not export_root:
-            return
+            export_root = ''
+
         for i in range(export_dir.count("../")):
             export_root = os.path.dirname(export_root)
 

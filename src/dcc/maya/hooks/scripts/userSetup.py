@@ -19,7 +19,7 @@ def init_djed():
 
     DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
-    print('Djed: ', DJED_ROOT)
+    print('Djed: ', DJED_ROOT.as_posix())
     try:
         site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
         sys.path.append(DJED_ROOT.joinpath('src').as_posix())
@@ -30,6 +30,8 @@ def init_djed():
         shelves.main()
         open_commandPort()
 
+        from dcc.maya.api.lib import set_project_event
+        set_project_event()
 
     except:
         print(traceback.format_exc())
