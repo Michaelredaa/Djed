@@ -15,8 +15,6 @@ from PySide2.QtWidgets import *
 from lib.assets_browser.ui.promoted_widgets import ListView
 
 
-
-
 class Ui_AssetBrowserWindow(object):
     def setupUi(self, AssetBrowserWindow):
         if not AssetBrowserWindow.objectName():
@@ -51,37 +49,39 @@ class Ui_AssetBrowserWindow(object):
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_6)
 
-        self.pushButton_refreshView = QPushButton(self.layoutWidget_2)
-        self.pushButton_refreshView.setObjectName(u"pushButton_refreshView")
+        self.pushButton_sortItems = QPushButton(self.layoutWidget_2)
+        self.pushButton_sortItems.setObjectName(u"pushButton_sortItems")
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_refreshView.sizePolicy().hasHeightForWidth())
-        self.pushButton_refreshView.setSizePolicy(sizePolicy)
-        self.pushButton_refreshView.setMinimumSize(QSize(0, 20))
-        self.pushButton_refreshView.setMaximumSize(QSize(40, 25))
-        self.pushButton_refreshView.setStyleSheet(u"background-color:none;\n"
-"border:none;")
-        icon = QIcon()
-        icon.addFile(u":/ui/icon/images/reload.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pushButton_refreshView.setIcon(icon)
-        self.pushButton_refreshView.setIconSize(QSize(20, 20))
-
-        self.horizontalLayout_2.addWidget(self.pushButton_refreshView)
-
-        self.pushButton_sortItems = QPushButton(self.layoutWidget_2)
-        self.pushButton_sortItems.setObjectName(u"pushButton_sortItems")
         sizePolicy.setHeightForWidth(self.pushButton_sortItems.sizePolicy().hasHeightForWidth())
         self.pushButton_sortItems.setSizePolicy(sizePolicy)
         self.pushButton_sortItems.setMinimumSize(QSize(0, 20))
         self.pushButton_sortItems.setMaximumSize(QSize(40, 25))
         self.pushButton_sortItems.setStyleSheet(u"background-color:none;\n"
-"border:none;")
-        icon1 = QIcon()
-        icon1.addFile(u":/ui/icon/images/sort.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pushButton_sortItems.setIcon(icon1)
+                                                "border:none;\n"
+                                                "padding: 2px 2px 2px 2px;")
+        icon = QIcon()
+        icon.addFile(u":/ui/icon/images/sort.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pushButton_sortItems.setIcon(icon)
 
         self.horizontalLayout_2.addWidget(self.pushButton_sortItems)
+
+        self.pushButton_refreshView = QPushButton(self.layoutWidget_2)
+        self.pushButton_refreshView.setObjectName(u"pushButton_refreshView")
+        sizePolicy.setHeightForWidth(self.pushButton_refreshView.sizePolicy().hasHeightForWidth())
+        self.pushButton_refreshView.setSizePolicy(sizePolicy)
+        self.pushButton_refreshView.setMinimumSize(QSize(0, 20))
+        self.pushButton_refreshView.setMaximumSize(QSize(40, 25))
+        self.pushButton_refreshView.setStyleSheet(u"background-color:none;\n"
+                                                  "border:none;\n"
+                                                  "padding: 2px 2px 2px 2px;")
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/reload.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pushButton_refreshView.setIcon(icon1)
+        self.pushButton_refreshView.setIconSize(QSize(20, 20))
+
+        self.horizontalLayout_2.addWidget(self.pushButton_refreshView)
 
         self.pushButton_filterItems = QPushButton(self.layoutWidget_2)
         self.pushButton_filterItems.setObjectName(u"pushButton_filterItems")
@@ -90,9 +90,10 @@ class Ui_AssetBrowserWindow(object):
         self.pushButton_filterItems.setMinimumSize(QSize(0, 25))
         self.pushButton_filterItems.setMaximumSize(QSize(40, 25))
         self.pushButton_filterItems.setStyleSheet(u"background-color:none;\n"
-"border:none;")
+                                                  "border:none;\n"
+                                                  "padding: 2px 2px 2px 2px;")
         icon2 = QIcon()
-        icon2.addFile(u":/ui/icon/images/filter.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/filter.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pushButton_filterItems.setIcon(icon2)
 
         self.horizontalLayout_2.addWidget(self.pushButton_filterItems)
@@ -286,21 +287,21 @@ class Ui_AssetBrowserWindow(object):
 
     def retranslateUi(self, AssetBrowserWindow):
         AssetBrowserWindow.setWindowTitle(QCoreApplication.translate("AssetBrowserWindow", u"MainWindow", None))
-#if QT_CONFIG(tooltip)
-        self.pushButton_refreshView.setToolTip(QCoreApplication.translate("AssetBrowserWindow", u"Sort Items", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_refreshView.setText("")
-#if QT_CONFIG(tooltip)
+        # if QT_CONFIG(tooltip)
         self.pushButton_sortItems.setToolTip(QCoreApplication.translate("AssetBrowserWindow", u"Sort Items", None))
-#endif // QT_CONFIG(tooltip)
+        # endif // QT_CONFIG(tooltip)
         self.pushButton_sortItems.setText("")
-#if QT_CONFIG(tooltip)
+        # if QT_CONFIG(tooltip)
+        self.pushButton_refreshView.setToolTip(QCoreApplication.translate("AssetBrowserWindow", u"Sort Items", None))
+        # endif // QT_CONFIG(tooltip)
+        self.pushButton_refreshView.setText("")
+        # if QT_CONFIG(tooltip)
         self.pushButton_filterItems.setToolTip(QCoreApplication.translate("AssetBrowserWindow", u"Filter Items", None))
-#endif // QT_CONFIG(tooltip)
+        # endif // QT_CONFIG(tooltip)
         self.pushButton_filterItems.setText("")
-#if QT_CONFIG(tooltip)
+        # if QT_CONFIG(tooltip)
         self.le_search.setToolTip(QCoreApplication.translate("AssetBrowserWindow", u"Search Items", None))
-#endif // QT_CONFIG(tooltip)
+        # endif // QT_CONFIG(tooltip)
         self.le_search.setPlaceholderText(QCoreApplication.translate("AssetBrowserWindow", u"Search", None))
         self.asset_num.setText(QCoreApplication.translate("AssetBrowserWindow", u"0 Asset", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_2), QCoreApplication.translate("AssetBrowserWindow", u"3D", None))

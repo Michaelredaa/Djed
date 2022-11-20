@@ -65,17 +65,17 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_refreshView">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
+              <widget class="QPushButton" name="pushButton_sortItems">
+                  <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                      </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                      <size>
+                          <width>0</width>
+                          <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
@@ -85,39 +85,36 @@
                 </size>
                </property>
                <property name="toolTip">
-                <string>Sort Items</string>
+                   <string extracomment="sort items">Sort Items</string>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-color:none;
-border:none;</string>
+                   <string notr="true">background-color:none;
+                       border:none;
+                       padding: 2px 2px 2px 2px;
+                   </string>
                </property>
                <property name="text">
                 <string/>
                </property>
                <property name="icon">
-                <iconset>
-                 <normaloff>:/ui/icon/images/reload.png</normaloff>:/ui/icon/images/reload.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
+                   <iconset>
+                       <normaloff>:/ui/icon/images/sort.png</normaloff>:/ui/icon/images/sort.png
+                   </iconset>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_sortItems">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
+                 <widget class="QPushButton" name="pushButton_refreshView">
+                     <property name="sizePolicy">
+                         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                         </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                         <size>
+                             <width>0</width>
+                             <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
@@ -127,20 +124,29 @@ border:none;</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Sort Items</string>
+                   <string extracomment="refresh">Sort Items</string>
                </property>
-               <property name="styleSheet">
-                <string notr="true">background-color:none;
-border:none;</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>:/ui/icon/images/sort.png</normaloff>:/ui/icon/images/sort.png</iconset>
-               </property>
-              </widget>
+                     <property name="styleSheet">
+                         <string notr="true">background-color:none;
+                             border:none;
+                             padding: 2px 2px 2px 2px;
+                         </string>
+                     </property>
+                     <property name="text">
+                         <string/>
+                     </property>
+                     <property name="icon">
+                         <iconset resource="../../../utils/resources/style_rc.qrc">
+                             <normaloff>:/icons/reload.png</normaloff>:/icons/reload.png
+                         </iconset>
+                     </property>
+                     <property name="iconSize">
+                         <size>
+                             <width>20</width>
+                             <height>20</height>
+                         </size>
+                     </property>
+                 </widget>
              </item>
              <item>
               <widget class="QPushButton" name="pushButton_filterItems">
@@ -163,19 +169,22 @@ border:none;</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Filter Items</string>
+                   <string extracomment="filter">Filter Items</string>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-color:none;
-border:none;</string>
+                   <string notr="true">background-color:none;
+                       border:none;
+                       padding: 2px 2px 2px 2px;
+                   </string>
                </property>
                <property name="text">
                 <string/>
                </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>:/ui/icon/images/filter.png</normaloff>:/ui/icon/images/filter.png</iconset>
-               </property>
+                  <property name="icon">
+                      <iconset resource="../../../utils/resources/style_rc.qrc">
+                          <normaloff>:/icons/filter.png</normaloff>:/icons/filter.png
+                      </iconset>
+                  </property>
               </widget>
              </item>
              <item>
@@ -479,13 +488,15 @@ border:none;</string>
    </property>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ListView</class>
-   <extends>QListView</extends>
-   <header>Djed.Scripts.asset_browser.promoted_widgets.h</header>
-  </customwidget>
- </customwidgets>
- <resources/>
- <connections/>
+    <customwidgets>
+        <customwidget>
+            <class>ListView</class>
+            <extends>QListView</extends>
+            <header>lib.assets_browser.ui.promoted_widgets.h</header>
+        </customwidget>
+    </customwidgets>
+    <resources>
+        <include location="../../../utils/resources/style_rc.qrc"/>
+    </resources>
+    <connections/>
 </ui>

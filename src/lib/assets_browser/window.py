@@ -181,7 +181,6 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         self.showMaximized()
 
         # button
-        self.pushButton_filterItems.setIcon(QIcon(":/icons/filter.png"))
 
         # filter checkbox menu
         self.filter_menu = QMenu(self)
@@ -228,6 +227,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
 
         # buttons
         self.pushButton_filterItems.clicked.connect(self.on_filter_click)
+        self.pushButton_refreshView.clicked.connect(self.refresh)
 
         # check box
         self.all_filter_cb.stateChanged.connect(self.on_filter_changed)
