@@ -271,7 +271,7 @@ class SubstanceIntegration():
                 'to_renderer': to_render,
                 'source_renderer': 'standard',
                 'colorspace': settings.get('colorspace'),
-                'geo_type': settings.get('geometry_type'),
+                'geometry_type': settings.get('geometry_type'),
                 'geo_paths': geo_paths,
                 'asset_data': asset_data,
             }
