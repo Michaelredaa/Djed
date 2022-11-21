@@ -827,7 +827,7 @@ class Maya:
     def validate_uv_shells(self, shape_node):
 
         def get_uv_place(uv_point):
-            uv = [math.floor(x) for x in uv_point]
+            uv = [math.floor(x) if x.is_integer() else int(x) for x in uv_point]
             return 1001 + uv[0], 1001 + uv[0] + 10 * uv[1]
 
         uv_shells = self.get_uv_shells(shape_node)
@@ -843,9 +843,10 @@ class Maya:
                 intial_location = get_uv_place(uv_points[0])
                 for i, uv_point in enumerate(uv_points):
                     if intial_location != get_uv_place(uv_points[i]):
+                        # print(intial_location, get_uv_place(uv_points[i]), uv_points[i])
                         shape_name = shape_node.rsplit('|', 1)[-1]
-                        message = "{} has a shared uv islands with borders in {}".format(shape_name, uvs)
-                        return message, uvs
+                        msg = "{} has a shared uv islands with borders in {}".format(shape_name, uvs)
+                        return msg, uvs
 
         return True
 
