@@ -12,30 +12,35 @@ class SelectInvalidUVSetsNodes(pyblish.api.Action):
     def process(self, context, plugin):
 
         for result in context.data["results"]:
-            if result["error"]:
+
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_uvsets_nodes', [])
                 cmds.select([x.get('node') for x in invalid_nodes if x], r=1)
 
 
-
 class SelectInvalidUVNodes(pyblish.api.Action):
-    label = "Select nodes"
+    label = "Select UVs"
     on = "failed"
     icon = "hand-o-up"
 
     def process(self, context, plugin):
 
         for result in context.data["results"]:
-            if result["error"]:
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
+                print(instance.data)
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_uv_nodes', [])
+                invalid_uvs = []
+                for uvs in invalid_nodes:
+                    for uv in uvs.get('uvs_on_boarders', []):
+                        invalid_uvs.append(uv)
 
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
-                cmds.select([x.get('uvs_on_boarders') for x in invalid_nodes if x], r=1)
+                cmds.select(invalid_uvs, r=1)
 
 
 class FixUVSets(pyblish.api.Action):
-    label = "Fix invalid nodes"
+    label = "Fix UV sets"
     on = "failed"
     icon = "wrench"
 
@@ -44,16 +49,14 @@ class FixUVSets(pyblish.api.Action):
         ma = Maya()
 
         for result in context.data["results"]:
-            if result["error"]:
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
 
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_uvsets_nodes', [])
 
                 for node_dict in invalid_nodes:
                     shape_node = node_dict.get('node')
                     uv_sets = node_dict.get('uv_sets')
-                    print(instance.data)
-                    print("sets: ", uv_sets)
                     if not uv_sets:
                         return
 
@@ -105,19 +108,25 @@ class ValidateUVSets(pyblish.api.InstancePlugin):
                 invalid_nodes = {'node': shape_node, 'uv_sets': uv_sets}
                 invalid_uv_set_names.append(invalid_nodes)
 
+        if 'output' not in instance:
+            instance.set_data("output", {})
+
         if no_uv_sets:
-            instance.set_data("output", {'invalid_nodes': no_uv_sets})
+            instance.data['djed_errors']['invalid_uvsets_nodes'] = no_uv_sets
             msg = f"Some nodes have no uvSets'{no_uv_sets}'"
+            self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
 
         if more_uv_sets:
-            instance.set_data("output", {'invalid_nodes': more_uv_sets})
+            instance.data['djed_errors']['invalid_uvsets_nodes'] = more_uv_sets
             msg = f"Some nodes have more than uvSets'{more_uv_sets}'"
+            self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
 
         if invalid_uv_set_names:
-            instance.set_data("output", {'invalid_nodes': invalid_uv_set_names})
+            instance.data['djed_errors']['invalid_uvsets_nodes'] = invalid_uv_set_names
             msg = f"uv set name must have the uv set name 'map1' '{invalid_uv_set_names}'"
+            self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
 
 
@@ -149,7 +158,11 @@ class ValidateUVBoarders(pyblish.api.InstancePlugin):
                 invalid_nodes = {'node': shape_node, 'uvs_on_boarders': validate_result[1]}
                 overlapped.append(invalid_nodes)
 
+        if 'output' not in instance:
+            instance.set_data("output", {})
+
         if overlapped:
             msg = f"Some uv shells has intersection with border '{overlapped}'"
+            instance.data['djed_errors']['invalid_uv_nodes'] = overlapped
             self.log.error(msg)
             raise pyblish.api.ValidationError(msg)

@@ -15,9 +15,9 @@ class SelectInvalidNameNodes(pyblish.api.Action):
     def process(self, context, plugin):
 
         for result in context.data["results"]:
-            if result["error"]:
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_names_nodes', [])
                 cmds.select([x.get('node') for x in invalid_nodes if x])
 
 
@@ -88,7 +88,7 @@ class ValidateNaming(pyblish.api.InstancePlugin):
                 cmds.rename(sg_node, new_name)
 
         if invalid_nodes_names:
-            instance.set_data("output", invalid_nodes_names)
+            instance.data['djed_errors']['invalid_names_nodes'] = invalid_nodes_names
             msg = f"'Some nodes names is not allowed! '{invalid_nodes_names}'"
             self.log.error(msg)
             raise pyblish.api.ValidationError(msg)

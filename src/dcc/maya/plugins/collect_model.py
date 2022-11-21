@@ -28,6 +28,6 @@ class CollectMesh(pyblish.api.ContextPlugin):
         if '|' in selection[0]:
             name = selection[0].split('|')[1]
 
-        instance = context.create_instance(name, family="model", **self.external_data)
+        instance = context.create_instance(name, family="model", djed_errors={}, **self.external_data)
 
         instance.extend(shapes)

@@ -13,9 +13,9 @@ class SelectInvalidMTLNodes(pyblish.api.Action):
     def process(self, context, plugin):
 
         for result in context.data["results"]:
-            if result["error"]:
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_sg_nodes', [])
                 cmds.select([x.get('node') for x in invalid_nodes if x])
 
 
@@ -27,9 +27,9 @@ class SelectInvalidMultiMTLNodes(pyblish.api.Action):
     def process(self, context, plugin):
 
         for result in context.data["results"]:
-            if result["error"]:
+            if result["error"] and plugin == result['plugin']:
                 instance = result['instance']
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_mtl_nodes', [])
                 cmds.select([x.get('node') for x in invalid_nodes if x])
 
 
@@ -48,7 +48,7 @@ class SplitPerMaterials(pyblish.api.Action):
                 self.log.info("Split object by materials")
 
                 instance = result['instance']
-                invalid_nodes = instance.data.get("output", {}).get('invalid_nodes', [])
+                invalid_nodes = instance.data.get("djed_errors", {}).get('invalid_mtl_nodes', [])
                 for item in invalid_nodes:
                     ma.split_by_material(item.get('node'), keep_original=1)
 
@@ -85,14 +85,17 @@ class ValidateShadingGroups(pyblish.api.InstancePlugin):
                 invalid_nodes = {'node': shape_node, 'sgs': sgs}
                 lambert_shading_grps.append(invalid_nodes)
 
+        if 'output' not in instance:
+            instance.set_data("output", {})
+
         if no_shading_grps:
-            instance.set_data("output", {'invalid_nodes': no_shading_grps})
+            instance.data['djed_errors']['invalid_sg_nodes'] = no_shading_grps
             msg = f"Some nodes have no shading group '{no_shading_grps}'"
             self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
 
         if lambert_shading_grps:
-            instance.set_data("output", {'invalid_nodes': lambert_shading_grps})
+            instance.data['djed_errors']['invalid_sg_nodes'] = lambert_shading_grps
             msg = f"Some nodes have 'lambert1' material assign. ('lambert1' not allowed)'{lambert_shading_grps}'"
             self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
@@ -126,7 +129,7 @@ class ValidateMultipleMaterialAssign(pyblish.api.InstancePlugin):
                 faces_shading_grps.append(invalid_nodes)
 
         if faces_shading_grps:
-            instance.set_data("output", {'invalid_nodes': faces_shading_grps})
+            instance.data['djed_errors']['invalid_mtl_nodes'] = faces_shading_grps
             msg = f"Some nodes have multiple material assign on one object.'{faces_shading_grps}'"
             self.log.error(msg)
             raise pyblish.api.ValidationError(msg)
