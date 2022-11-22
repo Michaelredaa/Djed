@@ -9,6 +9,7 @@ import os
 import re
 import sys
 import site
+import traceback
 from pathlib import Path
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
@@ -83,7 +84,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         if geo_paths:
             # get the geometry types  ('Alembic Reference', 'Alembic Bundle', 'USD Reference', 'USD Bundle')
             geo_type = data.get('geometry_type', 'Alembic Bundle')
-            print(geo_type)
+
             if re.search(r'(?i)alembic', geo_type):
                 geo_path = geo_paths.get('abc_file')
             elif re.search(r'(?i)usd', geo_type):
@@ -227,10 +228,11 @@ class LoadAsset(pyblish.api.InstancePlugin):
             # assign materials
             default_sgs = ['default', 'top', 'bottom', 'back', 'left', 'right', 'front', 'sides', 'subset']
             # - reference
-            if "ref" in geo_type:
-                if 'abc' in geo_type:
+            if re.search(r'(?i)reference', geo_type):
+
+                if re.search(r'(?i)alembic', geo_type):
                     clarisse_geo_type = 'GeometryAbcMesh'
-                elif 'usd' in geo_type:
+                elif re.search(r'(?i)usd', geo_type):
                     clarisse_geo_type = 'GeometryUsdMesh'
                 else:
                     continue
@@ -243,7 +245,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                         shape_item_name = str(shape_item.get_name())
 
-                        if 'usd' in geo_type:
+                        if re.search(r'(?i)usd', geo_type):
                             mesh_path = mesh_shape_path.rsplit('|', 1)[0]
                         else:
                             mesh_path = mesh_shape_path
@@ -262,7 +264,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                                             [str(displacement_items[0])])
 
             # - bundle
-            elif "bundle" in geo_type:
+            elif re.search(r'(?i)bundle', geo_type):
                 bundle_sgs = self.cl.get_shading_group(geo_item)
 
                 for mesh_shape in asset_data.get(sg, {}).get('meshes', {}).get('shape', {}):
@@ -274,7 +276,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                             # source data pattern
                             source_path_pattern = mesh_shape.split('|')
-                            if 'usd' in geo_type:
+                            if re.search(r'(?i)usd', geo_type):
                                 # remove shape node because clarisse usd ignore the shape nodes
                                 source_path_pattern.pop(-1)
                             else:
@@ -282,15 +284,19 @@ class LoadAsset(pyblish.api.InstancePlugin):
                                 source_path_pattern.pop(-2)
 
                             source_path_pattern = '/'.join(source_path_pattern)
-
                             # assign material
-                            if clarisse_path_pattern in source_path_pattern:
-                                ix.cmds.SetValues([str(geo_item) + f".materials[{index}]"], [str(material_items[0])])
+                            try:
+                                print(clarisse_path_pattern, source_path_pattern, index, material_items)
+                                if clarisse_path_pattern in source_path_pattern:
+                                    ix.cmds.SetValues([str(geo_item) + f".materials[{index}]"],
+                                                      [str(material_items[0])])
 
-                            if displacement_items:
-                                ix.cmds.SetValues(
-                                    [str(geo_item) + f".displacements[{index}]"],
-                                    [str(displacement_items[0])])
+                                if displacement_items:
+                                    ix.cmds.SetValues(
+                                        [str(geo_item) + f".displacements[{index}]"],
+                                        [str(displacement_items[0])])
+                            except:
+                                print(traceback.format_exc())
 
 
 # Main Function
