@@ -453,7 +453,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         asset['family'] = 'asset'
         asset['colorspace'] = 'aces'
         asset['to_renderer'] = 'autodesk_standard_surface'
-        asset['geometry_type'] = 'abc_bundle'
+        asset['geometry_type'] = 'Alembic Bundle'
 
         send_to_clarisse(asset)
 
