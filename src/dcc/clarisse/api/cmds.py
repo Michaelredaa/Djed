@@ -125,12 +125,6 @@ class Clarisse:
 
         return objects
 
-    def geo_type(self, geo_type):
-        if geo_type == "Alembic Reference":
-            self.working_geo_type = "abc_ref"
-        else:
-            self.working_geo_type = "abc_ref"
-
     def create_ref(self, cntx, name, path, update_existence=True):
         if ix.item_exists(f'{cntx}/{name}_ref') and update_existence:
             ref_cntx = ix.get_item(f'{cntx}/{name}_ref')
@@ -169,15 +163,15 @@ class Clarisse:
         return bundle_item
 
     @error(name=__name__)
-    def import_geo(self, geo_path, asset_name=None, context="build://project", geo_type='abc_ref',
+    def import_geo(self, geo_path, asset_name=None, context="build://project", geo_type='Alembic Bundle',
                    update_existence=True):
         geo_path = unquote(geo_path)
 
         _types = {
-            'abc_ref': self.create_ref,
-            'usd_ref': self.create_ref,
-            'abc_bundle': self.abc_bundle,
-            'usd_bundle': self.usd_bundle
+            'Alembic Reference': self.create_ref,
+            'USD Reference': self.create_ref,
+            'Alembic Bundle': self.abc_bundle,
+            'USD Bundle': self.usd_bundle
         }
 
         geo_cntx = self.create_context(context)

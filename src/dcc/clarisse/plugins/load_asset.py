@@ -6,6 +6,7 @@ Documentation:
 # ---------------------------------
 # Import Libraries
 import os
+import re
 import sys
 import site
 from pathlib import Path
@@ -30,7 +31,6 @@ importlib.reload(utils.file_manager)
 
 import pyblish.api
 
-from utils.dialogs import message
 from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion, get_material_attrs, \
     get_shading_nodes
 
@@ -59,6 +59,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
     def process(self, instance):
         self.log.info("-initialize loading asset into clarisse")
+        print('-initialize loading asset into clarisse')
         self.cl = Clarisse()
 
         asset_name = instance.name
@@ -80,17 +81,19 @@ class LoadAsset(pyblish.api.InstancePlugin):
         geo_paths = data.get('geo_paths')
 
         if geo_paths:
-            # get the geometry types  (abc_ref, usd_ref, abc_bundle, usd_bundle)
-            geo_type = data.get('geometry_type', 'abc_ref')
-            if 'abc' in geo_type:
+            # get the geometry types  ('Alembic Reference', 'Alembic Bundle', 'USD Reference', 'USD Bundle')
+            geo_type = data.get('geometry_type', 'Alembic Bundle')
+            print(geo_type)
+            if re.search(r'(?i)alembic', geo_type):
                 geo_path = geo_paths.get('abc_file')
-            elif 'usd' in geo_type:
+            elif re.search(r'(?i)usd', geo_type):
                 geo_path = geo_paths.get('usd_geo_file')
             else:
+                ix.ix.log_error(f"Invalid geometry_type, '{geo_type}' not supported.")
                 return
 
             if not os.path.isfile(str(geo_path)):
-                message(None, "Error", f"'{geo_path}' file does not exists")
+                ix.ix.log_error(f"'{geo_path}' file does not exists")
                 return
         else:
             geo_type = geo_paths = geo_path = None

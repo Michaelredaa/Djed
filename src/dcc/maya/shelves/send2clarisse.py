@@ -216,10 +216,10 @@ class Maya2ClsSettings(ToolSettingsBase):
 
     def onApply(self):
         geo_types = {
-            "Alembic Reference": 'abc_ref',
-            "USD Reference": 'usd_ref',
-            "Alembic Bundle": 'abc_bundle',
-            "USD Bundle": 'usd_bundle'
+            "Alembic Reference": 'Alembic Reference',
+            "USD Reference": 'USD Reference',
+            "Alembic Bundle": 'Alembic Bundle',
+            "USD Bundle": 'USD Bundle'
         }
 
         renderer_types = {
