@@ -5,6 +5,7 @@ Documentation:
 import os
 import sys
 import re
+import ast
 from pathlib import Path
 
 DJED_ROOT = os.getenv('DJED_ROOT')
@@ -53,9 +54,10 @@ def texture_type_from_name(texture_name):
 
     # reversed to take the color before weight e.g. specular_color before specular
     for _type in reversed(list(texture_types.keys())):
-        if not isinstance(texture_types[_type], list):
+        str_to_list = ast.literal_eval(texture_types[_type])
+        if not isinstance(str_to_list, list):
             continue
-        for regex in texture_types[_type]:
+        for regex in str_to_list:
             if re.search(regex, texture_name):
                 return _type
 
