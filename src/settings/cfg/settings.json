@@ -373,11 +373,11 @@
             {
               "name": "spp_save_directory",
               "label": "SPP save directory",
-              "default_value": "../../sur/substance",
-              "value": "../../sur/substance",
+              "default_value": "../sur/substance",
+              "value": "../sur/substance",
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the source file (like maya file)",
-              "placeholder": "e.g. ../../sur/substance"
+              "placeholder": "e.g. ../sur/substance"
             },
             {
               "name": "use_latest_textures",
@@ -396,11 +396,11 @@
             {
               "name": "path",
               "label": "Path",
-              "default_value": "../../textures",
-              "value": "../../textures",
+              "default_value": "../textures",
+              "value": "../textures",
               "type": "input_text",
               "tooltip": "The directory in which the spp file will be saves\n relatives to the texturing file",
-              "placeholder": "e.g. \"../../textures\""
+              "placeholder": "e.g. \"../textures\""
             },
             {
               "name": "preset",
