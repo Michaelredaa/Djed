@@ -41,14 +41,18 @@ def get_sgName_from_textures(directory):
         for item in items:
             if re.search(r'(i?)sg', item):
                 sgs.append(item[1:])
-        sg = items[-2][1:]
-        if len(sg) >= 4:
-            try:
-                sg = items[-4][1:] + "_" + items[-3][1:]
-            except:
-                pass
+                continue
+        try:
+            sg = items[-2][1:]
+            if len(sg) >= 4:
+                try:
+                    sg = items[-4][1:] + "_" + items[-3][1:]
+                except:
+                    pass
 
-        sgs.append(sg)
+            sgs.append(sg)
+        except:
+            pass
     return list(set(sgs))
 
 
