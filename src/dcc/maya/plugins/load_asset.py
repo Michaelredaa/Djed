@@ -193,7 +193,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 except:
                     pass
 
-        ma.arrangeHypershade()
+        # ma.arrangeHypershade()
 
 
 # Main Function
