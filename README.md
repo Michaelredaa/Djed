@@ -22,11 +22,21 @@ Requirements
 
 Djed trying to follow [**VFX Reference Platform**](https://vfxplatform.com/)
 
-Djed is written in python 3, and use [**pyblish**](https://pyblish.com/) concepts in publishing
+Djed is written in python 3, and use [**pyblish**](https://github.com/Michaelredaa/Djed/releases) concepts in publishing
 
 
 Installing
 ------------
-Go to GitHub releases and download the latest build executable and install it with regular way.
+Go to [**GitHub releases**](https://github.com/Michaelredaa/Djed/releases)  and download the latest build executable and install it with regular way.
 
-Ideas and contributions are welcome!
+
+Build
+------------
+build `start.py` with [**cx-freeze**](https://cx-freeze.readthedocs.io/en/latest/index.html) 
+
+To make installer use [**Inno**](https://jrsoftware.org/) with configuration file `create_djed_executable.iss`
+
+
+Contribution
+------------
+Ideas and any kind of contributions or feedback are welcome!
