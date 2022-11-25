@@ -1,0 +1,268 @@
+{
+  "host": "maya",
+  "name": "plugins",
+  "label": "Plugins",
+  "children": [
+    {
+      "name": "export_geometry",
+      "label": "Export Geometry",
+      "children": [
+        {
+          "name": "export_root",
+          "label": "Export Root",
+          "default_value": "../Export/$selection",
+          "value": "../Export/$selection",
+          "type": "input_text",
+          "tooltip": "The directory in which the maya will export geometry\\n relatives to maya file\"",
+          "placeholder": "e.g. '../Export/$selection'"
+        },
+        {
+          "name": "use_pyblish",
+          "label": "Use Pyblish",
+          "default_value": true,
+          "value": true,
+          "type": "toggle_box",
+          "tooltip": "Use pyblish validator on export geometry"
+        },
+        {
+          "name": "obj",
+          "label": "OBJ",
+          "default_value": true,
+          "value": true,
+          "type": "toggle_box",
+          "tooltip": "Export obj format file when publish"
+        },
+        {
+          "name": "fbx",
+          "label": "FBX",
+          "default_value": false,
+          "value": false,
+          "type": "toggle_box",
+          "tooltip": "Export fbx format file when publish"
+        },
+        {
+          "name": "abc",
+          "label": "ABC",
+          "default_value": true,
+          "value": true,
+          "type": "toggle_box",
+          "tooltip": "Export alembic file when publish"
+        },
+        {
+          "name": "usd",
+          "label": "USD",
+          "default_value": false,
+          "value": false,
+          "type": "toggle_box",
+          "tooltip": "Export usd file when publish"
+        }
+      ]
+    },
+    {
+      "name": "maya_substance_painter",
+      "label": "Maya Substance Painter",
+      "children": [
+        {
+          "name": "export_root",
+          "label": "Export Root",
+          "default_value": "../Export/$selection",
+          "value": "../Export/$selection",
+          "type": "input_text",
+          "tooltip": "The directory in which the maya will export geometry\\n relatives to maya file\"",
+          "placeholder": "e.g. '../Export/$selection'"
+        },
+        {
+          "name": "default_texture_resolution",
+          "label": "Default Texture Resolution",
+          "menu_items": [
+            "512",
+            "1024",
+            "2048",
+            "4096"
+          ],
+          "default_value": "1024",
+          "value": "1024",
+          "type": "drop_menu",
+          "tooltip": "The default texture resolution to open substance painter with it"
+        },
+        {
+          "name": "normal_map_format",
+          "label": "Normal Map Format",
+          "menu_items": [
+            "OpenGL",
+            "DirectX"
+          ],
+          "default_value": "OpenGL",
+          "value": "OpenGl",
+          "type": "drop_menu",
+          "tooltip": "The normal format"
+        },
+        {
+          "name": "tangent_space_mode",
+          "label": "Tangent Space Mode",
+          "menu_items": [
+            "PerVertex",
+            "PerFragment"
+          ],
+          "default_value": "PerVertex",
+          "value": "PerVertex",
+          "type": "drop_menu",
+          "tooltip": "The tangent space mode"
+        },
+        {
+          "name": "project_workflow",
+          "label": "Project Workflow",
+          "menu_items": [
+            "TextureSetPerUVTile",
+            "UVTile"
+          ],
+          "default_value": "UVTile",
+          "value": "UVTile",
+          "type": "drop_menu",
+          "tooltip": "The project workflow use UDIM or materials workflow"
+        },
+        {
+          "name": "import_cameras",
+          "label": "Import Cameras",
+          "default_value": false,
+          "value": false,
+          "type": "toggle_box",
+          "tooltip": "import camera in substance painter"
+        },
+        {
+          "name": "use_latest_publish",
+          "label": "Use Latest Publish",
+          "default_value": false,
+          "value": false,
+          "type": "toggle_box",
+          "tooltip": "Use the latest published geometry"
+        }
+      ]
+    },
+    {
+      "name": "maya_clarisse",
+      "label": "Maya Clarisse",
+      "children": [
+        {
+          "name": "command_port",
+          "label": "Command Port",
+          "default_value": 55000,
+          "value": 55000,
+          "type": "input_text",
+          "tooltip": "Clarisse command port number to communicate with maya",
+          "placeholder": "e.g. '55000'"
+        },
+        {
+          "name": "geometry_type",
+          "label": "Geometry Type",
+          "menu_items": [
+            "Alembic Reference",
+            "Alembic Bundle",
+            "USD Reference",
+            "USD Bundle"
+          ],
+          "default_value": "Alembic Bundle",
+          "value": "Alembic Bundle",
+          "type": "drop_menu",
+          "tooltip": "The type to geometry to create in clarisse is it reference or bundle"
+        },
+        {
+          "name": "mtls_from",
+          "label": "Mtls From",
+          "menu_items": [
+            "Arnold"
+          ],
+          "default_value": "Arnold",
+          "value": "Arnold",
+          "type": "drop_menu",
+          "tooltip": "Convert material from renderer"
+        },
+        {
+          "name": "mtls_to",
+          "label": "Mtls To",
+          "menu_items": [
+            "Autodesk Standard Surface",
+            "Disney Principles"
+          ],
+          "default_value": "Autodesk Standard Surface",
+          "value": "Autodesk Standard Surface",
+          "type": "drop_menu",
+          "tooltip": "Convert material to renderer in clarisse"
+        },
+        {
+          "name": "colorspace",
+          "label": "Colorspace",
+          "menu_items": [
+            "sRGB",
+            "ACES"
+          ],
+          "default_value": "ACES",
+          "value": "ACES",
+          "type": "drop_menu",
+          "tooltip": "The colorspace of textures in clarisse"
+        },
+        {
+          "name": "use_latest_publish",
+          "label": "Use Latest Publish",
+          "default_value": false,
+          "value": false,
+          "type": "toggle_box",
+          "tooltip": "Use the latest published geometry"
+        }
+      ]
+    },
+    {
+      "name": "material_from_textures",
+      "label": "Material From Textures",
+      "children": [
+        {
+          "name": "textures_directory",
+          "label": "Textures Directory",
+          "default_value": "$project/Texture",
+          "value": "$project/Texture",
+          "type": "input_text",
+          "tooltip": "The directory of textures",
+          "placeholder": "e.g. '$project/Texture'"
+        },
+        {
+          "name": "renderer",
+          "label": "Renderer",
+          "default_value": "Arnold",
+          "value": "Arnold",
+          "type": "input_text",
+          "tooltip": "The render to create materials belongs it",
+          "placeholder": "e.g. Arnold"
+        },
+        {
+          "name": "materials",
+          "label": "Materials",
+          "default_value": "All",
+          "value": "All",
+          "type": "input_text",
+          "tooltip": "Import specific materials form the texture directory\n, It list the available materials dynamically based on textures naming conventional",
+          "placeholder": "e.g. 'All'"
+        },
+        {
+          "name": "colorspace",
+          "label": "Colorspace",
+          "menu_items": [
+            "sRGB",
+            "ACES"
+          ],
+          "default_value": "ACES",
+          "value": "ACES",
+          "type": "drop_menu",
+          "tooltip": "The colorspace of textures in clarisse"
+        },
+        {
+          "name": "udim",
+          "label": "UDIM",
+          "default_value": true,
+          "value": true,
+          "type": "toggle_box",
+          "tooltip": "To create textures with udims"
+        }
+      ]
+    }
+  ]
+}
