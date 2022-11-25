@@ -38,6 +38,9 @@ def get_sgName_from_textures(directory):
     for img in list_textures(directory):
         img = img.split(' ')[0]
         items = re.findall(r"_[a-zA-Z0-9]*", img)
+        for item in items:
+            if re.search(r'(i?)sg', item):
+                sgs.append(item[1:])
         sg = items[-2][1:]
         if len(sg) >= 4:
             try:
@@ -63,6 +66,6 @@ def texture_type_from_name(texture_name):
 
 
 if __name__ == '__main__':
-    path = "/path/to/image/mesh_materialSG_specularcolor.1001.png"
-    print(texture_type_from_name(path))
+    path = r"D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0003"
+    print(get_sgName_from_textures(path))
     print(__name__)
