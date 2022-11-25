@@ -65,6 +65,8 @@ class SubstanceIntegration():
 
         self.asset_name = ''
         self.project_dir = self.fm.get_user_json('general', 'project')
+        if self.project_dir is None:
+            self.project_dir = ''
         self.exported_textures = dict()
 
         self.init_menus()
@@ -296,7 +298,7 @@ class SubstanceIntegration():
             return
 
         save_root = get_dcc_cfg("substance_painter", "configuration", "spp_save_directory")
-
+        print({"$asset_name": self.asset_name, "$project": self.project_dir})
         resolved_dir = self.fm.resolve_path(
             save_root,
             relatives_to=source_file_path,
