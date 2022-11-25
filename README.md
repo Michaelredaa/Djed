@@ -27,14 +27,21 @@ Djed is written in python 3, and use [**pyblish**](https://github.com/Michaelred
 
 Installing
 ------------
-Go to [**GitHub releases**](https://github.com/Michaelredaa/Djed/releases)  and download the latest build executable and install it with regular way.
+Go to [**GitHub releases**](https://github.com/Michaelredaa/Djed/releases)  and download the latest build executable and
+install it with regular way.
 
 
 Build
 ------------
-build `start.py` with [**cx-freeze**](https://cx-freeze.readthedocs.io/en/latest/index.html) 
+build `start.py` with [**cx-freeze**](https://cx-freeze.readthedocs.io/en/latest/index.html)
 
 To make installer use [**Inno**](https://jrsoftware.org/) with configuration file `create_djed_executable.iss`
+
+
+Testing
+------------
+Due to following of [**VFX Reference Platform**](https://vfxplatform.com/) tests run on `Maya 2023`
+, `substance Painter 8.1` `Clarisse 5 SP8`
 
 
 Contribution
