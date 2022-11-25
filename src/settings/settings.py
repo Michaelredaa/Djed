@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from pathlib import Path
+import ast
 
 from PySide2.QtWidgets import QApplication
 
@@ -161,7 +162,7 @@ def get_textures_settings(key='extensions'):
     :return: (list) list values of given key
     """
     value_dict = get_value(key, 'general', 'textures', 'patterns', key)
-    return list(value_dict.get('value', ''))
+    return ast.literal_eval(value_dict.get('value', '[]'))
 
 
 def get_textures_patterns():
