@@ -52,19 +52,6 @@ class FileManager:
 
         return resolved_path
 
-    def get_cfg(self, key):
-        """
-        To get the value from configuration with given key
-        :param key: (str) the key name
-        :return: type as the configuration
-        """
-
-        cfg_path = os.path.join(DJED_ROOT, "cfg.json")
-        if not os.path.isfile(cfg_path):
-            print("Can not get the configuration file")
-            return
-        data = self.read_json(cfg_path)
-        return data[key]
 
     def get_user_json(self, key, key1=None):
         json_path = self.user_documents.joinpath("Djed.json")
