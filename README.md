@@ -46,4 +46,5 @@ Due to following of [**VFX Reference Platform**](https://vfxplatform.com/) tests
 Contribution
 ------------
 [**Ideas board**]([https://vfxplatform.com/](https://miro.com/app/board/uXjVOmTmOgU=/?share_link_id=212362301029))
+
 Ideas and any kind of contributions or feedback are welcome!
