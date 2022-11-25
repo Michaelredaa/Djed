@@ -171,7 +171,7 @@ def get_textures_patterns():
     :return: (dict) dict patterns of textures {'name': [regx, regx*, ..]}
     """
     value_dict = get_value('patterns', 'general', 'textures', 'patterns')
-    patterns = {x['name']: x['value'] for x in value_dict.get('children', [])}
+    patterns = {x['name']: ast.literal_eval(x['value']) for x in value_dict.get('children', [])}
     patterns.pop('extensions')
     patterns.pop('hdr_extension')
     return patterns
@@ -259,11 +259,10 @@ if __name__ == '__main__':
     else:
         app = QApplication.instance()
 
-    print(get_value('plugins', 'maya', 'plugins'))
+    # print(get_value('plugins', 'maya', 'plugins'))
     # print(get_value('arnold', 'maya', 'renderers', 'arnold'))
     # print(get_dcc_cfg("substance_painter", "texture_export"))
     # set_value('512', "maya", "plugins", "maya_substance_painter", "default_texture_resolution")
-    reset_value('default_texture_resolution', "maya", "plugins", "maya_substance_painter", "default_texture_resolution")
     sys.exit(app.exec_())
 
     print(__name__)

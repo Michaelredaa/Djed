@@ -57,7 +57,7 @@ def texture_type_from_name(texture_name):
 
     # reversed to take the color before weight e.g. specular_color before specular
     for _type in reversed(list(texture_types.keys())):
-        str_to_list = ast.literal_eval(texture_types[_type])
+        str_to_list = texture_types[_type]
         if not isinstance(str_to_list, list):
             continue
         for regex in str_to_list:
@@ -66,6 +66,6 @@ def texture_type_from_name(texture_name):
 
 
 if __name__ == '__main__':
-    path = r"D:/3D/working/projects/Generic/03_Workflow/Assets/tv_table/Scenefiles/sur/Textures/v0003"
-    print(get_sgName_from_textures(path))
+    path = r"path/foo/bar/baseColor"
+    print(texture_type_from_name(path))
     print(__name__)

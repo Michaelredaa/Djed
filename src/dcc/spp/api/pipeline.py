@@ -5,6 +5,7 @@ Documentation:
 import os
 import re
 import sys
+import traceback
 from pathlib import Path
 
 from PySide2.QtWidgets import QMessageBox
@@ -310,7 +311,8 @@ def export_texture(tex_dir=None):
         return on_export_texture_finished(result), version
 
     except Exception as e:
-        error_("Export error: \n"+str(e))
+        error_(f"Export error: {e}")
+        error_(f"Export error: {traceback.format_exc()}")
 
 
 def on_export_texture_finished(result):
