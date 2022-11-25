@@ -33,7 +33,7 @@ fm = FileManager()
 def is_clarisse_connected(port_num=None):
     if not port_num:
         port_num = get_dcc_cfg("clarisse", 'configuration', "command_port")
-    socket = connect(ip='localhost', port_num=port_num)
+    socket = connect(ip='localhost', port_num=int(port_num))
     return socket
 
 
@@ -41,7 +41,7 @@ def send_to_clarisse(data, port_num=None):
     try:
         if not port_num:
             port_num = get_dcc_cfg("clarisse", 'configuration', "command_port")
-        socket = connect(ip='localhost', port_num=port_num)
+        socket = connect(ip='localhost', port_num=int(port_num))
 
         cmd_text = "## Djed Tools ##\n\n"
         cmd_text += "print('## Djed Tools ##')\n"
@@ -65,4 +65,4 @@ def send_to_clarisse(data, port_num=None):
 
 
 if __name__ == '__main__':
-    pass
+    print(is_clarisse_connected())

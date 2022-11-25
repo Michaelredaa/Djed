@@ -17,7 +17,7 @@ fm = FileManager()
 def is_maya_connected(port_num=None):
     if not port_num:
         port_num = get_dcc_cfg("maya", 'configuration', "command_port")
-    socket = OpenSocket(host='127.0.0.1', port=port_num)
+    socket = OpenSocket(host='localhost', port=port_num)
     return socket
 
 
@@ -25,7 +25,7 @@ def send_to_maya(data, port_num=None):
     try:
         if not port_num:
             port_num = get_dcc_cfg("maya", 'configuration', "command_port")
-        socket = OpenSocket(host='127.0.0.1', port=port_num)
+        socket = OpenSocket(host='127.0.0.1', port=int(port_num))
 
         cmd_text = "## Djed Tools ##\n\n"
         cmd_text += "print('## Djed Tools ##')\n"

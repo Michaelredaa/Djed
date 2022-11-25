@@ -56,7 +56,7 @@ class ClarisseNet:
     ## Default constructor. By default, tries to connect to localhost:55000
     def __init__(self, host="localhost", port=55000):
         self.status = self.Status.Error
-        self.connect(host, port)
+        self.connect(host, int(port))
 
     ## Connect to the command port of a Clarisse/CNODE host.
     # @param host The name or the IP address of the remote Clarisse host.

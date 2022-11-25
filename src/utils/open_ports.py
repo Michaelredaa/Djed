@@ -213,7 +213,7 @@ class OpenSocket:
         """
         self.status = False
         self.mode = False  # True: Statement False: Script
-        self.connect(host, port)
+        self.connect(host, int(port))
 
     def connect(self, host, port):
         """
@@ -227,7 +227,7 @@ class OpenSocket:
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.settimeout(SOCKET_TIMEOUT_S)
-            self._socket.connect((host, port))
+            self._socket.connect((host, int(port)))
 
         except:
             raise ValueError('Failed to connect to ' + host + ':' + str(port))
