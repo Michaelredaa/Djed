@@ -382,8 +382,8 @@
             {
               "name": "use_latest_textures",
               "label": "Use Latest Textures",
-              "default_value": true,
-              "value": true,
+              "default_value": false,
+              "value": false,
               "type": "toggle_box",
               "tooltip": "To use the latest exported textures of substance painter"
             }
