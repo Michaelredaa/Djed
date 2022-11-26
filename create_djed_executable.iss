@@ -31,6 +31,8 @@ SetupIconFile={#ROOT}\src\utils\resources\icons\djed.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+; Tell Windows Explorer to reload the environment
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
