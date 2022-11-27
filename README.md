@@ -16,6 +16,7 @@ thing through global settings.
 ![main_diagram](docs/screenshots/main_diagram.png)
 
 [**Get more information**](docs/basic_doc.md)
+[**Fast demo video **](https://vimeo.com/775184392)
 
 Requirements
 ------------
