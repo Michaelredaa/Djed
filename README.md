@@ -16,7 +16,8 @@ thing through global settings.
 ![main_diagram](docs/screenshots/main_diagram.png)
 
 [**Get more information**](docs/basic_doc.md)
-[**Fast demo video **](https://vimeo.com/775184392)
+
+[**Fast demo video**](https://vimeo.com/775184392)
 
 Requirements
 ------------
@@ -46,6 +47,6 @@ Due to following of [**VFX Reference Platform**](https://vfxplatform.com/) tests
 
 Contribution
 ------------
-[**Ideas board**](https://miro.com/app/board/uXjVOmTmOgU=/?share_link_id=212362301029))
+[**Ideas board**](https://miro.com/app/board/uXjVOmTmOgU=/?share_link_id=212362301029)
 
 Ideas and any kind of contributions or feedback are welcome!
