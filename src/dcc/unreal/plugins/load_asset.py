@@ -107,7 +107,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
             else:
                 material = createMaterial(mtl_root + '/' + sg_name)
             
-            assignMaterial(asset_path, material, 0)
+            assignMaterial(asset_path, material, slot_name=sg_name)
         print(f'import_result: {type(import_result[0])}')
 
 

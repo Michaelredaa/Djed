@@ -380,10 +380,11 @@ def makeInstanceWithTextures(master_path, instance_path, texturesData):
     return instance_mtl_asset
 
 
-def assignMaterial(st_mesh_asset, material_object, mtl_id=0):
+def assignMaterial(st_mesh_asset, material_object, mtl_id=0, slot_name=None):
     if isinstance(st_mesh_asset, str):
         st_mesh_asset = unreal.EditorAssetLibrary.find_asset_data(st_mesh_asset).get_asset()
-
+    if slot_name:
+        mtl_id = st_mesh_asset.get_material_index(slot_name)
     st_mesh_asset.set_material(mtl_id, material_object)
 
 
