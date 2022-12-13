@@ -6,13 +6,17 @@ Documentation:
 # ---------------------------------
 # import libraries
 import sys
-import logging
+import os
+import site
 import traceback
 import socket
 import struct
 import time
 import threading
 
+DJED_ROOT = os.getenv('DJED_ROOT')
+
+site.addsitedir(os.path.join(DJED_ROOT, 'venv', 'python39', 'Lib', 'site-packages'))
 
 from PySide2.QtCore import *
 from PySide2.QtWidgets import *
@@ -22,7 +26,7 @@ WAIT_TIME = 0.025
 READ_BODY_TIMEOUT_S = 5.0
 SOCKET_TIMEOUT_S = 30.0
 
-
+App = QCoreApplication(sys.argv)
 class WorkerSignals(QObject):
     """
     Defines the signals available from a running worker thread.
@@ -156,7 +160,7 @@ class HServer_old(threading.Thread):
                     break
 
 
-class HServer():
+class SocketServer():
     Instance = []
 
     def __init__(self, host='172.0.0.1', port=19091):
@@ -175,7 +179,8 @@ class HServer():
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.bind((self.host, self.port))
             self._socket.listen(1)
-        except:
+        except Exception as e:
+            print(e)
             self.thread_complete()
 
     def receive(self, progress_callback):
@@ -203,8 +208,8 @@ class HServer():
         worker.signals.finished.connect(self.thread_complete)
 
         # Execute
-        self.threadpool.start(worker)
-
+        # self.threadpool.start(worker)
+        QThreadPool.globalInstance().start(worker)
 
 class OpenSocket:
     def __init__(self, host='172.0.0.1', port=39390):
@@ -329,8 +334,11 @@ def main():
     # link.link_called.connect(print_string)
     # link.start()
 
-    socket = OpenSocket(host='localhost', port=55000)
-    socket.send('''exec('print("hello")')''')
+    # socket = OpenSocket(host='localhost', port=55000)
+    # socket.send('''exec('print("hello")')''')
+
+    s = OpenSocket(host='127.0.0.1', port=55100)
+    s.send('unreal.log("Hello Djed...")')
 
 
 
