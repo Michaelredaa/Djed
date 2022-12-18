@@ -396,6 +396,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             send_action = menu.addMenu("Send to")
             send_to_maya_action = send_action.addAction("Maya")
             send_to_clarisse_action = send_action.addAction("Clarisse")
+            send_to_unreal_action = send_action.addAction("Unreal")
             # send_to_spp_action = send_action.addAction("Substance Painter")
 
             edit_action = menu.addAction("Edit asset")
@@ -407,6 +408,7 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
             # signals
             send_to_maya_action.triggered.connect(self.on_open_maya)
             send_to_clarisse_action.triggered.connect(self.on_open_clarisse)
+            send_to_unreal_action.triggered.connect(self.on_open_unreal)
             # send_to_spp_action.triggered.connect(self.on_open_spp)
             tag_action.triggered.connect(self.on_add_tag_window)
             edit_action.triggered.connect(self.on_edit_asset)
@@ -456,6 +458,20 @@ class AssetViewWindow(QMainWindow, Ui_AssetBrowserWindow):
         asset['geometry_type'] = 'Alembic Bundle'
 
         send_to_clarisse(asset)
+    def on_open_unreal(self):
+        from dcc.linker.to_unreal import send_to_unreal
+
+        # get selection data
+        index = self.get_selection()
+        asset_uuid = index.data(ItemRoles.UUID)
+        asset = db.get_asset(uuid=asset_uuid)
+
+        asset['family'] = 'asset'
+        asset['colorspace'] = 'aces'
+        asset['to_renderer'] = 'unreal'
+        asset['geo_type'] = 'obj_file'
+
+        send_to_unreal(asset)
 
     def on_open_spp(self):
         print("spp")
