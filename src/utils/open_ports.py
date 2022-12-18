@@ -26,7 +26,6 @@ WAIT_TIME = 0.025
 READ_BODY_TIMEOUT_S = 5.0
 SOCKET_TIMEOUT_S = 30.0
 
-App = QCoreApplication(sys.argv)
 class WorkerSignals(QObject):
     """
     Defines the signals available from a running worker thread.
