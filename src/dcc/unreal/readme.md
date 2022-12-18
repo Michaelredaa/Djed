@@ -6,3 +6,14 @@ How to activate Djed on unreal 5
 
 - Project Settings >> python >> Enable Remote Execution
 - Project Settings >> python >> Developer Mode
+
+
+
+
+
+
+**TODO**
+- creates generic master material
+- manage the switch between virtual textures and non-virtual
+- manage colorspace
+- automate the initial settings
