@@ -24,32 +24,22 @@ import pyblish.api
 
 #############################################################################
 import importlib
-import dcc.unreal.api.pipeline
+import settings.settings
 
-importlib.reload(dcc.unreal.api.pipeline)
+importlib.reload(settings.settings)
 #############################################################################
 
 
 from settings.settings import (
     get_dcc_cfg,
-    material_attrs_conversion,
-    shading_nodes_conversion,
     get_material_attrs,
-    get_shading_nodes,
+    get_material_type_names
 
 )
 
-from dcc.unreal.api.pipeline import (
-    createDir,
-    importStaticMesh,
-    spawn_asset,
-    createMaterial,
-    assignMaterial,
-    assetExists,
-    get_asset
 
-)
-
+import dcc.unreal.api.pipeline as ur
+importlib.reload(ur)
 
 # ---------------------------------
 # Variables
@@ -64,13 +54,13 @@ class LoadAsset(pyblish.api.InstancePlugin):
     families = ["asset"]
 
     def process(self, instance):
-        print(instance.data)
+        # print(instance.data)
 
         data = instance.data
 
         # import geo
         asset_name = data.get('name')
-        geo_type = data.get('geo_type', 'obj')
+        geo_type = data.get('geo_type', 'obj_file')
         geo_paths = data.get('geo_paths', {})
         colorspace = data.get('colorspace')
 
@@ -78,16 +68,23 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         geo_path = geo_paths.get(geo_type)
         if not geo_path:
+            print(f'invalid geo_path: `{geo_path}`')
             return
 
         # create root
-        asset_root = f'/Game/Djed/Assets/{asset_name}'
-        mtl_root = f'/Game/Djed/Assets/{asset_name}/mtls'
-        createDir(asset_root)
+        asset_root = get_dcc_cfg('unreal', 'configuration', 'asset_root')
+        mtl_root = get_dcc_cfg('unreal', 'configuration', 'material_root')
+        tex_root = get_dcc_cfg('unreal', 'configuration', 'texture_root')
+
+        # resolve paths
+        asset_root = asset_root.replace("$assetName", asset_name)
+        mtl_root = mtl_root.replace('..', asset_root)
+        tex_root = tex_root.replace('..', asset_root)
+        ur.createDir(asset_root)
 
         # import asset
         prefix = 'ST'
-        import_result = importStaticMesh(
+        import_result = ur.importStaticMesh(
             filepath=geo_path,
             destination_path=asset_root,
             prefix=f'{prefix}_{asset_name}',
@@ -98,16 +95,64 @@ class LoadAsset(pyblish.api.InstancePlugin):
         )
         asset_path = ''
         for asset_path in import_result[0]:
-            spawn_asset(asset_path)
+            ur.spawn_asset(asset_path)
+
+        to_renderer = get_material_type_names('unreal')[0]
+        plugs_conversion = get_material_attrs(self.hosts[0], to_renderer)
+
+        # get master material path
+        master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer)
 
         for sg_name in asset_data:
             mtl_path = mtl_root + '/' + sg_name
-            if assetExists(mtl_path):
-                material = get_asset(mtl_path)
+            if ur.assetExists(mtl_path):
+                material_obj = ur.get_asset(mtl_path)
             else:
-                material = createMaterial(mtl_root + '/' + sg_name)
-            
-            assignMaterial(asset_path, material, slot_name=sg_name)
+                instance_path = mtl_root + '/' + sg_name
+                material_obj = ur.makeMaterialInstance(master_mat_path, instance_path)
+                # material = ur.createMaterial(mtl_root + '/' + sg_name)
+
+            # bind material to geometry
+            ur.assignMaterial(asset_path, material_obj, slot_name=sg_name)
+
+            materials = asset_data.get(sg_name, {}).get('materials', {})
+
+
+            for mtl in materials:
+                # attributes
+                attrs = materials[mtl].get('attrs')
+                for attr in attrs:
+                    ...
+
+                # create textures
+                textures = materials[mtl].get('texs')
+                for tex_name, tex_dict in textures.items():
+                    plug_name = tex_dict.get('plugs')[0]
+                    filepath = tex_dict.get('filepath')
+
+                    if not plug_name:
+                        continue
+
+                    to_plug = plugs_conversion.get(plug_name)
+                    if not to_plug:
+                        continue
+
+                    # create texture
+                    game_tex_path = tex_root+'/'+tex_name
+                    if ur.assetExists(game_tex_path):
+                        tex_result = [ur.get_asset(game_tex_path)]
+                    else:
+                        tex_result = ur.importTexture(filepath, tex_root)[0]
+
+
+                    if not tex_result:
+                        continue
+
+                    tex_obj = tex_result[0]
+
+                    ur.setMaterialInstanceTexture(material_obj, to_plug.get("name"), tex_obj)
+
+
         print(f'import_result: {type(import_result[0])}')
 
 
