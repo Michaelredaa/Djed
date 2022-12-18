@@ -971,6 +971,94 @@
       ]
     },
     {
+      "name": "unreal",
+      "label": "unreal",
+      "children": [
+        {
+          "name": "configuration",
+          "label": "Configuration",
+          "children": [
+            {
+              "name": "executable",
+              "label": "Executable",
+              "default_value": "C:/Program Files/Epic Games/UE_5.0/Engine/Binaries/Win64/UnrealEditor.exe",
+              "value": "C:/Program Files/Epic Games/UE_5.0/Engine/Binaries/Win64/UnrealEditor.exe",
+              "type": "input_text",
+              "tooltip": "unreal executable path",
+              "placeholder": "e.g. 'C:/Program Files/Epic Games/UE_5.0/Engine/Binaries/Win64/UnrealEditor.exe'"
+            },
+            {
+              "name": "command_port",
+              "label": "Command Port",
+              "default_value": 55100,
+              "value": 55100,
+              "type": "input_text",
+              "tooltip": "unreal command port number to communicate with another programs",
+              "placeholder": "e.g. '55100'"
+            },
+                        {
+              "name": "project_path",
+              "label": "Project Path",
+              "default_value": "C:/Users/Michael/Documents/Unreal Projects/getStart/getStart.uproject",
+              "value": "C:/Users/Michael/Documents/Unreal Projects/getStart/getStart.uproject",
+              "type": "input_text",
+              "tooltip": "The working project path",
+              "placeholder": "e.g. 'path/to/your/project.uproject'"
+            },
+            {
+              "name": "asset_root",
+              "label": "Asset Root",
+              "default_value": "/Game/Djed/Assets/$assetName",
+              "value": "/Game/Djed/Assets/$assetName",
+              "type": "input_text",
+              "tooltip": "The directory root of in which the assets imported",
+              "placeholder": "e.g. '/Game/Djed/Assets/$assetName'"
+            },
+            {
+              "name": "geometry_root",
+              "label": "Geometry Root",
+              "default_value": "../",
+              "value": "../",
+              "type": "input_text",
+              "tooltip": "The root directory of unreal in which the geometry created.\n '../' mean relative to asset root",
+              "placeholder": "e.g. '../' it will created in Asset Root"
+            },
+            {
+              "name": "material_root",
+              "label": "Material Root",
+              "default_value": "../mtls",
+              "value": "../mtls",
+              "type": "input_text",
+              "tooltip": "The directory root of unreal in which the materials created.\n '../' mean relative to asset root",
+              "placeholder": "e.g. '../mtls'"
+            },
+            {
+              "name": "texture_root",
+              "label": "Texture Root",
+              "default_value": "../mtls/texs",
+              "value": "../mtls/texs",
+              "type": "input_text",
+              "tooltip": "The directory root of unreal in which the textures created.\n '../' mean relative to asset root",
+              "placeholder": "e.g. '../mtls/texs'"
+            }
+          ]
+        },
+        {
+          "name": "plugins",
+          "label": "Plugins",
+          "children": [
+          ]
+        },
+        {
+          "name": "renderers",
+          "label": "Renderers",
+          "children": [
+            "$unreal_default_mtl_udim"
+          ]
+        }
+      ]
+    },
+    {
       "name": "end",
       "label": "End"
     }

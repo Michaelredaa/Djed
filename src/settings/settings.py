@@ -17,7 +17,6 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from utils.file_manager import FileManager
-from utils.dialogs import message
 
 fm = FileManager()
 
@@ -56,7 +55,7 @@ def set_settings_data(data_list):
 
 def error_on_reading(key, dict_name):
     # popup message with error
-    message(None, 'Error', f'Corrupted settings file.\nCan not get "{key}" from "{dict_name}" dict settings')
+    # message(None, 'Error', f'Corrupted settings file.\nCan not get "{key}" from "{dict_name}" dict settings')
     raise Exception(f'Can not get settings of "{key}" from "{dict_name}"')
 
 
@@ -210,6 +209,15 @@ def material_attrs_conversion(from_host, from_renderer, to_host, to_renderer, no
     plugs = {from_plugs[i]['name']: to_plugs[j] for i, j in zip(from_plugs, to_plugs)}
     return plugs
 
+def get_material_type_names(host, node='standard_surface'):
+    """
+    To get the available materials names
+    :param host: (str) the host name
+    :param node: (str) the standard node name
+    :return: (list(str)) of materials names
+    """
+    renderers = get_dcc_cfg(host, 'renderers')
+    return list(renderers)
 
 def get_material_attrs(host, renderer, node='standard_surface'):
     """

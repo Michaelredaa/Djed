@@ -1,0 +1,203 @@
+{
+  "host": "unreal",
+  "name": "default_mtl_udim",
+  "label": "Default MTL UDIM",
+  "children": [
+    {
+      "name": "standard_surface",
+      "label": "Standard Surface",
+      "default_value": "/Game/Djed/Presets/Djed_defaultMTL_UDIM",
+      "value": "/Game/Djed/Presets/Djed_defaultMTL_UDIM",
+      "type": "input_text",
+      "tooltip": "The master material game path",
+      "placeholder": ""
+    },
+    {
+      "name": "standard_surface_plugs",
+      "label": "Standard Surface Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "base",
+          "label": "Base",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "base_color",
+          "label": "Base Color",
+          "value": {
+            "name": "base_color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "metallic",
+          "label": "Metallic",
+          "value": {
+            "name": "metallic",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "normal",
+          "label": "Normal",
+          "value": {
+            "name": "normal",
+            "type": "vector3",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "specular",
+          "label": "Specular",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "roughness",
+          "label": "Roughness",
+          "value": {
+            "name": "roughness",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "transmission",
+          "label": "Transmission",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "specular_color",
+          "label": "Specular Color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "transmission_color",
+          "label": "Transmission Color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface",
+          "label": "Subsurface",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface_color",
+          "label": "Subsurface Color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface_radius",
+          "label": "Subsurface Radius",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "coat",
+          "label": "Coat",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "sheen",
+          "label": "Sheen",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "sheen_color",
+          "label": "Sheen color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "emission",
+          "label": "Emission",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "emission_color",
+          "label": "Emission Color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "opacity",
+          "label": "Opacity",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        }
+      ]
+    }
+  ]
+}

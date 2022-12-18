@@ -263,6 +263,7 @@ def main():
         app = QApplication.instance()
 
     win = SettingsWindow()
+    print(win)
     win.show()
 
     sys.exit(app.exec_())
