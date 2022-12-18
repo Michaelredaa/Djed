@@ -209,7 +209,7 @@ def material_attrs_conversion(from_host, from_renderer, to_host, to_renderer, no
     plugs = {from_plugs[i]['name']: to_plugs[j] for i, j in zip(from_plugs, to_plugs)}
     return plugs
 
-def get_material_type_names(host, node='standard_surface'):
+def get_material_type_names(host):
     """
     To get the available materials names
     :param host: (str) the host name
