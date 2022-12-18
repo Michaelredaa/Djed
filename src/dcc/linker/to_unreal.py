@@ -17,14 +17,13 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from settings.settings import get_dcc_cfg
-from utils.dialogs import message
 from utils.open_ports import OpenSocket
 
 
 def send_to_unreal(data, port_num=None):
     try:
         if not port_num:
-            port_num = 55100  # get_dcc_cfg("clarisse", 'configuration', "command_port")
+            port_num = get_dcc_cfg("unreal", 'configuration', "command_port")
 
         unreal_socket = OpenSocket(host='127.0.0.1', port=port_num)
 
