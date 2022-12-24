@@ -29,6 +29,7 @@ for sysPath in sysPaths:
 
 Shelf_Items = [["exportMesh"],
                ["send2spp", "updateSpp"],  # "updateSpp", "updateExitSpp"],
+               ["send2unreal"],
                ["send2clarisse"],
                ["importTexs", "createMtl"],
                ["about"]
