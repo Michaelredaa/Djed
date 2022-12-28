@@ -201,9 +201,14 @@ def importAnimation(filepath, destination_path, skeleton_path):
     return result
 
 
-def importTexture(filepath, destination_path):
+def importTexture(filepath, destination_path, virtual_texture=False):
     task = buildImportTask(filepath, destination_path)
     result = execteImportTasks([task])
+
+    if virtual_texture and result:
+        for tex_path in result[0]:
+            get_asset(tex_path).set_editor_property('virtual_texture_streaming', True)
+
     return result
 
 
