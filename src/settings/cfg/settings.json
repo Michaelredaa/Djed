@@ -693,6 +693,43 @@
               ]
             },
             {
+              "name": "maya_unreal",
+              "label": "Maya Unreal",
+              "children": [
+                {
+                  "name": "geometry_type",
+                  "label": "Geometry Type",
+                  "menu_items": [
+                    ""
+                  ],
+                  "default_value": "",
+                  "value": "",
+                  "type": "drop_menu",
+                  "tooltip": "The type to geometry to create in unreal"
+                },
+                {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                },
+                {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
+                }
+              ]
+            },
+            {
               "name": "maya_clarisse",
               "label": "Maya Clarisse",
               "children": [
