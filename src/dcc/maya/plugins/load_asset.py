@@ -56,7 +56,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         data = instance.data
 
         # import geo
-        geo_type = data.get('geo_type', '')
+        geo_type = data.get('geometry_type', '')
         import_type = data.get('import_type', '<none>')
         geo_paths = data.get('geo_paths', {})
         colorspace = data.get('colorspace')
