@@ -88,6 +88,7 @@ class SubstanceIntegration():
         export_action = self.menu.addAction(QIcon(':/icons/export.png'), "&Export Textures")
         self.menu.addSeparator()
         maya_action = self.menu.addAction(QIcon(':/icons/maya.png'), "&To Maya")
+        unreal_action = self.menu.addAction(QIcon(':/icons/unreal.png'), "&To Unreal")
         clarisse_action = self.menu.addAction(QIcon(':/icons/clarisse.png'), "&To Clarisse")
 
         self.menu.addSeparator()
@@ -118,6 +119,7 @@ class SubstanceIntegration():
         open_action.triggered.connect(self.on_open_location)
         export_action.triggered.connect(self.on_textures_export)
         maya_action.triggered.connect(self.on_send_to_maya)
+        unreal_action.triggered.connect(self.on_send_to_unreal)
         clarisse_action.triggered.connect(self.on_send_to_clarisse)
         export_texture_action.triggered.connect(self.on_export_settings)
         self.recent_menu.triggered.connect(self.on_recent_clicked)
@@ -237,7 +239,7 @@ class SubstanceIntegration():
                 'to_renderer': settings.get('use_material'),
                 'source_renderer': 'standard',
                 'colorspace': settings.get('colorspace').lower(),
-                'geo_type': 'abc_file',
+                'geometry_type': 'abc_file',
                 'import_type': import_type,
                 'geo_paths': asset_data,
                 'asset_data': json.loads(asset_data.get('mesh_data')),
@@ -282,6 +284,35 @@ class SubstanceIntegration():
         else:
             message(self.main_window, "Error",
                     "Can not connect to clarisse.\nMake sure you open clarisse session or clarisse command port is open.")
+
+    def on_send_to_unreal(self):
+        from dcc.linker.to_unreal import send_to_unreal
+
+        if not self.use_latest_textures_action.isChecked():
+            self.on_textures_export()
+
+        # settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
+
+        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+        asset_data = json.loads(asset_data)
+        geo_paths = db.get_geometry(
+            asset_name=self.asset_name,
+            obj_file="",
+            usd_geo_file="",
+            abc_file="",
+            fbx_file="",
+            source_file="")
+
+        data = {
+            'name': self.asset_name,
+            'host': 'unreal',
+            'renderer': 'arnold',
+            'colorspace': 'aces',
+            'geometry_type': 'obj_file',
+            'geo_paths': geo_paths,
+            'asset_data': asset_data,
+        }
+        send_to_unreal(data)
 
     def on_about(self):
         about.message(self.main_window)
