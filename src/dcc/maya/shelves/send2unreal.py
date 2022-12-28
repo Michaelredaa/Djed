@@ -127,7 +127,7 @@ class Maya2UnrealSettings(ToolSettingsBase):
         data['family'] = 'asset'
         data['colorspace'] = 'aces'
         data['host'] = 'unreal'
-        data['geo_type'] = 'obj_file'
+        data['geometry_type'] = 'obj_file'
 
         send_to_unreal(data)
 
