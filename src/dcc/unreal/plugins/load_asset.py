@@ -60,7 +60,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         # import geo
         asset_name = data.get('name')
-        geo_type = data.get('geo_type', 'obj_file')
+        geo_type = data.get('geometry_type', 'obj_file')
         geo_paths = data.get('geo_paths', {})
         colorspace = data.get('colorspace')
 
@@ -101,7 +101,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         plugs_conversion = get_material_attrs(self.hosts[0], to_renderer)
 
         # get master material path
-        master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer)
+        master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer, 'standard_surface')
 
         for sg_name in asset_data:
             mtl_path = mtl_root + '/' + sg_name
