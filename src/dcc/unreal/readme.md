@@ -1,11 +1,11 @@
 How to activate Djed on unreal 5
 
-- Plugins >> Scripting >> Python
+- Plugins >> Scripting >> Python -AllowPythonDeveloperMode
 - Plugins >> Scripting >> Editor scripting utility
 - Plugins >> Scripting >> sequencer scripting
 
-- Project Settings >> python >> Enable Remote Execution
-- Project Settings >> python >> Developer Mode
+- Project Settings >> python >> Enable Remote Execution -AllowRemoteExecution
+- Project Settings >> python >> Developer Mode -AllowPythonDeveloperMode
 
 
 
