@@ -1,15 +1,15 @@
 {
   "host": "unreal",
-  "name": "default_mtl_udim",
-  "label": "Default MTL UDIM",
+  "name": "default_mtl",
+  "label": "Default MTL",
   "children": [
     {
       "name": "standard_surface",
       "label": "Standard Surface",
-      "default_value": "/Game/Djed/Presets/MasterMaterials/Djed_defaultMTL_UDIM",
-      "value": "/Game/Djed/Presets/MasterMaterials/Djed_defaultMTL_UDIM",
+      "default_value": "/Game/Djed/Presets/MasterMaterials/Djed_defaultMTL",
+      "value": "/Game/Djed/Presets/MasterMaterials/Djed_defaultMTL",
       "type": "input_text",
-      "tooltip": "The UDIM master material game path",
+      "tooltip": "The master material game path",
       "placeholder": ""
     },
     {
@@ -24,7 +24,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -34,7 +36,9 @@
             "name": "base_color",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -44,7 +48,9 @@
             "name": "metallic",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -54,7 +60,9 @@
             "name": "normal",
             "type": "vector3",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -64,7 +72,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -74,7 +84,9 @@
             "name": "roughness",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -84,7 +96,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -94,7 +108,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -104,7 +120,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -114,7 +132,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -124,7 +144,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -134,7 +156,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -144,7 +168,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -154,7 +180,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -164,7 +192,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -174,7 +204,9 @@
             "name": "",
             "type": "float",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -184,7 +216,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         },
         {
@@ -194,7 +228,9 @@
             "name": "",
             "type": "color",
             "plug": "input",
-            "inbetween": [{}]
+            "inbetween": [
+              {}
+            ]
           }
         }
       ]
