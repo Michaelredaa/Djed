@@ -1090,7 +1090,8 @@
           "name": "renderers",
           "label": "Renderers",
           "children": [
-            "$unreal_default_mtl_udim"
+            "$unreal_default_mtl_udim",
+            "$unreal_default_mtl"
           ]
         }
       ]
