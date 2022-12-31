@@ -97,20 +97,44 @@ class LoadAsset(pyblish.api.InstancePlugin):
         for asset_path in import_result[0]:
             ur.spawn_asset(asset_path)
 
-        to_renderer = get_material_type_names('unreal')[0]
-        plugs_conversion = get_material_attrs(self.hosts[0], to_renderer)
-
-        # get master material path
-        master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer, 'standard_surface')
+        # Get the master material type
+        material_types = {}
+        for sg_name in asset_data:
+            materials = asset_data.get(sg_name, {}).get('materials', {})
+            for mtl in materials:
+                textures = materials[mtl].get('texs')
+                for tex_name, tex_dict in textures.items():
+                    udim = tex_dict.get('udim')
+                    if int(udim) > 1:
+                        material_types[sg_name] = 'udim'
+                        break
+                    else:
+                        material_types[sg_name] = 'not_udim'
+                        break
 
         for sg_name in asset_data:
+
+            all_master_mtl_names = get_material_type_names('unreal')
+            if material_types[sg_name] == 'udim':
+                to_renderer = all_master_mtl_names[0]
+            else:
+                to_renderer = all_master_mtl_names[1]
+
+            plugs_conversion = get_material_attrs(self.hosts[0], to_renderer)
+
+            # get master material path
+            master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer, 'standard_surface')
+
             mtl_path = mtl_root + '/' + sg_name
             if ur.assetExists(mtl_path):
                 material_obj = ur.get_asset(mtl_path)
             else:
                 instance_path = mtl_root + '/' + sg_name
-                material_obj = ur.makeMaterialInstance(master_mat_path, instance_path)
-                # material = ur.createMaterial(mtl_root + '/' + sg_name)
+                if material_types[sg_name] == 'udim':
+                    material_obj = ur.makeMaterialInstance(master_mat_path, instance_path)
+                    # material = ur.createMaterial(mtl_root + '/' + sg_name)
+                elif material_types[sg_name] == 'not_udim':
+                    material_obj = ur.makeMaterialInstance(master_mat_path, instance_path)
 
             # bind material to geometry
             ur.assignMaterial(asset_path, material_obj, slot_name=sg_name)
@@ -142,8 +166,11 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     if ur.assetExists(game_tex_path):
                         tex_result = [ur.get_asset(game_tex_path)]
                     else:
-                        tex_result = ur.importTexture(filepath, tex_root)[0]
-
+                        tex_result = ur.importTexture(
+                            filepath,
+                            tex_root,
+                            virtual_texture=material_types[sg_name] == 'udim'
+                        )[0]
 
                     if not tex_result:
                         continue
