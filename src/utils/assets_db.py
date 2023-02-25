@@ -11,6 +11,7 @@ import sqlite3
 import sys
 import os
 import site
+import traceback
 from functools import wraps
 from urllib.parse import unquote
 
@@ -20,6 +21,7 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from settings.settings import get_textures_patterns
+from utils.generic import merge_dicts
 
 # ---------------------------------
 # Variables
@@ -47,7 +49,7 @@ def connect(db_file):
     return connect_
 
 
-class Connect():
+class Connect(object):
     db_file = None
 
     def __init__(self, db_file=None):
@@ -63,6 +65,7 @@ class Connect():
                 cur = conn.cursor()
                 ret_data = query_func(*args, conn, **kwargs)
             except Exception as e:
+                print(traceback.format_exc())
                 raise e
             else:
                 conn.commit()
@@ -289,6 +292,16 @@ class AssetsDB(Connect):
             return 0
 
     @Connect.db
+    def get_asset_uuid(self, conn, asset_name):
+        cur = conn.cursor()
+        cur.execute(f'SELECT uuid from assets WHERE name="{asset_name}"')
+        uuids = cur.fetchone()
+        if uuids:
+            return uuids[0]
+        else:
+            raise Exception(f"Asset '{asset_name}' not found")
+
+    @Connect.db
     def get_asset_name(self, conn, uuid):
         cur = conn.cursor()
         cur.execute(f'SELECT name from assets WHERE uuid="{uuid}"')
@@ -313,7 +326,7 @@ class AssetsDB(Connect):
     @Connect.db
     def update_date(self, conn, asset_name):
         now = datetime.datetime.now()
-        current_date = now.strftime("%Y/%m/%d, %H:%M:%S")
+        current_date = now.strftime("%Y-%m-%d, %H:%M:%S")
         cur = conn.cursor()
         query = f'''
                 UPDATE assets 
@@ -367,15 +380,32 @@ class AssetsDB(Connect):
         '''obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="", substance_file="", mesh_data=""'''
         self.update_date(asset_name=asset_name)
         for col in kwargs:
+            value = kwargs.get(col)
+
+            # get mesh data
+            if isinstance(value, dict):
+                old_data = self.get_geometry(asset_name=asset_name, mesh_data="")
+                if not old_data:
+                    old_data = {}
+
+                old_data = old_data.get("mesh_data", {})
+                if not old_data:
+                    old_data = {}
+
+                new_data_dict = dict(merge_dicts(old_data, kwargs.get(col)))
+                value = json.dumps(new_data_dict)
+
+
+
             cur = conn.cursor()
             query = f'''
                     INSERT INTO geometry 
                     (asset_id, {col})
                     VALUES
-                    ((SELECT id from assets WHERE name='{asset_name}'), '{kwargs.get(col)}')
+                    ((SELECT id from assets WHERE name='{asset_name}'), '{value}')
                     ON CONFLICT(asset_id) 
                     DO UPDATE
-                    SET {col} = '{kwargs.get(col)}';
+                    SET {col} = '{value}';
 
             '''
             cur.execute(query)
@@ -391,8 +421,17 @@ class AssetsDB(Connect):
                 asset_id = (SELECT id from assets WHERE name="{asset_name}")
         '''
         cur.execute(query)
-        data = cur.fetchall()[0]
-        return dict(zip(kwargs.keys(), data))
+        data = cur.fetchall()
+
+        if not data:
+            return {}
+
+        data = data[0]
+
+        returned_dict = dict(zip(kwargs.keys(), data))
+        if returned_dict.get('mesh_data'):
+            returned_dict['mesh_data'] = json.loads(returned_dict['mesh_data'])
+        return returned_dict
 
     @Connect.db
     def add_tag(self, conn, asset_name, tag_name):
@@ -685,8 +724,8 @@ def main():
     db = AssetsDB()
     # db.create_default_tables()
     # db.create_geometry_table()
-    data = json.dumps({'foo': 'bar'})
-    db.add_geometry(asset_name="tv_table", mesh_data=f'{data}')
+    data = {'foo': 'bar'}
+    db.add_geometry(asset_name="tv_table", mesh_data=data)
     # x = db.add_tag(asset_name="ABAGORA", tag_name="tag1")
     # x = db.get_assets_data()
     # print(db.get_tags(asset_name="ABAGORA"))
