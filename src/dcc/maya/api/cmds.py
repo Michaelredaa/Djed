@@ -23,7 +23,7 @@ from maya.app.general import fileTexturePathResolver
 from PySide2.QtWidgets import QMessageBox, QWidget
 
 from shiboken2 import wrapInstance
-from utils.generic import merge_dicts
+
 
 DJED_ROOT = os.getenv("DJED_ROOT")
 scripts_path = os.path.join(DJED_ROOT, "src")
@@ -454,12 +454,8 @@ class Maya:
 
             print("[Geometry Exported]: ", export_path + "." + ext)
 
-        old_data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
-        old_data = json.loads(old_data)
         mesh_data = self.get_mesh_data(asset_name)
-        new_data = dict(merge_dicts(old_data, mesh_data))
-
-        db.add_geometry(asset_name=asset_name, mesh_data=json.dumps(new_data))
+        db.add_geometry(asset_name=asset_name, mesh_data=mesh_data)
 
         if _message:
             info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
