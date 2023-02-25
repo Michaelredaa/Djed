@@ -179,12 +179,7 @@ class SubstanceIntegration():
         tex_data, version = pipeline.export_texture(tex_dir=tex_dir)
 
         # update database
-        old_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
-        old_data = json.loads(old_data)
-
-        new_data = dict(merge_dicts(old_data, tex_data))
-
-        db.add_geometry(asset_name=self.asset_name, mesh_data=json.dumps(new_data))
+        db.add_geometry(asset_name=self.asset_name, mesh_data=tex_data)
         # add texture to db
 
     def on_export_settings(self):
