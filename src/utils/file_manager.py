@@ -21,9 +21,6 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from utils.dialogs import message
-
-
 # ---------------------------------
 
 class FileManager:
@@ -50,7 +47,7 @@ class FileManager:
         for var in variables:
             resolved_path = str(resolved_path).replace(var, variables.get(var))
 
-        return resolved_path
+        return resolved_path.replace('\\', '/')
 
 
     def get_user_json(self, key, key1=None):
@@ -143,7 +140,7 @@ class FileManager:
         root = Path(root)
 
         files = root.glob(f'*{ext}')
-        names = [x.name for x in files if re.search(prefix + "\d+", x.name)]
+        names = [x.name for x in files if re.search(prefix + r"\d+", x.name)]
         if len(names) < 1:
             return 0
 
@@ -151,7 +148,7 @@ class FileManager:
         max_version_num = max(all_versions_ints)
         latest_version = prefix + str(max_version_num).zfill(padding)
 
-        file_name = re.sub(prefix + r'\d+', latest_version, names[0])
+        file_name = re.sub(prefix + r"\d+", latest_version, names[0])
         if ret_path:
             return root.joinpath(file_name).as_posix(), max_version_num
         else:
@@ -213,10 +210,6 @@ class FileManager:
 # Main function
 def main():
     pass
-    fm = FileManager()
-    fm.version_file_up(
-        r"D:\3D\working\projects\Generic\03_Workflow\Assets\tv_table\Scenefiles\sur\substance\tv_table")
-    # print(fm.resolve_path('../../foo', relatives_to='c:/users/michael'))
 
 
 if __name__ == '__main__':
