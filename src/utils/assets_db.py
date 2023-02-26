@@ -87,6 +87,11 @@ class AssetsDB(Connect):
 
     def __init__(self, db_file=None):
         super(AssetsDB, self).__init__(db_file)
+
+        if not os.path.isdir(os.path.dirname(db_file)):
+            os.makedirs(os.path.dirname(db_file))
+
+        Connect.db_file = db_file
         self.create_default_tables()
 
     @Connect.db
