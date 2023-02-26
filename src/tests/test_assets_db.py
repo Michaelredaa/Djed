@@ -25,9 +25,7 @@ from utils.assets_db import AssetsDB, Connect
 # Variables
 db_file = DJED_ROOT + '/src/tests/data/djed.db'
 
-Connect.db_file = db_file
 db = AssetsDB(db_file)
-
 
 # ---------------------------------
 # Start Here
@@ -117,6 +115,16 @@ class TestDataBase(unittest.TestCase):
         self.assertEqual(geo_data.get('obj_file'), 'path/to/obj2')
         self.assertEqual(geo_data.get('abc_file'), 'path/to/abc')
         self.assertEqual(geo_data.get('mesh_data'), {'sgs': {'mat01': {}, 'mat02': {}}})
+
+    def test_add_tag(self):
+        db.add_tag(asset_name='foo', tag_name='tag1')
+
+        self.assertTrue('tag1' in db.get_tags(asset_name='foo'))
+
+    def test_add_project(self):
+        db.add_project(asset_name='foo', project_name='project1')
+
+        self.assertTrue('project1' in db.get_projects(asset_name='foo'))
 
 
 # Main Function
