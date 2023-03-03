@@ -173,6 +173,13 @@ def get_textures_patterns():
     patterns = {x['name']: x['value'] for x in value_dict.get('children', [])}
     patterns.pop('extensions')
     patterns.pop('hdr_extension')
+
+    try:
+        for i in patterns:
+            patterns[i] = json.loads(patterns[i].replace('\'', '"'))
+    except json.decoder.JSONDecodeError:
+        raise Exception(f"Invalid input date for textures patterns: {patterns}")
+
     return patterns
 
 

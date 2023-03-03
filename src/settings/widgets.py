@@ -66,6 +66,44 @@ class TextFiled(QWidget):
     def get_name(self):
         return self.label.text()
 
+class IntFiled(QWidget):
+    name = 'input_number'
+
+    def __init__(self, parent=None):
+        super(IntFiled, self).__init__(parent)
+
+        h_layout = QHBoxLayout(self)
+        self.setLayout(h_layout)
+        self.label = QLabel(self)
+        self.label.setFixedWidth(155)
+        self.label.setAlignment(Qt.AlignRight)
+
+        self.spin_box = QSpinBox(self)
+        self.spin_box.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.spin_box.setMaximum(99999999)
+
+        h_layout.addWidget(self.label)
+        h_layout.addWidget(self.spin_box)
+        # h_layout.addItem(QSpacerItem(100, 2, QSizePolicy.MinimumExpanding, QSizePolicy.Maximum))
+
+    def set_name(self, name):
+        # name = ' '.join(str(name).split('_')).title()
+        self.label.setText(name)
+
+    def set_default_value(self, value):
+        self.spin_box.setText(value)
+
+    def set_value(self, value):
+        self.spin_box.setValue(value)
+
+    def set_tooltip(self, text):
+        self.setToolTip(text)
+
+    def get_value(self):
+        return self.spin_box.value()
+
+    def get_name(self):
+        return self.label.text()
 
 class MultiTextFiled(QWidget):
     def __init__(self, parent=None, num=2):
@@ -323,6 +361,7 @@ class TreeItemWidget(QWidget):
     def all_widgets(self):
         # input text
         self.widgets["input_text"] = TextFiled
+        self.widgets["input_number"] = IntFiled
         self.widgets["multi_input_text"] = TextFiled
         self.widgets["table_field"] = TableField
         self.widgets["toggle_box"] = ToggleBox
