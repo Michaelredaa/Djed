@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 import ast
 
-from PySide2.QtWidgets import QApplication
+
 
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT, f"{DJED_ROOT}/src"]
@@ -261,7 +261,7 @@ def shading_nodes_conversion(from_host, from_renderer, to_host, to_renderer):
 
 
 if __name__ == '__main__':
-
+    from PySide2.QtWidgets import QApplication
     if not QApplication.instance():
         app = QApplication(sys.argv)
     else:
