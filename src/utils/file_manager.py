@@ -21,8 +21,6 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from utils.dialogs import message
-
 
 # ---------------------------------
 
