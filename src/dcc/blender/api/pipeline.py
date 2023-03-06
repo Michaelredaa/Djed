@@ -84,7 +84,6 @@ def get_obj_path(obj):
     return "|"+"|".join(parents)
 
 def add_property(mesh_obj: bpy.types.Object, name: str, value=""):
-
     class CustomProperty(bpy.types.PropertyGroup):
         custom_property: bpy.props.StringProperty(name=name)
 
@@ -93,6 +92,30 @@ def add_property(mesh_obj: bpy.types.Object, name: str, value=""):
     mesh_data[name] = value
     bpy.utils.register_class(CustomProperty)
     bpy.types.Mesh.my_properties = bpy.props.PointerProperty(type=CustomProperty)
+
+
+def add_material(objects=None, mtl_name='material', override=True) -> bpy.types.Material:
+    if objects is None:
+        objects = bpy.context.selected_objects
+
+    if mtl_name not in bpy.data.materials:
+        mtl_net = bpy.data.materials.new(name=mtl_name)
+        mtl_net.use_nodes = True
+        bpy.context.object.active_material = mtl_net
+
+    else:
+        mtl_net = bpy.data.materials[mtl_name]
+
+    for obj in objects:
+        if obj.type == 'MESH':
+            if override and len(obj.data.materials) > 0:
+                # obj.data.materials[0] = material
+                obj.material_slots[0].material = mtl_net
+            else:
+                # obj.data.materials.append(material)
+                slot = obj.material_slots.add()
+                slot.material = mtl_net
+    return mtl_net
 
 
 def add_material_property_to_mesh(obj):
