@@ -82,6 +82,10 @@ class TestSettings(unittest.TestCase):
         for key in textures_patterns:
             self.assertIsInstance(textures_patterns[key], list)
 
+    def test_get_textures_settings(self):
+        extensions = settings.get_textures_settings('extensions')
+        self.assertIsInstance(extensions, list)
+
     def test_material_attrs_conversion(self):
         from_host = "maya"
         from_renderer = "arnold"
