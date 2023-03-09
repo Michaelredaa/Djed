@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 import ast
 
-from PySide2.QtWidgets import QApplication
+
 
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT, f"{DJED_ROOT}/src"]
@@ -161,7 +161,12 @@ def get_textures_settings(key='extensions'):
     :return: (list) list values of given key
     """
     value_dict = get_value(key, 'general', 'textures', 'patterns', key)
-    return ast.literal_eval(value_dict.get('value', '[]'))
+    values = value_dict.get('value', '[]')
+
+    if not isinstance(values, list):
+        values = json.loads(values.replace('\'', '"'))
+
+    return values
 
 
 def get_textures_patterns():
@@ -176,6 +181,8 @@ def get_textures_patterns():
 
     try:
         for i in patterns:
+            if isinstance(patterns[i], list):
+                continue
             patterns[i] = json.loads(patterns[i].replace('\'', '"'))
     except json.decoder.JSONDecodeError:
         raise Exception(f"Invalid input date for textures patterns: {patterns}")
@@ -268,7 +275,7 @@ def shading_nodes_conversion(from_host, from_renderer, to_host, to_renderer):
 
 
 if __name__ == '__main__':
-
+    from PySide2.QtWidgets import QApplication
     if not QApplication.instance():
         app = QApplication(sys.argv)
     else:
