@@ -148,7 +148,7 @@
           "label": "Command Port",
           "default_value": 55000,
           "value": 55000,
-          "type": "input_text",
+          "type": "input_number",
           "tooltip": "Clarisse command port number to communicate with maya",
           "placeholder": "e.g. '55000'"
         },
