@@ -1,0 +1,275 @@
+{
+  "host": "blender",
+  "name": "principled_BSDF",
+  "label": "Principled BSDF",
+  "children": [
+    {
+      "name": "standard_surface",
+      "label": "Standard Surface",
+      "default_value": "ShaderNodeBsdfPrincipled",
+      "value": "ShaderNodeBsdfPrincipled",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "standard_surface_plugs",
+      "label": "Standard Surface Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "base",
+          "label": "Base",
+          "value": {
+            "name": "",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "base_color",
+          "label": "Base Color",
+          "value": {
+            "name": "Base Color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "metallic",
+          "label": "Metallic",
+          "value": {
+            "name": "Metallic",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "normal",
+          "label": "Normal",
+          "value": {
+            "name": "Normal",
+            "type": "vector3",
+            "plug": "input",
+            "inbetween": [{"name": "_normal","type": "ShaderNodeNormalMap", "inplug": "Color", "outplug": "Normal"}]
+          }
+        },
+        {
+          "name": "specular",
+          "label": "Specular",
+          "value": {
+            "name": "Normal",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "roughness",
+          "label": "Roughness",
+          "value": {
+            "name": "Roughness",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "transmission",
+          "label": "Transmission",
+          "value": {
+            "name": "Emission Strength",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "specular_color",
+          "label": "Specular Color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "transmission_color",
+          "label": "Transmission Color",
+          "value": {
+            "name": "Transmission",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface",
+          "label": "Subsurface",
+          "value": {
+            "name": "Subsurface",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface_color",
+          "label": "Subsurface Color",
+          "value": {
+            "name": "Subsurface Color",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "subsurface_radius",
+          "label": "Subsurface Radius",
+          "value": {
+            "name": "Subsurface Radius",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "coat",
+          "label": "Coat",
+          "value": {
+            "name": "Clearcoat",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "sheen",
+          "label": "Sheen",
+          "value": {
+            "name": "Sheen",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "sheen_color",
+          "label": "Sheen color",
+          "value": {
+            "name": "",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "emission",
+          "label": "Emission",
+          "value": {
+            "name": "Emission Strength",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "emission_color",
+          "label": "Emission Color",
+          "value": {
+            "name": "Emission",
+            "type": "color",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "opacity",
+          "label": "Opacity",
+          "value": {
+            "name": "Alpha",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "displacement",
+      "label": "Displacement",
+      "default_value": "ShaderNodeDisplacement",
+      "value": "ShaderNodeDisplacement",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "displacement_plugs",
+      "label": "Displacement Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "displacement",
+          "label": "Displacement",
+          "value": {
+            "name": "Normal",
+            "type": "float",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "displacement",
+          "label": "Displacement",
+          "value": {
+            "name": "Displacement",
+            "type": "float",
+            "plug": "output",
+            "inbetween": [{}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal_map",
+      "label": "Normal Map",
+      "default_value": "ShaderNodeNormalMap",
+      "value": "ShaderNodeNormalMap",
+      "type": "input_text",
+      "tooltip": "",
+      "placeholder": ""
+    },
+    {
+      "name": "normal_map_plugs",
+      "label": "Normal Map Plugs",
+      "type": "table_field",
+      "data": [
+        {
+          "name": "input",
+          "label": "Input",
+          "value": {
+            "name": "Color",
+            "type": "vector3",
+            "plug": "input",
+            "inbetween": [{}]
+          }
+        },
+        {
+          "name": "out_value",
+          "label": "out Value",
+          "value": {
+            "name": "Normal",
+            "type": "vector3",
+            "plug": "output",
+            "inbetween": [{}]
+          }
+        }
+      ]
+    }
+  ]
+}

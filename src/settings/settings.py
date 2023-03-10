@@ -161,7 +161,12 @@ def get_textures_settings(key='extensions'):
     :return: (list) list values of given key
     """
     value_dict = get_value(key, 'general', 'textures', 'patterns', key)
-    return ast.literal_eval(value_dict.get('value', '[]'))
+    values = value_dict.get('value', '[]')
+
+    if not isinstance(values, list):
+        values = json.loads(values.replace('\'', '"'))
+
+    return values
 
 
 def get_textures_patterns():
@@ -176,6 +181,8 @@ def get_textures_patterns():
 
     try:
         for i in patterns:
+            if isinstance(patterns[i], list):
+                continue
             patterns[i] = json.loads(patterns[i].replace('\'', '"'))
     except json.decoder.JSONDecodeError:
         raise Exception(f"Invalid input date for textures patterns: {patterns}")
@@ -278,7 +285,7 @@ if __name__ == '__main__':
     # print(get_value('arnold', 'maya', 'renderers', 'arnold'))
     # print(get_dcc_cfg("substance_painter", "texture_export"))
     # set_value('512', "maya", "plugins", "maya_substance_painter", "default_texture_resolution")
-    print(get_textures_patterns())
+    print(get_textures_settings('extensions'))
     sys.exit(app.exec_())
 
     print(__name__)

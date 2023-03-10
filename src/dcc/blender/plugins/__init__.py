@@ -3,5 +3,18 @@
 Documentation:
 """
 
-if __name__ == '__main__':
-    print(__name__)
+import importlib
+
+from . import create_material_from_textures, load_asset
+
+importlib.reload(create_material_from_textures)
+importlib.reload(load_asset)
+
+
+from .create_material_from_textures import CreateMaterialFromTextures
+from .load_asset import LoadAsset
+
+__all__ = [
+    "CreateMaterialFromTextures",
+    "LoadAsset",
+]

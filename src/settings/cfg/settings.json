@@ -1097,6 +1097,59 @@
       ]
     },
     {
+      "name": "blender",
+      "label": "Blender",
+      "children": [
+        {
+          "name": "configuration",
+          "label": "Configuration",
+          "children": [
+            {
+              "name": "executable",
+              "label": "Executable",
+              "default_value": "C:/Program Files/Blender Foundation/Blender 3.1/blender.exe",
+              "value": "C:/Program Files/Blender Foundation/Blender 3.1/blender.exe",
+              "type": "input_text",
+              "tooltip": "blender executable path",
+              "placeholder": "e.g. 'C:/Program Files/Blender Foundation/Blender 3.1/blender.exe'"
+            },
+            {
+              "name": "command_port",
+              "label": "Command Port",
+              "default_value": 55200,
+              "value": 55200,
+              "type": "input_number",
+              "tooltip": "blender command port number to communicate with another programs",
+              "placeholder": "e.g. '55200'"
+            },
+            {
+              "name": "collection_name",
+              "label": "Collection Name",
+              "default_value": "DJED",
+              "value": "DJED",
+              "type": "input_text",
+              "tooltip": "The root collection name at which the geometry created.",
+              "placeholder": "e.g. myCollection"
+            }
+
+          ]
+        },
+        {
+          "name": "plugins",
+          "label": "Plugins",
+          "children": [
+          ]
+        },
+        {
+          "name": "renderers",
+          "label": "Renderers",
+          "children": [
+            "$blender_principle_BSDF"
+          ]
+        }
+      ]
+    },
+    {
       "name": "end",
       "label": "End"
     }

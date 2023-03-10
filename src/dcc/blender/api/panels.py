@@ -2,60 +2,56 @@
 """
 Documentation:
 """
+import os
+import sys
+
 import bpy
+import bpy.utils.previews
+
+DJED_ROOT = os.getenv('DJED_ROOT')
+utils_path = os.path.join(DJED_ROOT, 'src')
+
+sysPaths = [DJED_ROOT, utils_path]
+
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
+
+import dcc.blender.plugins.panels.materials as mtls
+import dcc.blender.plugins.panels.geometry as geos
+
+import importlib
+
+importlib.reload(mtls)
+importlib.reload(geos)
 
 bl_info = {
     "name": "DJED Assets Tools",
     "category": "Object",
-    "version": "0.0.0.0",
-    "author": "Michael Reda"
+    "version": (0, 1, 0),
+    "author": "Michael Reda",
+    "blender": (3, 4, 0),
 }
 
 
-def show_message(message='', title='Message Box', msg_type='INFO'):
-    def draw(self, context):
-        self.layout.label(text=message)
 
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=msg_type)
-
-
-class DJEDPanel(bpy.types.Panel):
-    """Creates a Djed Panel in the Object properties window"""
-
-    bl_label = "DJED"
-    bl_idname = "OBJECT_PT_djed_panel"
-    bl_description = ""
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "DJED"
-
-    def draw(self, context):
-        layout = self.layout
-
-        obj = context.object
-
-        row = layout.row()
-        row.label(text="new", icon='MATERIAL_DATA')
-
-        row = layout.row()
-        row.operator("addonname.djed_addmtl_operator")
-
-        # to get all material slots
-        material_slots = bpy.context.object.material_slots
-        # print([x.name for x in material_slots])
+# # add icons
+# icons_dict = bpy.utils.previews.new()
+#
+# icons_dict.load("custom_icon", icon_path, 'IMAGE')
+#
+# row.operator("addonname.djed_addmtl_operator", icon_value=icons_dict["custom_icon"].icon_id)
 
 
-class AddMaterial(bpy.types.Operator):
-    bl_label = "Add New Material"
-    bl_idname = "addonname.djed_addmtl_operator"
-
-    def execute(self, context):  # execute() is called when running teh operator.
-        self.report({'INFO'}, str(context))
-
-        return {'FINISHED'}
 
 
-classes = [DJEDPanel, AddMaterial]
+
+
+
+
+classes = []
+classes.extend(mtls.classes)
+classes.extend(geos.classes)
 
 
 def register():
