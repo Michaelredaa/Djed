@@ -196,7 +196,7 @@ def connect_nodes(network, in_node, in_name, out_node, out_name):
     network.node_tree.links.new(in_slot, out_slot)
 
 
-def create_texture(network, tex_path, udim=False, colorspace='aces', color=False, tex_name=None):
+def create_texture(network, tex_path, udim=False, colorspace='aces', color=False, tex_name=None, collapse=True):
     hdr = get_textures_settings('hdr_extension')
     extension = tex_path.rsplit('.', 1)[-1]
     if colorspace == 'aces':
@@ -237,6 +237,9 @@ def create_texture(network, tex_path, udim=False, colorspace='aces', color=False
         tex_node.image.source = 'FILE'
 
     tex_node.image.colorspace_settings.name = colorspace_value
+
+    if collapse:
+        tex_node.hide = True
 
     return tex_node
 
