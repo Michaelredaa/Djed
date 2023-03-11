@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 
 import bpy
+import addon_utils
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT.joinpath('src').as_posix()]
@@ -82,14 +83,17 @@ class LoadAsset(pyblish.api.InstancePlugin):
             plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
             nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
+
         asset_data = data.get('asset_data')
         for sg in asset_data:
 
-            mtl_net = add_material(mtl_name=sg, bind=False)
+            mtl_net = add_material(mtl_name=re.sub(r'(?i)sg', 'MTL', sg), bind=False)
+            mtl_node = None
 
             material_output_node = mtl_net.node_tree.nodes.get('Material Output')
             if not material_output_node:
                 material_output_node = mtl_net.node_tree.nodes.new('ShaderNodeOutputMaterial')
+            material_output_node.location.x = 600
             # materials
             materials = asset_data.get(sg, {}).get('materials', {})
             for mtl in materials:
@@ -105,6 +109,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 if not mtl_node:
                     mtl_node = mtl_net.node_tree.nodes.new(mtl_type)
 
+                mtl_node.location.x = 0
+
                 connect_nodes(mtl_net, mtl_node, 'BSDF', material_output_node, 'Surface')
 
                 # attributes
@@ -116,6 +122,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     mtl_node.inputs[to_attr].default_value = value
 
                 # create textures
+                padding = 400
+                x, y = -1*padding, 0
                 textures = materials[mtl].get('texs')
                 for tex_name, tex_dict in textures.items():
                     plug_name = tex_dict.get('plugs')[0]
@@ -139,6 +147,9 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         tex_name
 
                     )
+                    tex_node.location.x = x
+                    tex_node.location.y = y
+                    y -= 160
 
                     if plug_type == 'float':
                         ...
@@ -158,6 +169,12 @@ class LoadAsset(pyblish.api.InstancePlugin):
                             inbetween_node = mtl_net.node_tree.nodes.new(inbetween_dict.get('type'))
                             inbetween_node.name = inbetween_node_name
 
+                        # position
+
+                        inbetween_node.location.x = connected_node.location.x
+                        inbetween_node.location.y = connected_node.location.y + inbetween_node.height/2
+                        connected_node.location.x = connected_node.location.x-padding
+
                         connect_nodes(
                             mtl_net,
                             connected_node, connected_plug,
@@ -173,45 +190,70 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         mtl_node, to_plug.get("name")
                     )
 
-            continue
 
             # displacement
             displacements = asset_data.get(sg, {}).get('displacements', {})
             for displacement, displacement_dict in displacements.items():
+
+                if bpy.context.scene.render.engine != 'CYCLES':
+                    continue
+
+                if mtl_node:
+                    mtl_net.cycles.displacement_methode = 'BOTH'
+
                 # create displacement
-                displacement_node = displacement
-                tex_name = displacement.replace('displacement', 'height')
-                if not cmds.objExists(displacement_node):
-                    displacement_node = cmds.shadingNode('displacementShader', n=displacement_node, asShader=1)
+                displacement_node = mtl_net.node_tree.nodes.get(displacement)
+                if not displacement_node:
+                    displacement_node = mtl_net.node_tree.nodes.new("ShaderNodeDisplacement")
+
+                displacement_node.name = displacement
+
+                displacement_node.location.x = 300
+                y_pos = -1*mtl_node.height - 600
+                displacement_node.location.y = y_pos
 
                 for tex_name, tex_dict in displacement_dict.get('texs', {}).items():
                     # create texture
                     if colorspace is None:
                         colorspace = tex_dict.get('colorspace', 'aces')
-                    tex_node = ma.import_texture(
+                    tex_node = create_texture(
+                        mtl_net,
                         tex_dict.get('filepath'),
                         tex_dict.get('udim'),
                         colorspace,
                         False,
                         tex_name
                     )
+
+                    # position
+                    tex_node.location.y = y_pos
+
                     if not tex_node:
                         continue
-                    cmds.connectAttr(f'{tex_node}.outColor.outColorR', displacement_node + '.displacement', f=1)
-                    cmds.connectAttr(displacement_node + '.displacement', f'{sg}.displacementShader', f=1)
+                    connect_nodes(
+                        mtl_net,
+                        tex_node, 'Color',
+                        displacement_node, 'Height'
+                    )
+                    connect_nodes(
+                        mtl_net,
+                        displacement_node, 'Displacement',
+                        material_output_node, 'Displacement'
+                    )
 
-            # assign materials
-            if not geo_path:
-                continue
-            meshes = asset_data.get(sg, {}).get('meshes', {}).get('shape', {})
-            for mesh_path in meshes:
-                try:
-                    mesh_path = '*' + mesh_path.split('|', 2)[-1]
-                    ma.assign_material(cmds.ls(mesh_path), sg_name=sg)
-                except:
-                    pass
 
-        # ma.arrangeHypershade()
+
+
+            # # assign materials
+            # if not geo_path:
+            #     continue
+            # meshes = asset_data.get(sg, {}).get('meshes', {}).get('shape', {})
+            # for mesh_path in meshes:
+            #     try:
+            #         mesh_path = '*' + mesh_path.split('|', 2)[-1]
+            #         ma.assign_material(cmds.ls(mesh_path), sg_name=sg)
+            #     except:
+            #         pass
 
 
 # Main Function
