@@ -4,32 +4,26 @@ Documentation:
 """
 
 import os
-import site
 import tempfile
+import subprocess
 from pathlib import Path
 
 from ctypes import windll
 
-DJED_ROOT = Path(os.getenv('DJED_ROOT'))
-
-site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
-
-import subprocess
-import psutil
 
 
 def is_process_running(process_name):
-    '''
+    """
     Check if there is any running process that contains the given name processName.
-    '''
-    # Iterate over teh all teh running process
-    for proc in psutil.process_iter():
-        try:
-            # Check if process name contains the given name string.
-            if process_name.lower() in proc.name().lower():
-                return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
+    """
+    # Use the tasklist command to get a list of all running processes
+    tasklist = subprocess.Popen('tasklist', stdout=subprocess.PIPE).stdout.read().decode('utf-8')
+
+    # Iterate over the lines and check if the process name is in any of them
+    for line in tasklist.split('\n'):
+        if process_name.lower()[:25] in line.lower():
+            return True
+
     return False
 
 
@@ -77,3 +71,8 @@ def run_as_administrator(cmd):
     )
     success = result > 32
     return success
+
+
+if __name__ == '__main__':
+    name = 'Adobe Substance 3D Painter'
+    print(is_process_running(name))
