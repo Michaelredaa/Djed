@@ -190,6 +190,54 @@ def add_material(objects=None, mtl_name='material', override=True, bind=True) ->
     return mtl_net
 
 
+def get_mesh_data(obj):
+    """To gather mesh data like material and paths"""
+
+    data = {}
+    for child in get_all_children(obj):
+        if child.type == "MESH":
+            mtls = obj.material_slots
+
+            if not mtls:
+                continue
+
+            for mtl in mtls:
+
+                if mtl.name not in data:
+                    data[mtl.name] = {'meshes': {}}
+                if 'shape' not in data[mtl.name]['meshes']:
+                    data[mtl.name]['meshes'] = {'shape': []}
+
+                data[mtl.name]['meshes']['shape'].append(get_obj_path(obj))
+
+    return data
+
+
+def get_textures_from_mtl(network):
+    textures_nodes = []
+    material_out = [x for x in network.node_tree.nodes if x.type == 'OUTPUT_MATERIAL']
+
+    if not material_out: return textures_nodes
+
+    material_out = material_out[0]
+
+    for node_input in material_out.inputs:
+
+        if not node_input.is_linked:
+            continue
+
+        for link in node_input.links:
+            if link.to_socket.name == "Surface":
+                surface_shader = link.from_node
+
+                for s_input in surface_shader.inputs:
+                    if not s_input.is_linked:
+                        continue
+
+                    for s_link in s_input.links:
+                        print(s_link.from_node.type)
+
+
 def connect_nodes(network, in_node, in_name, out_node, out_name):
     in_slot = in_node.outputs[in_name]
     out_slot = out_node.inputs[out_name]
@@ -255,7 +303,7 @@ def add_material_property_to_mesh(obj):
             add_property(child, 'materialBinding', material_name)
 
 
-def export_geometry(asset_dir=None, export_type=["abc"]):
+def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
     if asset_dir is None:
         asset_dir = get_dcc_cfg('maya', 'plugins', 'export_geometry', 'export_root')
 
@@ -271,7 +319,8 @@ def export_geometry(asset_dir=None, export_type=["abc"]):
         show_message("Please make sure you select outliner object first", "No Selection", "ERROR")
         return
 
-    asset_name = selected[0].name
+    if asset_name is None:
+        asset_name = selected[0].name
 
     resolved_context = {
         'relatives_to': filepath,
@@ -294,7 +343,8 @@ def export_geometry(asset_dir=None, export_type=["abc"]):
     export_paths = {}
     with maintained_selection():
 
-        selected[0].select_set(state=True)
+        selected_object = selected[0]
+        selected_object.select_set(state=True)
         for s in get_all_children(selected[0]):
             s.select_set(state=True)
 
@@ -342,12 +392,8 @@ def export_geometry(asset_dir=None, export_type=["abc"]):
 
             export_paths[ext] = export_path + '.' + ext
 
-    old_data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
-    old_data = json.loads(old_data)
-    mesh_data = self.get_mesh_data(asset_name)
-    new_data = dict(merge_dicts(old_data, mesh_data))
-
-    db.add_geometry(asset_name=asset_name, mesh_data=json.dumps(new_data))
+    data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
+    db.add_geometry(asset_name=asset_name, mesh_data=data)
 
     return export_paths
 
