@@ -12,7 +12,6 @@ import re
 import site
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-sysPaths = [DJED_ROOT.joinpath('djed').as_posix()]
 
 sysPaths = [DJED_ROOT.as_posix()]
 for sysPath in sysPaths:
@@ -99,7 +98,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
             name='any',
             family="asset",
             colorspace='aces',
-            to_renderer='principled_BSDF',
+            to_renderer='principle_BSDF',
             host="standard",
             asset_data=asset_data
         )
