@@ -13,7 +13,7 @@ import traceback
 from pathlib import Path
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-sysPaths = [DJED_ROOT.joinpath('djed').as_posix()]
+sysPaths = [DJED_ROOT.as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
@@ -22,20 +22,20 @@ site.addsitedir(DJED_ROOT.joinpath('venv', 'python39', 'Lib', 'site-packages').a
 
 ############################################
 import importlib
-import dcc.clarisse.api.cmds
-import utils.file_manager
+import djed.dcc.clarisse.api.cmds
+import djed.utils.file_manager
 
-importlib.reload(dcc.clarisse.api.cmds)
-importlib.reload(utils.file_manager)
+importlib.reload(djed.dcc.clarisse.api.cmds)
+importlib.reload(djed.utils.file_manager)
 
 ############################################
 
 import pyblish.api
 
-from settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion, get_material_attrs, \
+from djed.settings.settings import get_dcc_cfg, material_attrs_conversion, shading_nodes_conversion, get_material_attrs, \
     get_shading_nodes
 
-from dcc.clarisse.api.cmds import Clarisse
+from djed.dcc.clarisse.api.cmds import Clarisse
 
 import ix
 
@@ -73,6 +73,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         source_host = data.get('host', 'standard')
         if source_host == 'spp':
             source_host = 'standard'
+
         host = 'clarisse'
 
         # renderer
@@ -154,7 +155,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 material_items.append(mtl_item)
 
                 # attributes
-                attrs = materials[mtl].get('attrs')
+                attrs = materials[mtl].get('attrs', {})
                 for attr in attrs:
                     try:
                         to_attr = plugs_conversion.get(attr).get('name')
