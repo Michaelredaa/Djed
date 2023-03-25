@@ -11,14 +11,13 @@ import os
 import unittest
 
 DJED_ROOT = os.getenv('DJED_ROOT')
-utils_path = os.path.join(DJED_ROOT, 'djed')
-sysPaths = [DJED_ROOT, utils_path]
+sysPaths = [DJED_ROOT]
 
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from settings import settings
+from djed.settings import settings
 
 
 # ---------------------------------
@@ -97,6 +96,20 @@ class TestSettings(unittest.TestCase):
         self.assertIsInstance(conversion, dict)
         self.assertEqual(conversion['baseColor']['name'], 'base_color')
         self.assertIsInstance(conversion['baseColor']['inbetween'], list)
+
+    def test_blender_material_attrs_conversion(self):
+        from_host = "blender"
+        from_renderer = "principle_BSDF"
+        to_host = "clarisse"
+        to_renderer = "autodesk_standard_surface"
+
+        conversion = settings.material_attrs_conversion(from_host, from_renderer, to_host, to_renderer)
+
+        self.assertIsInstance(conversion, dict)
+        self.assertEqual(conversion['Base Color']['name'], 'base_color')
+        self.assertIsInstance(conversion['Base Color']['inbetween'], list)
+
+
 
 
 if __name__ == '__main__':
