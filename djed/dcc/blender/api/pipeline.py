@@ -5,7 +5,7 @@ Documentation: Shared function for blender pipeline
 import os
 import sys
 from contextlib import contextmanager
-from typing import List, Iterator
+from typing import List, Iterator, Dict
 
 import bpy
 
@@ -16,7 +16,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from djed.settings.settings import get_dcc_cfg, get_textures_settings, get_colorspace_settings
+from djed.settings.settings import get_dcc_cfg, get_textures_settings, get_colorspace_settings, get_material_attrs
 from djed.utils.file_manager import FileManager
 from djed.utils.textures import ck_udim
 from djed.utils.assets_db import AssetsDB
@@ -198,40 +198,114 @@ def get_mesh_data(obj):
                 continue
 
             for mtl in mtls:
+                mtl_name = mtl.name.replace(' ', '_')
+                if mtl_name not in data:
+                    data[mtl_name] = {'meshes': {}}
+                if 'shape' not in data[mtl_name]['meshes']:
+                    data[mtl_name]['meshes'] = {'shape': []}
 
-                if mtl.name not in data:
-                    data[mtl.name] = {'meshes': {}}
-                if 'shape' not in data[mtl.name]['meshes']:
-                    data[mtl.name]['meshes'] = {'shape': []}
+                data[mtl_name]['meshes']['shape'].append(get_obj_path(obj))
 
-                data[mtl.name]['meshes']['shape'].append(get_obj_path(obj))
+                # add materials
+                material_data = get_textures_from_mtl(mtl.material)
+                data[mtl_name].update(material_data)
 
     return data
 
 
-def get_textures_from_mtl(network):
-    textures_nodes = []
+def get_standard_material_plug(plug, node='standard_surface'):
+    """To get the standard plug name form settings"""
+    attrs = get_material_attrs('blender', 'principle_BSDF', node=node)
+    for attr in attrs:
+        if attrs[attr]['name'] == plug:
+            return attr
+    else:
+        return ''
+
+
+def get_textures_from_mtl(network: bpy.types.Material) -> Dict:
+    """
+    To get all material connection data related to textures
+    """
+
+    def get_connected_image(node):
+        for _input in node.inputs:
+            if not _input.is_linked:
+                continue
+
+            for _link in _input.links:
+                if _link.from_node.type == 'TEX_IMAGE':
+                    return _link.from_node
+                else:
+                    get_connected_image(_link.from_node)
+
+    def get_texture_path(shader_node, cfg_node='standard_surface'):
+        tex_dict = {}
+        for s_input in shader_node.inputs:
+            if not s_input.is_linked:
+                continue
+
+            for s_link in s_input.links:
+                if s_link.from_node.type == 'TEX_IMAGE':
+                    image_node = s_link.from_node
+                else:
+                    image_node = get_connected_image(s_link.from_node)
+                    if not image_node:
+                        continue
+
+                image = image_node.image
+                if image and not image.is_dirty and image.packed_file:
+                    filepath = image.pixels
+                    # image.save_render(filepath=file_path)
+                else:
+                    filepath = image.filepath
+
+                colorspace = image.colorspace_settings.name
+                if colorspace == 'Non-Color':
+                    colorspace = "Raw"
+
+                # get UDIM
+                if image.source == 'TILED':
+                    udim = len(image.tiles)
+                else:
+                    udim = 0
+
+                plug_name = get_standard_material_plug(s_link.to_socket.name, node=cfg_node)
+
+                image_name = image_node.name.replace(' ', '_')
+                tex_dict[image_name] = {}
+                tex_dict[image_name]["plugs"] = [plug_name]
+                tex_dict[image_name]["filepath"] = filepath
+                tex_dict[image_name]["colorspace"] = colorspace
+                tex_dict[image_name]["type"] = image_node.type
+                tex_dict[image_name]["udim"] = udim
+
+        return tex_dict
+
+    material_data = {'materials': {}, 'displacements': {}}
     material_out = [x for x in network.node_tree.nodes if x.type == 'OUTPUT_MATERIAL']
 
-    if not material_out: return textures_nodes
+    if not material_out: return material_data
 
     material_out = material_out[0]
-
     for node_input in material_out.inputs:
 
         if not node_input.is_linked:
             continue
 
         for link in node_input.links:
+            shader_node = link.from_node
+            shader_node_name = shader_node.name.replace(' ', '_')
+
             if link.to_socket.name == "Surface":
-                surface_shader = link.from_node
+                tex_dict = get_texture_path(shader_node)
+                material_data['materials'][shader_node_name] = {"texs": tex_dict, "type": 'standard_surface'}
 
-                for s_input in surface_shader.inputs:
-                    if not s_input.is_linked:
-                        continue
+            elif link.to_socket.name == "Displacement":
+                tex_dict = get_texture_path(shader_node, cfg_node='displacement')
+                material_data['displacements'][shader_node_name] = {"texs": tex_dict, "type": 'displacement'}
 
-                    for s_link in s_input.links:
-                        print(s_link.from_node.type)
+    return material_data
 
 
 def connect_nodes(network, in_node, in_name, out_node, out_name):
@@ -389,6 +463,7 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
             export_paths[ext] = export_path + '.' + ext
 
     data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
+    data.update(get_mesh_data(selected[0]))
     db.add_geometry(asset_name=asset_name, mesh_data=data)
 
     return export_paths
