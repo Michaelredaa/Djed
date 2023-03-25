@@ -11,7 +11,7 @@ from cx_Freeze import setup, Executable
 from pathlib import Path
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
+sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('djed').as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
@@ -27,7 +27,7 @@ if sys.platform == "win32":
 
 executables = [
     Executable("start.py", base=base, targetName="Djed",
-               icon=f"{DJED_ROOT.as_posix()}/src/utils/resources/icons/djed.ico")
+               icon=f"{DJED_ROOT.as_posix()}/djed/utils/resources/icons/djed.ico")
 ]
 
 include_files = [

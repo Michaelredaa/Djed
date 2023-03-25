@@ -10,13 +10,13 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 
 DJED_ROOT = Path(os.getenv('DJED_ROOT'))
-sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('src').as_posix()]
+sysPaths = [DJED_ROOT.as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from startup.system_tray import DjedTray
-from utils.resources.style_rc import *
+from djed.startup.system_tray import DjedTray
+from djed.utils.resources.style_rc import *
 
 
 def run_tray():
