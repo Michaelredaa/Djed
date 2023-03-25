@@ -26,7 +26,7 @@ for sysPath in sysPaths:
 
 ##################################
 import importlib
-import utils.file_manager
+import djed.utils.file_manager
 from djed.dcc.spp.api import pipeline
 import djed.dcc.linker.to_maya
 

@@ -19,19 +19,16 @@ PLUGIN = None
 # ---------------------------------PLUGIN
 # Start Here
 def start_plugin():
-    DJED_ROOT = os.getenv("DJED_ROOT")
-    spp_path = os.path.join(DJED_ROOT, "djed", "dcc", "spp")
-
-    plugin_path = os.path.join(spp_path, "hooks", "plugins")
-
-    sysPaths = [spp_path, plugin_path]
-    for sysPath in sysPaths:
-        if sysPath not in sys.path:
-            sys.path.append(sysPath)
-            substance_painter_plugins.path.append(sysPath)
-
     global PLUGIN
-    PLUGIN = importlib.import_module("Djed")
+
+    DJED_ROOT = os.getenv("DJED_ROOT")
+
+    module_path = os.path.join(DJED_ROOT, "djed/dcc/spp/hooks/plugins/Djed.py")
+    module_spec = importlib.util.spec_from_file_location('Djed_SPP', module_path)
+
+    PLUGIN = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(PLUGIN)
+    # PLUGIN = importlib.import_module("Djed")
 
     # Start the Plugin if it wasn't already:
     if not substance_painter_plugins.is_plugin_started(PLUGIN):
