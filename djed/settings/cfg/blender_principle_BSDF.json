@@ -1,7 +1,7 @@
 {
   "host": "blender",
-  "name": "principled_BSDF",
-  "label": "Principled BSDF",
+  "name": "principle_BSDF",
+  "label": "Principle BSDF",
   "children": [
     {
       "name": "standard_surface",
