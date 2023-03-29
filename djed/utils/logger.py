@@ -8,14 +8,18 @@ import os
 
 DJED_ROOT = os.getenv('DJED_ROOT')
 
-log_file_path = DJED_ROOT + '/test/logs/log.log'
+
 
 
 class Logger(object):
-    def __init__(self, name=None):
+    def __init__(self, name=None, filepath=None, use_file=False):
         self.log = logging.getLogger(__name__)
         if name:
             self.log = logging.getLogger(name)
+
+        log_file_path = DJED_ROOT + '/test/logs/log.log'
+        if filepath:
+            log_file_path = filepath
 
         if not len(self.log.handlers):  # To stop the duplicates of logs
             self.log.setLevel(logging.INFO)
@@ -26,12 +30,16 @@ class Logger(object):
             stream_handler.setFormatter(formatter)
             self.log.addHandler(stream_handler)
 
-            # file
-            file_handler = logging.FileHandler(log_file_path)
-            file_handler.setLevel(logging.DEBUG)
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
-            file_handler.setFormatter(formatter)
-            self.log.addHandler(file_handler)
+            if use_file:
+                # file
+                self.log.setLevel(logging.DEBUG)
+
+                file_handler = logging.FileHandler(log_file_path)
+                file_handler.setLevel(logging.DEBUG)
+                formatter = logging.Formatter('%(asctime)s - %(name)s -%(levelname)s - %(message)s',
+                                              "%Y-%m-%d %H:%M:%S")
+                file_handler.setFormatter(formatter)
+                self.log.addHandler(file_handler)
 
     def info(self, message):
         self.log.info(message)
@@ -48,6 +56,6 @@ class Logger(object):
 
 
 if __name__ == '__main__':
-    log = Logger()
-    log.error('foo')
+    log = Logger(use_file=True)
+    log.debug('foo')
     print(__name__)

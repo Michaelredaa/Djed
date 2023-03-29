@@ -33,6 +33,7 @@ import pyblish.api
 from djed.dcc.blender.api.pipeline import *
 from djed.settings.settings import material_attrs_conversion, shading_nodes_conversion, get_material_attrs, get_shading_nodes
 from djed.utils.file_manager import FileManager
+from djed.utils.logger import Logger
 
 # ---------------------------------
 # Variables
@@ -47,7 +48,15 @@ class LoadAsset(pyblish.api.InstancePlugin):
     hosts = ["blender"]
     families = ["asset"]
 
+    def __init__(self):
+        self.log = Logger(
+            name=self.hosts[0] + self.__class__.__name__,
+            use_file=True
+        )
+
     def process(self, instance):
+
+        self.log.debug(f"create instance for {instance.name}")
 
         asset_name = instance.name
         data = instance.data
@@ -59,6 +68,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
         colorspace = data.get('colorspace')
 
         geo_path = geo_paths.get(geo_type)
+        self.log.debug(f"Use geo path:  {geo_path}")
         if geo_path:
             if import_type == 'Import Geometry':
                 import_geometry(geo_path, scale=1.0)
@@ -71,11 +81,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
         # renderer
         to_renderer = data.get('to_renderer')
+        self.log.debug(f"Host: {host} -  To renderer:  {to_renderer}")
 
         source_renderer = data.get('source_renderer', 'standard')
+        self.log.debug(f"Source host:  {source_host} - Source renderer:  {source_renderer}")
 
         # conversions
         if source_host == 'standard' or source_renderer == 'standard':
+            self.log.debug(f"Using standard materials")
             # standard material
             plugs_conversion = get_material_attrs(host, to_renderer)
             nodes_conversion = get_shading_nodes(host, to_renderer)
@@ -83,8 +96,11 @@ class LoadAsset(pyblish.api.InstancePlugin):
             plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
             nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
+        self.log.debug(f"plugs_conversion: {plugs_conversion}")
+        self.log.debug(f"nodes_conversion: {nodes_conversion}")
 
         asset_data = data.get('asset_data')
+        self.log.debug(f"Processing: {asset_data}")
         for sg in asset_data:
 
             mtl_net = add_material(mtl_name=re.sub(r'(?i)sg', 'MTL', sg), bind=False)

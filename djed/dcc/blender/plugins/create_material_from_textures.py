@@ -25,6 +25,7 @@ import pyblish.util
 
 from djed.utils.file_manager import FileManager
 from djed.utils.textures import list_textures, ck_udim, get_sgName_from_textures, texture_type_from_name
+from djed.utils.logger import Logger
 
 # ---------------------------------
 # Variables
@@ -41,11 +42,19 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
 
     def __init__(self, directory):
         self.directory = directory
+        self.log = Logger(
+            name=self.hosts[0] + self.__class__.__name__,
+            use_file=True
+        )
 
     def process(self, context):
-        # ma = Maya()
+
+        self.log.info(f"Creating context for creating material from textures")
+
         textures = list_textures(self.directory)
         sgs = get_sgName_from_textures(self.directory)
+        self.log.debug(f"Get Sgs from textures: {sgs}")
+
         asset_data = {}
 
         for sg in sgs:
@@ -94,6 +103,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
                 "texs": texs_dict
 
             }
+        self.log.debug(f"Asset data: {asset_data}")
         instance = context.create_instance(
             name='any',
             family="asset",
