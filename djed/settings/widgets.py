@@ -458,7 +458,7 @@ class SettingsTree(QTreeView):
             for i in range(len(data)):
                 if "$" in data[i]:
                     file_name = data[i].split('$')[-1]
-                    cfg_path_rel = f"src/settings/cfg/{file_name}.json"
+                    cfg_path_rel = f"djed/settings/cfg/{file_name}.json"
                     cfg_path = os.path.join(DJED_ROOT, cfg_path_rel)
 
                     if not os.path.isfile(cfg_path):

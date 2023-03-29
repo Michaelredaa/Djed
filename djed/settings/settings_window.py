@@ -175,7 +175,7 @@ class SettingsWindow(QMainWindow):
 
         if "$" in data:
             file_name = data.split('$')[-1]
-            cfg_path_rel = f"src/settings/cfg/{file_name}.json"
+            cfg_path_rel = f"djed/settings/cfg/{file_name}.json"
             cfg_path = os.path.join(DJED_ROOT, cfg_path_rel)
 
             if os.path.isfile(cfg_path):
