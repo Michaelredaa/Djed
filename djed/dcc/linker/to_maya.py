@@ -3,8 +3,16 @@
 Documentation:
 """
 
-import re
-import traceback
+import os
+import sys
+
+DJED_ROOT = os.getenv("DJED_ROOT")
+
+sysPaths = [DJED_ROOT]
+
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
 
 from djed.settings.settings import get_dcc_cfg
 from djed.utils.dialogs import message
