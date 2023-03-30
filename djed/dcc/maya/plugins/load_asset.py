@@ -30,8 +30,15 @@ importlib.reload(djed.utils.file_manager)
 
 import pyblish.api
 from djed.dcc.maya.api.cmds import Maya
-from djed.settings.settings import material_attrs_conversion, shading_nodes_conversion, get_material_attrs
+from djed.settings.settings import (
+    material_attrs_conversion,
+    shading_nodes_conversion,
+    get_material_attrs,
+    get_shading_nodes,
+)
+
 from djed.utils.file_manager import FileManager
+from djed.utils.logger import Logger
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -48,7 +55,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
     hosts = ["maya"]
     families = ["asset"]
 
+    def __init__(self):
+        self.log = Logger(
+            name=self.hosts[0] + self.__class__.__name__,
+            use_file=True
+        )
+
     def process(self, instance):
+        self.log.debug(f"Loading asset `{instance.name}` in maya...")
 
         ma = Maya()
         fm = FileManager()
@@ -62,6 +76,8 @@ class LoadAsset(pyblish.api.InstancePlugin):
         colorspace = data.get('colorspace')
 
         geo_path = geo_paths.get(geo_type)
+        self.log.debug(f"geometry_type:  `{geo_type}` ->> import_type:  `{import_type}` ->> geo_paths:  `{geo_paths}`")
+        self.log.debug(f"Use geo path:  {geo_path}")
         if geo_path:
             if import_type == 'Import Geometry':
                 ma.import_geo(geo_path)
@@ -75,39 +91,67 @@ class LoadAsset(pyblish.api.InstancePlugin):
         # renderer
         to_renderer = data.get('to_renderer')
         source_renderer = data.get('source_renderer', 'standard')
+        self.log.debug(f"Host: `{host}` -  To renderer:  `{to_renderer}`")
+        self.log.debug(f"Source host:  `{source_host}` - Source renderer:  `{source_renderer}`")
 
         # conversions
         if source_host == 'standard' or source_renderer == 'standard':
             # standard material
+            self.log.debug(f"Using standard materials")
             plugs_conversion = get_material_attrs(host, to_renderer)
+            nodes_conversion = get_shading_nodes(host, to_renderer)
         else:
             plugs_conversion = material_attrs_conversion(source_host, source_renderer, host, to_renderer)
             nodes_conversion = shading_nodes_conversion(source_host, source_renderer, host, to_renderer)
 
+        self.log.debug(f"plugs_conversion: {plugs_conversion}")
+        self.log.debug(f"nodes_conversion: {nodes_conversion}")
+
         asset_data = data.get('asset_data')
+        self.log.debug(f"Processing: {asset_data}")
         for sg in asset_data:
+            self.log.debug(f"__sg: {sg}")
+
             # materials
             materials = asset_data.get(sg, {}).get('materials', {})
             for mtl in materials:
                 mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
+                if not mtl_name.endswith('MTL'):
+                    mtl_name += 'MTL'
+                self.log.debug(f"__mtl: {mtl} -> __material name {mtl_name}")
+
                 if not cmds.objExists(sg):
+                    self.log.debug(f"__Creating new shading group")
                     mtl_name, sg = ma.create_material(name=mtl_name, sg=sg)
                 else:
+                    self.log.debug(f"__Use existence shading group")
                     exist_materials = ma.get_materials_from_sg(sg, 'material')
                     if exist_materials and mtl_name in exist_materials:
+                        self.log.debug(f"__Use existence material")
                         mtl_name = exist_materials[0]
                     else:
+                        self.log.debug(f"__Creating new material")
                         mtl_name, sg = ma.create_material(name=mtl, sg=sg)
 
                 # attributes
-                attrs = materials[mtl].get('attrs')
+                attrs = materials[mtl].get('attrs', {})
+                self.log.debug(f"__Set attributes: {attrs}")
                 for attr in attrs:
-                    to_attr = plugs_conversion.get(attr).get('name')
-                    value = attrs.get(attr)
-                    cmds.setAttr(f'{mtl_name}.{to_attr}', value)
+                    try:
+                        to_attr = plugs_conversion.get(attr).get('name', '')
+                        value = attrs.get(attr)
+                        if isinstance(value, list):
+                            cmds.setAttr(f'{mtl_name}.{to_attr}', *value, type='double3')
+                        elif isinstance(value, str):
+                            cmds.setAttr(f'{mtl_name}.{to_attr}', value, type='string')
+                        else:
+                            cmds.setAttr(f'{mtl_name}.{to_attr}', value)
+                    except:
+                        self.log.error(f"__Cant set attr {mtl_name}.{to_attr} with {value}")
 
                 # create textures
                 textures = materials[mtl].get('texs')
+                self.log.debug(f"__import textures: {textures}")
                 for tex_name, tex_dict in textures.items():
                     plug_name = tex_dict.get('plugs')[0]
                     if not plug_name:
@@ -120,7 +164,9 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                     if colorspace is None:
                         colorspace = tex_dict.get('colorspace', 'aces')
+
                     # create texture
+                    self.log.debug(f"__Creating: {tex_name} -> {colorspace} -> udim {tex_dict.get('udim')}")
                     tex_node = ma.import_texture(
                         tex_dict.get('filepath'),
                         tex_dict.get('udim'),
@@ -138,12 +184,15 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         mel.eval(f'generateUvTilePreview {tex_node};')
 
                     # inbetween nodes
+                    self.log.debug(f"__Creating inbetween nodes..")
                     connected_node = tex_node
                     connected_plug = tex_plug
                     for inbetween_dict in to_plug.get("inbetween"):
                         if inbetween_dict == [{}] or not inbetween_dict:
                             continue
                         inbetween_node = mtl + inbetween_dict.get('name')
+
+                        self.log.debug(f"__Inbetween node: {inbetween_node}")
                         if not cmds.objExists(inbetween_node):
                             inbetween_node = ma.create_util_node(inbetween_dict.get('type'), inbetween_node)
                         ma.connect_attr(
@@ -159,6 +208,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
             # displacement
             displacements = asset_data.get(sg, {}).get('displacements', {})
+            self.log.debug(f"__Creating displacements: {displacements}")
             for displacement, displacement_dict in displacements.items():
                 # create displacement
                 displacement_node = displacement
@@ -186,6 +236,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
             if not geo_path:
                 continue
             meshes = asset_data.get(sg, {}).get('meshes', {}).get('shape', {})
+            self.log.debug(f"__Assigning materials: {sg} -> {meshes}")
             for mesh_path in meshes:
                 try:
                     mesh_path = '*' + mesh_path.split('|', 2)[-1]
