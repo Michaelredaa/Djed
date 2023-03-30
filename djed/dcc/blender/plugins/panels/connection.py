@@ -12,9 +12,9 @@ from pathlib import Path
 
 import bpy
 
-DJED_ROOT = Path(os.getenv("DJED_ROOT")).as_posix()
+DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 
-sysPaths = [DJED_ROOT]
+sysPaths = [DJED_ROOT.as_posix()]
 
 for sysPath in sysPaths:
     if sysPath not in sys.path:
@@ -33,6 +33,7 @@ importlib.reload(djed.dcc.blender.api.pipeline)
 
 from djed.dcc.linker.to_spp import send_to_spp, update_spp
 from djed.dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
+from djed.dcc.linker.to_maya import send_to_maya, is_maya_connected
 from djed.utils.assets_db import AssetsDB
 from djed.dcc.blender.api.pipeline import selection, export_geometry
 
@@ -116,8 +117,8 @@ class DJEDConnections(bpy.types.Panel):
 
         if obj.expanded_maya:
             row = maya_box.row()
-            row.operator("addonname.djed_send_spp_operator")
-            row.operator("addonname.djed_update_spp_operator")
+            row.operator("addonname.djed_send_maya_operator")
+            # row.operator("addonname.djed_update_maya_operator")
 
 
 class SendToSPP(bpy.types.Operator):
@@ -203,7 +204,6 @@ class SendToClarisse(bpy.types.Operator):
             return {'FINISHED'}
 
         self.report({'INFO'}, 'Sending to Clarisse')
-        cfg = {}  # TODO Add custom configurations
 
         use_latest_published = False
 
@@ -235,7 +235,6 @@ class SendToClarisse(bpy.types.Operator):
         geometry_type = 'Alembic Bundle'
         renderer = 'standard'
 
-
         data = {
             'name': asset_name,
             'host': 'blender',
@@ -251,10 +250,70 @@ class SendToClarisse(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class SendToMaya(bpy.types.Operator):
+    bl_label = "Send"
+    bl_idname = "addonname.djed_send_maya_operator"
+    bl_description = "Send the selected geometry to Maya"
+
+    def execute(self, context):
+
+        if not is_maya_connected():
+            self.report({'ERROR'}, 'Can not connect to Maya.\n'
+                                   'Make sure you open Maya session or Maya command port is open.')
+            return {'FINISHED'}
+
+        self.report({'INFO'}, 'Sending to Maya')
+
+        if len(selection()) < 1:
+            self.report({'WARNING'}, 'Please make sure you select an object from outliner')
+            return {'FINISHED'}
+
+        asset_name = selection()[0].name.replace(' ', '_')
+
+        use_latest_published = False
+        if not use_latest_published:
+            export_geometry(
+                asset_dir=None,
+                asset_name=asset_name,
+                export_type=["obj", "abc"]
+            )
+
+        asset_data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
+        geo_paths = db.get_geometry(
+            asset_name=asset_name,
+            obj_file="",
+            usd_geo_file="",
+            abc_file="",
+            fbx_file="",
+            source_file="")
+
+        to_render = 'arnold'
+        colorspace = 'aces'
+        geometry_type = 'abc_file'
+        import_type = 'Import Geometry'
+        renderer = 'standard'
+
+        data = {
+            'name': asset_name,
+            'host': 'blender',
+            'renderer': renderer,
+            'to_renderer': to_render,
+            'colorspace': colorspace,
+            'geometry_type': geometry_type,
+            'import_type': import_type,
+            'geo_paths': geo_paths,
+            'asset_data': asset_data,
+        }
+        send_to_maya(data)
+
+        return {'FINISHED'}
+
+
 classes = [
     DJEDConnections,
     SendToSPP, UpdateToSPP,
     SendToClarisse,
+    SendToMaya,
 ]
 
 
