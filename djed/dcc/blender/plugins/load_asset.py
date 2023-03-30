@@ -102,18 +102,25 @@ class LoadAsset(pyblish.api.InstancePlugin):
         asset_data = data.get('asset_data')
         self.log.debug(f"Processing: {asset_data}")
         for sg in asset_data:
+            self.log.debug(f"__sg: {sg}")
 
             mtl_net = add_material(mtl_name=re.sub(r'(?i)sg', 'MTL', sg), bind=False)
+            self.log.debug(f"__material name {mtl_net.name}")
+
             mtl_node = None
 
             material_output_node = mtl_net.node_tree.nodes.get('Material Output')
             if not material_output_node:
+                self.log.debug(f"__Creating Output Material node {mtl_net.name}")
                 material_output_node = mtl_net.node_tree.nodes.new('ShaderNodeOutputMaterial')
+
             material_output_node.location.x = 600
             # materials
             materials = asset_data.get(sg, {}).get('materials', {})
+
             for mtl in materials:
                 # mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
+                self.log.debug(f"__mtl: {mtl}")
                 from_renderer = materials[mtl].get('type')
                 mtl_type = nodes_conversion.get(from_renderer)
 
@@ -123,6 +130,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                 mtl_node = mtl_net.node_tree.nodes.get(mtl)
                 if not mtl_node:
+                    self.log.debug(f"__Creating new material")
                     mtl_node = mtl_net.node_tree.nodes.new(mtl_type)
 
                 mtl_node.location.x = 0
@@ -131,6 +139,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                 # attributes
                 attrs = materials[mtl].get('attrs')
+                self.log.debug(f"__Set attributes: {attrs}")
                 for attr in attrs:
                     to_attr = plugs_conversion.get(attr).get('name')
                     value = attrs.get(attr)
@@ -141,6 +150,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 padding = 400
                 x, y = -1*padding, 0
                 textures = materials[mtl].get('texs')
+                self.log.debug(f"__import textures: {textures}")
                 for tex_name, tex_dict in textures.items():
                     plug_name = tex_dict.get('plugs')[0]
                     if not plug_name:
@@ -153,7 +163,9 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                     if colorspace is None:
                         colorspace = tex_dict.get('colorspace', 'aces')
+
                     # create texture
+                    self.log.debug(f"__Creating: {tex_name} -> {colorspace} -> udim {tex_dict.get('udim')}")
                     tex_node = create_texture(
                         mtl_net,
                         tex_dict.get('filepath'),
@@ -173,12 +185,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
                         ...
 
                     # inbetween nodes
+                    self.log.debug(f"__Creating inbetween nodes..")
                     connected_node = tex_node
                     connected_plug = 'Color'
                     for inbetween_dict in to_plug.get("inbetween"):
                         if inbetween_dict == [{}] or not inbetween_dict:
                             continue
                         inbetween_node_name = inbetween_dict.get('name')
+                        self.log.debug(f"__Inbetween node: {inbetween_node_name}")
 
                         inbetween_node = mtl_net.node_tree.nodes.get(inbetween_node_name)
                         if not inbetween_node:
@@ -209,6 +223,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
             # displacement
             displacements = asset_data.get(sg, {}).get('displacements', {})
+            self.log.debug(f"__Creating displacements: {displacements}")
             for displacement, displacement_dict in displacements.items():
 
                 if bpy.context.scene.render.engine != 'CYCLES':
