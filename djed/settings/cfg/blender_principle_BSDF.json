@@ -81,7 +81,7 @@
           "name": "transmission",
           "label": "Transmission",
           "value": {
-            "name": "Emission Strength",
+            "name": "Transmission",
             "type": "float",
             "plug": "input",
             "inbetween": [{}]
@@ -101,7 +101,7 @@
           "name": "transmission_color",
           "label": "Transmission Color",
           "value": {
-            "name": "Transmission",
+            "name": "",
             "type": "color",
             "plug": "input",
             "inbetween": [{}]
