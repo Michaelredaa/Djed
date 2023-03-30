@@ -21,6 +21,9 @@ class Logger(object):
         if filepath:
             log_file_path = filepath
 
+        if not os.path.isdir(os.path.dirname(log_file_path)):
+            os.makedirs(os.path.dirname(log_file_path))
+
         if not len(self.log.handlers):  # To stop the duplicates of logs
             self.log.setLevel(logging.INFO)
 
