@@ -4,6 +4,7 @@ Documentation: Shared function for blender pipeline
 """
 import os
 import sys
+import re
 from contextlib import contextmanager
 from typing import List, Iterator, Dict
 
@@ -20,7 +21,7 @@ from djed.settings.settings import get_dcc_cfg, get_textures_settings, get_color
 from djed.utils.file_manager import FileManager
 from djed.utils.textures import ck_udim
 from djed.utils.assets_db import AssetsDB
-from djed.utils.generic import merge_dicts
+from djed.utils.generic import validate_name
 
 fm = FileManager()
 db = AssetsDB()
@@ -137,11 +138,13 @@ def get_parents(obj):
 
 
 def get_obj_path(obj):
-    parents = reversed([x.name for x in get_parents(obj)])
+    parents = reversed([validate_name(x.name) for x in get_parents(obj)])
     return "|" + "|".join(parents)
 
 
 def add_property(mesh_obj: bpy.types.Object, name: str, value=""):
+    name = validate_name(name)
+
     class CustomProperty(bpy.types.PropertyGroup):
         custom_property: bpy.props.StringProperty(name=name)
 
@@ -150,6 +153,24 @@ def add_property(mesh_obj: bpy.types.Object, name: str, value=""):
     mesh_data[name] = value
     bpy.utils.register_class(CustomProperty)
     bpy.types.Mesh.my_properties = bpy.props.PointerProperty(type=CustomProperty)
+
+
+def check_uv_maps(mesh: bpy.types.Mesh):
+    """To checks uv layer for each mesh and rename the first one to `map1`"""
+
+    uv_sets = mesh.uv_layers
+    if not uv_sets:
+        return
+
+    map1 = uv_sets.get('map1')
+
+    if map1 is None:
+        map1 = uv_sets[0]
+        map1.name = 'map1'
+
+    map1_index = uv_sets.find('map1')
+    map1.active_render = True
+    uv_sets.active_index = map1_index
 
 
 def add_material(objects=None, mtl_name='material', override=True, bind=True) -> bpy.types.Material:
@@ -198,7 +219,7 @@ def get_mesh_data(obj):
                 continue
 
             for mtl in mtls:
-                mtl_name = mtl.name.replace(' ', '_')
+                mtl_name = validate_name(mtl.name)
                 if mtl_name not in data:
                     data[mtl_name] = {'meshes': {}}
                 if 'shape' not in data[mtl_name]['meshes']:
@@ -272,7 +293,7 @@ def get_textures_from_mtl(network: bpy.types.Material) -> Dict:
 
                 plug_name = get_standard_material_plug(s_link.to_socket.name, node=cfg_node)
 
-                image_name = image_node.name.replace(' ', '_')
+                image_name = validate_name(image_node.name)
                 tex_dict[image_name] = {}
                 tex_dict[image_name]["plugs"] = [plug_name]
                 tex_dict[image_name]["filepath"] = filepath
@@ -281,6 +302,27 @@ def get_textures_from_mtl(network: bpy.types.Material) -> Dict:
                 tex_dict[image_name]["udim"] = udim
 
         return tex_dict
+
+    def get_attrs(mtl_node):
+        attrs = {}
+        cfg_attrs = get_material_attrs('blender', 'principle_BSDF')
+        for attr_name in cfg_attrs:
+            bl_attr_name = cfg_attrs[attr_name]['name']
+            attr = mtl_node.inputs.get(bl_attr_name)
+
+            if not attr or attr.is_linked:
+                continue
+            value = attr.default_value
+
+            if bl_attr_name in ['Alpha', ]:
+                value = [value, value, value]
+
+            if isinstance(value, (str, int, float)):
+                attrs[attr_name] = value
+            elif len(value) > 1:
+                attrs[attr_name] = tuple(value)
+
+        return attrs
 
     material_data = {'materials': {}, 'displacements': {}}
     material_out = [x for x in network.node_tree.nodes if x.type == 'OUTPUT_MATERIAL']
@@ -295,11 +337,19 @@ def get_textures_from_mtl(network: bpy.types.Material) -> Dict:
 
         for link in node_input.links:
             shader_node = link.from_node
-            shader_node_name = shader_node.name.replace(' ', '_')
+            shader_node_name = validate_name(shader_node.name)
+
+            txt = re.findall(r'(?i)mtl', shader_node_name)
+            if not txt:
+                shader_node_name = shader_node_name + "MTL"
 
             if link.to_socket.name == "Surface":
                 tex_dict = get_texture_path(shader_node)
-                material_data['materials'][shader_node_name] = {"texs": tex_dict, "type": 'standard_surface'}
+                material_data['materials'][shader_node_name] = {
+                    "texs": tex_dict,
+                    "attrs": get_attrs(shader_node),
+                    "type": 'standard_surface',
+                }
 
             elif link.to_socket.name == "Displacement":
                 tex_dict = get_texture_path(shader_node, cfg_node='displacement')
@@ -344,7 +394,7 @@ def create_texture(network, tex_path, udim=False, colorspace='aces', color=False
     if not tex_node:
         tex_node = network.node_tree.nodes.new('ShaderNodeTexImage')
 
-    tex_node.name = tex_name
+    tex_node.name = validate_name(tex_name)
     img = bpy.data.images.load(tex_path)
     tex_node.image = img
 
@@ -365,9 +415,11 @@ def create_texture(network, tex_path, udim=False, colorspace='aces', color=False
 def add_material_property_to_mesh(obj):
     for child in get_all_children(obj):
         if child.type == "MESH":
+            check_uv_maps(child.data)
+
             material = child.active_material
             if material:
-                material_name = material.name
+                material_name = validate_name(material.name)
             else:
                 material_name = 'Material'
             add_property(child, 'materialBinding', material_name)
@@ -390,7 +442,7 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
         return
 
     if asset_name is None:
-        asset_name = selected[0].name
+        asset_name = validate_name(selected[0].name)
 
     resolved_context = {
         'relatives_to': filepath,
