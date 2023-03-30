@@ -3,6 +3,8 @@
 Documentation:
 """
 import time
+import re
+
 
 def wait_until(somepredicate, timeout, period=0.25, **kwargs):
     mustend = time.time() + timeout
@@ -37,10 +39,20 @@ def merge_dicts(dict1, dict2):
         else:
             yield k, dict2[k]
 
+
 def dict_depth(dictionary):
     if isinstance(dictionary, dict):
         return 1 + (max(map(dict_depth, dictionary.values())) if dictionary else 0)
     return 0
+
+
+def validate_name(name: str):
+    """To validate and replace all special characters with underscore"""
+    name = name.strip()
+    name = name.rstrip()
+
+    clean_name = re.sub(r'[^a-zA-Z0-9]+', '_', name)
+    return clean_name
 
 
 if __name__ == '__main__':
