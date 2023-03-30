@@ -181,7 +181,7 @@
           "name": "emission_color",
           "label": "Emission Color",
           "value": {
-            "name": "emissioncolor",
+            "name": "emissionColor",
             "type": "color",
             "plug": "input",
             "inbetween": [{}]
