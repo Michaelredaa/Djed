@@ -54,7 +54,7 @@
             "name": "normalCamera",
             "type": "vector3",
             "plug": "input",
-            "inbetween": [{"name": "_normal","type": "aiNormalMap", "inplug": "input", "outplug": "outValue"}]
+            "inbetween": [{"name": "_normalmap","type": "aiNormalMap", "inplug": "input", "outplug": "outValue"}]
           }
         },
         {

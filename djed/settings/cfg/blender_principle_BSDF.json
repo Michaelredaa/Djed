@@ -54,7 +54,7 @@
             "name": "Normal",
             "type": "vector3",
             "plug": "input",
-            "inbetween": [{"name": "_normal","type": "ShaderNodeNormalMap", "inplug": "Color", "outplug": "Normal"}]
+            "inbetween": [{"name": "_normalmap","type": "ShaderNodeNormalMap", "inplug": "Color", "outplug": "Normal"}]
           }
         },
         {

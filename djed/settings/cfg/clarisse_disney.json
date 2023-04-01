@@ -54,7 +54,7 @@
             "name": "normal_input",
             "type": "vector3",
             "plug": "input",
-            "inbetween": [{"name": "_normal","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
+            "inbetween": [{"name": "_normalmap","type": "TextureNormalMap", "inplug": "input", "outplug": ""}]
           }
         },
         {
