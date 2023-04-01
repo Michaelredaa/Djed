@@ -17,3 +17,10 @@ How to activate Djed on unreal 5
 - manage the switch between virtual textures and non-virtual
 - manage colorspace
 - automate the initial settings
+
+
+
+**To Stop Port**
+-  `netstat -ano | findstr :PORT_NUMBER`
+-   `taskkill /PID PROCESS_PID /F`
+- or using `os.kill(PROCESS_PID, 9)`
