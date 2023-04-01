@@ -51,6 +51,9 @@ class UnrealSocket():
     Instance = []
 
     def __init__(self, host='172.0.0.1', port=55100):
+        self._thread = None
+        self._socket = None
+        self._timer = None
         self.__class__.Instance.append(self)
 
         self.host = host
