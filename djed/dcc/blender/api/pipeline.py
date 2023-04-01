@@ -27,6 +27,25 @@ fm = FileManager()
 db = AssetsDB()
 
 
+def create_context():
+    context = bpy.context.copy()
+
+    for window in bpy.context.window_manager.windows:
+        screen = window.screen
+        for area in screen.areas:
+            if area.type == 'VIEW_3D':
+                context['area'] = area
+                context['screen'] = screen
+                context['window'] = window
+                context['view_layer'] = bpy.context.view_layer
+                context['selected_objects'] = bpy.context.view_layer.objects.selected
+
+    return context
+
+
+context = create_context()
+
+
 def show_message(message='', title='Message Box', msg_type='INFO'):
     def draw(self, context):
         self.layout.label(text=message)
@@ -49,7 +68,14 @@ def get_file_path() -> str:
 
 
 def selection() -> List[bpy.types.Object]:
-    return bpy.context.selected_objects
+    if hasattr(bpy.context, "selected_objects"):
+        return bpy.context.selected_objects
+    else:
+        return context.get('selected_objects', [])
+
+
+def file_colorspace():
+    return bpy.context.scene.display_settings.display_device
 
 
 def deselect_all():
@@ -175,7 +201,7 @@ def check_uv_maps(mesh: bpy.types.Mesh):
 
 def add_material(objects=None, mtl_name='material', override=True, bind=True) -> bpy.types.Material:
     if objects is None:
-        objects = bpy.context.selected_objects
+        objects = selection()
 
     if mtl_name not in bpy.data.materials:
         mtl_net = bpy.data.materials.new(name=mtl_name)
@@ -367,7 +393,7 @@ def connect_nodes(network, in_node, in_name, out_node, out_name):
 def create_texture(network, tex_path, udim=False, colorspace='aces', color=False, tex_name=None, collapse=True):
     hdr = get_textures_settings('hdr_extension')
     extension = tex_path.rsplit('.', 1)[-1]
-    if colorspace == 'aces':
+    if colorspace == 'aces' and file_colorspace() == 'ACES':
         if color:
             if extension in hdr:
                 cs_config = 'aces_color_hdr'
@@ -525,24 +551,29 @@ def import_geometry(file_path: str, scale=1.0) -> List[bpy.types.Object]:
     """"Import geometry based on file extension"""
 
     deselect_all()
+    _context = bpy.context
+
+    if _context.screen is None:
+        _context = context
+
 
     if file_path.endswith('abc'):
-        result = bpy.ops.wm.alembic_import(filepath=file_path, scale=scale)
+        result = bpy.ops.wm.alembic_import(_context, filepath=file_path, scale=scale)
 
     elif file_path.endswith('obj'):
-        result = bpy.ops.wm.obj_import(filepath=file_path, global_scale=scale)
+        result = bpy.ops.wm.obj_import(_context, filepath=file_path, global_scale=scale)
 
     elif file_path.endswith('fbx'):
-        result = bpy.ops.wm.alembic_import(filepath=file_path, scale=scale)
+        result = bpy.ops.wm.alembic_import(_context, filepath=file_path, scale=scale)
 
     elif file_path.endswith('usd') or file_path.endswith('usdc'):
-        result = bpy.ops.wm.usd_import(filepath=file_path, scale=scale, import_render=True)
+        result = bpy.ops.wm.usd_import(_context, filepath=file_path, scale=scale, import_render=True)
 
     else:
         return
 
     if result == {'FINISHED'}:
-        imported_objects = bpy.context.selected_objects
+        imported_objects = selection()
         link_to_collection(imported_objects, "DJED")
         return imported_objects
 
