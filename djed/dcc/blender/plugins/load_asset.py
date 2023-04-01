@@ -7,13 +7,10 @@ Documentation:
 # Import Libraries
 import os
 import sys
-from pathlib import Path
-import re
 
 import bpy
-import addon_utils
 
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
+DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
@@ -23,7 +20,9 @@ for sysPath in sysPaths:
 import importlib
 import djed.utils.generic
 import djed.utils.file_manager
+import djed.dcc.blender.api.pipeline
 
+importlib.reload(djed.dcc.blender.api.pipeline)
 importlib.reload(djed.utils.generic)
 importlib.reload(djed.utils.file_manager)
 
@@ -66,12 +65,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
         import_type = data.get('import_type', '<none>')
         geo_paths = data.get('geo_paths', {})
         colorspace = data.get('colorspace')
+        scale = data.get('scale', 1.0)
 
         geo_path = geo_paths.get(geo_type)
-        self.log.debug(f"Use geo path:  {geo_path}")
+        self.log.debug(f"Use geo path: `{geo_type}` ->  `{geo_path}`")
         if geo_path:
             if import_type == 'Import Geometry':
-                import_geometry(geo_path, scale=1.0)
+                self.log.debug(f"Import Geometry...")
+                import_geometry(geo_path, scale=scale)
 
         # host
         source_host = data.get('host', 'standard')
@@ -105,7 +106,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
             self.log.debug(f"__sg: {sg}")
 
             mtl_net = add_material(mtl_name=re.sub(r'(?i)sg', 'MTL', sg), bind=False)
-            self.log.debug(f"__material name {mtl_net.name}")
+            self.log.debug(f"__material net name {mtl_net.name}")
 
             mtl_node = None
 
@@ -134,6 +135,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     mtl_node = mtl_net.node_tree.nodes.new(mtl_type)
 
                 mtl_node.location.x = 0
+                self.log.debug(f"__Using material {mtl_net.name}")
 
                 connect_nodes(mtl_net, mtl_node, 'BSDF', material_output_node, 'Surface')
 
@@ -141,10 +143,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 attrs = materials[mtl].get('attrs')
                 self.log.debug(f"__Set attributes: {attrs}")
                 for attr in attrs:
-                    to_attr = plugs_conversion.get(attr).get('name')
-                    value = attrs.get(attr)
+                    try:
+                        to_attr = plugs_conversion.get(attr).get('name')
+                        value = attrs.get(attr)
 
-                    mtl_node.inputs[to_attr].default_value = value
+                        mtl_node.inputs[to_attr].default_value = value
+                    except:
+                        self.log.error(f"__Cant set attr {mtl}.{to_attr} with {value}")
+
 
                 # create textures
                 padding = 400
