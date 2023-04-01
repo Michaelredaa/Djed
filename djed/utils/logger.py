@@ -5,6 +5,8 @@ Documentation:
 
 import logging
 import os
+import sys
+import traceback
 
 DJED_ROOT = os.getenv('DJED_ROOT')
 
@@ -13,6 +15,9 @@ DJED_ROOT = os.getenv('DJED_ROOT')
 
 class Logger(object):
     def __init__(self, name=None, filepath=None, use_file=False):
+
+        sys.excepthook = self.handel_exception
+
         self.log = logging.getLogger(__name__)
         if name:
             self.log = logging.getLogger(name)
@@ -29,7 +34,7 @@ class Logger(object):
 
             # console
             stream_handler = logging.StreamHandler()
-            formatter = logging.Formatter('%(message)s')
+            formatter = logging.Formatter('[Djed] %(message)s')
             stream_handler.setFormatter(formatter)
             self.log.addHandler(stream_handler)
 
@@ -43,6 +48,12 @@ class Logger(object):
                                               "%Y-%m-%d %H:%M:%S")
                 file_handler.setFormatter(formatter)
                 self.log.addHandler(file_handler)
+
+
+
+    def handel_exception(self, exc_type, exc_value, exc_traceback):
+        tb = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        self.log.error(tb)
 
     def info(self, message):
         self.log.info(message)
@@ -61,4 +72,5 @@ class Logger(object):
 if __name__ == '__main__':
     log = Logger(use_file=True)
     log.debug('foo')
+    1/0
     print(__name__)
