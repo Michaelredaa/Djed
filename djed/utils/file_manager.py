@@ -45,9 +45,9 @@ class FileManager:
 
         variables = kwargs.get('variables', {})
         for var in variables:
-            resolved_path = str(resolved_path).replace(var, variables.get(var))
+            resolved_path = Path(str(resolved_path).replace(var, variables.get(var)))
 
-        return resolved_path.replace('\\', '/')
+        return resolved_path.as_posix()
 
 
     def get_user_json(self, key, key1=None):
