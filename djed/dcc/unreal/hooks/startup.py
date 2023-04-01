@@ -6,15 +6,14 @@ import os
 import sys
 
 DJED_ROOT = os.getenv('DJED_ROOT')
-utils_path = os.path.join(DJED_ROOT, 'djed')
 
-sysPaths = [DJED_ROOT, utils_path]
+sysPaths = [DJED_ROOT]
 
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from dcc.unreal.api.open_socket import listen
+from djed.dcc.unreal.api.open_socket import listen
 
 import unreal
 
