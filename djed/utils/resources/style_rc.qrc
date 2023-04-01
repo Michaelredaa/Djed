@@ -1,8 +1,10 @@
 <RCC>
   <qresource prefix="/">
     <file>icons/about.png</file>
+    <file>icons/blender.png</file>
     <file>icons/unreal.png</file>
     <file>icons/integration.png</file>
+    <file>icons/recent.png</file>
     <file>icons/pyblish.png</file>
     <file>icons/assetIcon.png</file>
     <file>icons/backup.png</file>
