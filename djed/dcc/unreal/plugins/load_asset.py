@@ -36,7 +36,7 @@ from settings.settings import (
     get_material_type_names
 
 )
-
+from djed.utils.logger import Logger
 
 import dcc.unreal.api.pipeline as ur
 importlib.reload(ur)
@@ -53,8 +53,13 @@ class LoadAsset(pyblish.api.InstancePlugin):
     hosts = ["unreal"]
     families = ["asset"]
 
+    def __init__(self):
+        self.log = Logger(
+            name=self.hosts[0] + self.__class__.__name__,
+            use_file=True
+        )
     def process(self, instance):
-        # print(instance.data)
+        self.log.debug(f"Loading asset `{instance.name}` in unreal...")
 
         data = instance.data
 
@@ -67,8 +72,12 @@ class LoadAsset(pyblish.api.InstancePlugin):
         asset_data = data.get('asset_data', {})
 
         geo_path = geo_paths.get(geo_type)
+
+        self.log.debug(f"geometry_type:  `{geo_type}` ->> geo_paths:  `{geo_paths}`")
+        self.log.debug(f"Use geo path:  {geo_path}")
+
         if not geo_path:
-            print(f'invalid geo_path: `{geo_path}`')
+            self.log.error(f'invalid geo_path: `{geo_path}`')
             return
 
         # create root
@@ -106,13 +115,16 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 for tex_name, tex_dict in textures.items():
                     udim = tex_dict.get('udim')
                     if int(udim) > 1:
+                        self.log.debug(f"Using udim for material `{sg_name}`")
                         material_types[sg_name] = 'udim'
                         break
                     else:
+                        self.log.debug(f"Using non-udim for material `{sg_name}`")
                         material_types[sg_name] = 'not_udim'
                         break
 
         for sg_name in asset_data:
+            self.log.debug(f"__sg: {sg_name}")
 
             all_master_mtl_names = get_material_type_names('unreal')
             if material_types[sg_name] == 'udim':
@@ -121,15 +133,20 @@ class LoadAsset(pyblish.api.InstancePlugin):
                 to_renderer = all_master_mtl_names[1]
 
             plugs_conversion = get_material_attrs(self.hosts[0], to_renderer)
+            self.log.debug(f"__plugs_conversion: {plugs_conversion}")
 
             # get master material path
             master_mat_path = get_dcc_cfg('unreal', 'renderers', to_renderer, 'standard_surface')
+            self.log.debug(f"__using master material: {master_mat_path}")
 
             mtl_path = mtl_root + '/' + sg_name
             if ur.assetExists(mtl_path):
+                self.log.debug(f"__Use existence material `{mtl_path}`")
                 material_obj = ur.get_asset(mtl_path)
             else:
                 instance_path = mtl_root + '/' + sg_name
+                self.log.debug(f"__Creating new material `{instance_path}`")
+
                 if material_types[sg_name] == 'udim':
                     material_obj = ur.makeMaterialInstance(master_mat_path, instance_path)
                     # material = ur.createMaterial(mtl_root + '/' + sg_name)
@@ -144,12 +161,14 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
             for mtl in materials:
                 # attributes
-                attrs = materials[mtl].get('attrs')
+                attrs = materials[mtl].get('attrs', {})
+                self.log.debug(f"__Set attributes: {attrs}")
                 for attr in attrs:
                     ...
 
                 # create textures
-                textures = materials[mtl].get('texs')
+                textures = materials[mtl].get('texs', {})
+                self.log.debug(f"__import textures: {textures}")
                 for tex_name, tex_dict in textures.items():
                     plug_name = tex_dict.get('plugs')[0]
                     filepath = tex_dict.get('filepath')
@@ -163,6 +182,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                     # create texture
                     game_tex_path = tex_root+'/'+tex_name
+                    self.log.debug(f"__Creating: {game_tex_path} -> {colorspace} -> udim: {tex_dict.get('udim')}")
                     if ur.assetExists(game_tex_path):
                         tex_result = [ur.get_asset(game_tex_path)]
                     else:
