@@ -48,7 +48,6 @@ from djed.dcc.linker.to_maya import send_to_maya, is_maya_connected
 from djed.dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
 import about
 
-
 INTEGRATION_PLUGIN = None
 
 db = AssetsDB()
@@ -88,6 +87,7 @@ class SubstanceIntegration():
         export_action = self.menu.addAction(QIcon(':/icons/export.png'), "&Export Textures")
         self.menu.addSeparator()
         maya_action = self.menu.addAction(QIcon(':/icons/maya.png'), "&To Maya")
+        blender_action = self.menu.addAction(QIcon(':/icons/blender.png'), "&To Blender")
         unreal_action = self.menu.addAction(QIcon(':/icons/unreal.png'), "&To Unreal")
         clarisse_action = self.menu.addAction(QIcon(':/icons/clarisse.png'), "&To Clarisse")
 
@@ -105,7 +105,7 @@ class SubstanceIntegration():
         self.menu.addSeparator()
 
         # recent
-        self.recent_menu = self.menu.addMenu("&Recent")
+        self.recent_menu = self.menu.addMenu(QIcon(':/icons/recent.png'), "&Recent")
         self.populate_recent_files()
 
         about_action = self.menu.addAction(QIcon(':/icons/about.png'), "&About")
@@ -119,6 +119,7 @@ class SubstanceIntegration():
         open_action.triggered.connect(self.on_open_location)
         export_action.triggered.connect(self.on_textures_export)
         maya_action.triggered.connect(self.on_send_to_maya)
+        blender_action.triggered.connect(self.on_send_to_blender)
         unreal_action.triggered.connect(self.on_send_to_unreal)
         clarisse_action.triggered.connect(self.on_send_to_clarisse)
         export_texture_action.triggered.connect(self.on_export_settings)
@@ -254,7 +255,6 @@ class SubstanceIntegration():
             to_render = '_'.join(to_render.lower().split(' '))
 
             asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
-            asset_data = json.loads(asset_data)
             geo_paths = db.get_geometry(
                 asset_name=self.asset_name,
                 obj_file="",
@@ -281,7 +281,7 @@ class SubstanceIntegration():
                     "Can not connect to clarisse.\nMake sure you open clarisse session or clarisse command port is open.")
 
     def on_send_to_unreal(self):
-        from dcc.linker.to_unreal import send_to_unreal
+        from djed.dcc.linker.to_unreal import send_to_unreal
 
         if not self.use_latest_textures_action.isChecked():
             self.on_textures_export()
@@ -289,7 +289,6 @@ class SubstanceIntegration():
         # settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
 
         asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
-        asset_data = json.loads(asset_data)
         geo_paths = db.get_geometry(
             asset_name=self.asset_name,
             obj_file="",
@@ -300,7 +299,7 @@ class SubstanceIntegration():
 
         data = {
             'name': self.asset_name,
-            'host': 'unreal',
+            'host': 'spp',
             'renderer': 'arnold',
             'colorspace': 'aces',
             'geometry_type': 'obj_file',
@@ -308,6 +307,37 @@ class SubstanceIntegration():
             'asset_data': asset_data,
         }
         send_to_unreal(data)
+
+    def on_send_to_blender(self):
+
+        from djed.dcc.linker.to_blender import send_to_blender
+
+        if not self.use_latest_textures_action.isChecked():
+            self.on_textures_export()
+
+        # settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
+
+        asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
+        geo_paths = db.get_geometry(
+            asset_name=self.asset_name,
+            obj_file="",
+            usd_geo_file="",
+            abc_file="",
+            fbx_file="",
+            source_file="")
+
+        data = {
+            'name': self.asset_name,
+            'host': 'spp',
+            'source_renderer': 'standard',
+            'to_renderer': 'principle_BSDF',
+            'colorspace': 'aces',
+            'geometry_type': 'obj_file',
+            'import_type': 'Import Geometry',
+            'geo_paths': geo_paths,
+            'asset_data': asset_data,
+        }
+        send_to_blender(data)
 
     def on_about(self):
         about.message(self.main_window)
