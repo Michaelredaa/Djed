@@ -20,6 +20,13 @@ from djed.settings.settings import get_dcc_cfg
 from djed.utils.open_ports import OpenSocket
 
 
+def is_unreal_connected(port_num=None):
+    if not port_num:
+        port_num = get_dcc_cfg("unreal", 'configuration', "command_port")
+    socket = OpenSocket(host='localhost', port=port_num)
+    return socket
+
+
 def send_to_unreal(data, port_num=None):
     try:
         if not port_num:
