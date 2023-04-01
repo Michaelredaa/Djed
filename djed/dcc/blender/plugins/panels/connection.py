@@ -34,6 +34,7 @@ importlib.reload(djed.dcc.blender.api.pipeline)
 from djed.dcc.linker.to_spp import send_to_spp, update_spp
 from djed.dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
 from djed.dcc.linker.to_maya import send_to_maya, is_maya_connected
+from djed.dcc.linker.to_unreal import send_to_unreal, is_unreal_connected
 from djed.utils.assets_db import AssetsDB
 from djed.dcc.blender.api.pipeline import selection, export_geometry
 
@@ -47,6 +48,7 @@ db = AssetsDB()
 # ---------------------------------
 # Start Here
 
+# main UI
 class DJEDConnections(bpy.types.Panel):
     """Creates a Djed Panel in the Object properties window"""
 
@@ -89,8 +91,8 @@ class DJEDConnections(bpy.types.Panel):
 
         if obj.expanded_unreal:
             row = unreal_box.row()
-            row.operator("addonname.djed_send_spp_operator")
-            row.operator("addonname.djed_update_spp_operator")
+            row.operator("addonname.djed_send_unreal_operator")
+            # row.operator("addonname.djed_update_spp_operator")
 
         # add clarisse
         clarisse_box = layout.box()
@@ -238,6 +240,7 @@ class SendToClarisse(bpy.types.Operator):
         data = {
             'name': asset_name,
             'host': 'blender',
+            'family': 'asset',
             'renderer': renderer,
             'to_renderer': to_render,
             'colorspace': colorspace,
@@ -309,11 +312,68 @@ class SendToMaya(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class SendToUnreal(bpy.types.Operator):
+    bl_label = "Send"
+    bl_idname = "addonname.djed_send_unreal_operator"
+    bl_description = "Send the selected geometry to Unreal"
+
+    def execute(self, context):
+
+        if not is_unreal_connected():
+            self.report({'ERROR'}, 'Can not connect to Maya.\n'
+                                   'Make sure you open Maya session or unreal command port is open.')
+            return {'FINISHED'}
+
+        self.report({'INFO'}, 'Sending to Maya')
+
+        if len(selection()) < 1:
+            self.report({'WARNING'}, 'Please make sure you select an object from outliner')
+            return {'FINISHED'}
+
+        asset_name = selection()[0].name.replace(' ', '_')
+
+        use_latest_published = False
+        if not use_latest_published:
+            export_geometry(
+                asset_dir=None,
+                asset_name=asset_name,
+                export_type=["obj", "abc"]
+            )
+
+        asset_data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
+        geo_paths = db.get_geometry(
+            asset_name=asset_name,
+            obj_file="",
+            usd_geo_file="",
+            abc_file="",
+            fbx_file="",
+            source_file="")
+
+        colorspace = 'aces'
+        geometry_type = 'obj_file'
+        renderer = 'standard'
+
+        data = {
+            'name': asset_name,
+            'family': 'asset',
+            'host': 'blender',
+            'renderer': renderer,
+            'colorspace': colorspace,
+            'geometry_type': geometry_type,
+            'geo_paths': geo_paths,
+            'asset_data': asset_data,
+        }
+        send_to_unreal(data)
+
+        return {'FINISHED'}
+
+
 classes = [
     DJEDConnections,
     SendToSPP, UpdateToSPP,
     SendToClarisse,
     SendToMaya,
+    SendToUnreal,
 ]
 
 
