@@ -16,15 +16,21 @@ import threading
 
 DJED_ROOT = os.getenv('DJED_ROOT')
 
+sysPaths = [DJED_ROOT]
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
+
 site.addsitedir(os.path.join(DJED_ROOT, 'venv', 'python39', 'Lib', 'site-packages'))
 
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
+from djed.utils.logger import Logger
+
+from PySide2.QtCore import QObject, QTimer, QRunnable, Signal, Slot, QThreadPool
 
 WAIT_TIME = 0.025
 READ_BODY_TIMEOUT_S = 5.0
 SOCKET_TIMEOUT_S = 30.0
+
 
 class WorkerSignals(QObject):
     """
@@ -159,7 +165,7 @@ class HServer_old(threading.Thread):
                     break
 
 
-class SocketServer():
+class SocketServer(object):
     Instance = []
 
     def __init__(self, host='172.0.0.1', port=19091):
@@ -209,6 +215,69 @@ class SocketServer():
         # Execute
         # self.threadpool.start(worker)
         QThreadPool.globalInstance().start(worker)
+
+
+class SimpleServer(object):
+    Instance = []
+
+    def __init__(self, host='localhost', port=5003):
+
+        self.log = Logger(
+            name=__name__ + ' - ' + self.__class__.__name__,
+            use_file=True
+        )
+
+        self.__class__.Instance.append(self)
+
+        self.host = host
+        self.port = port
+
+        self._socket = None
+        self._thread = None
+        self.thread_running = True
+        self.start_socket()
+
+    def start_socket(self):
+        try:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # self._socket.settimeout(SOCKET_TIMEOUT_S)
+            self._socket.bind((self.host, self.port))
+            self._socket.listen(1)
+            self.log.debug(f"Djed Server listening on port `{self.port}`")
+
+        except Exception as e:
+            self.log.debug(str(e))
+            self.log.debug(f"Failed to initialize the socket server on port `{self.port}`")
+            self.thread_complete()
+
+    def receive(self, **kwargs):
+        self.log.debug("Receiving...")
+        while self.thread_running:
+            conn, address = self._socket.accept()
+            data = conn.recv(4096)
+            if data:
+                try:
+                    exec(data.decode(), globals(), kwargs)
+                except Exception as e:
+                    self.handle_error(traceback.format_exc())
+            else:
+                self.log.debug("No data...")
+                break
+
+    def run(self, **kwargs):
+        self._thread = threading.Thread(target=self.receive, kwargs=kwargs)
+        self._thread.start()
+
+    def thread_complete(self):
+        self.thread_running = False
+        self._socket.close()
+        if self._thread:
+            self._thread.join()
+        self.log.debug("THREAD COMPLETE!")
+
+    def handle_error(self, error):
+        self.log.debug(f"Error while receiving data: {error}")
+
 
 class OpenSocket:
     def __init__(self, host='172.0.0.1', port=39390):
@@ -336,12 +405,21 @@ def main():
     # socket = OpenSocket(host='localhost', port=55000)
     # socket.send('''exec('print("hello")')''')
 
-    s = OpenSocket(host='127.0.0.1', port=55100)
-    s.send('unreal.log("Hello Djed...")')
+    s = OpenSocket(host='127.0.0.1', port=55200)
 
+
+    t='''
+path="D:/3D/Scripts/Djed/test"
+import sys
+sys.path.append(path)
+import log
+import importlib
+importlib.reload(log)
+log.main()
+    '''
+
+    s.send(t)
 
 
 if __name__ == '__main__':
-    
     main()
-    
