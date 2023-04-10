@@ -15,12 +15,12 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-import importlib
 import djed.utils.open_ports as op
+from djed.settings.settings import get_dcc_cfg
 
-importlib.reload(op)
 
-bl_server = op.SimpleServer(host='localhost', port=55200)
+port_num = get_dcc_cfg("blender", 'configuration', "command_port")
+bl_server = op.SimpleServer(host='localhost', port=port_num)
 
 
 def register():
