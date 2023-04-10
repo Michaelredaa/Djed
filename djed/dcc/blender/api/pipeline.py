@@ -22,28 +22,26 @@ from djed.utils.file_manager import FileManager
 from djed.utils.textures import ck_udim
 from djed.utils.assets_db import AssetsDB
 from djed.utils.generic import validate_name
+from djed.utils.logger import Logger
 
 fm = FileManager()
 db = AssetsDB()
+log = Logger(name='blender_pipeline', use_file=True)
 
 
 def create_context():
-    context = bpy.context.copy()
-
+    _context = bpy.context.copy()
     for window in bpy.context.window_manager.windows:
         screen = window.screen
         for area in screen.areas:
             if area.type == 'VIEW_3D':
-                context['area'] = area
-                context['screen'] = screen
-                context['window'] = window
-                context['view_layer'] = bpy.context.view_layer
-                context['selected_objects'] = bpy.context.view_layer.objects.selected
+                _context['area'] = area
+                _context['screen'] = screen
+                _context['window'] = window
+                _context['view_layer'] = bpy.context.view_layer
+                _context['selected_objects'] = bpy.context.view_layer.objects.selected
 
-    return context
-
-
-context = create_context()
+    return _context
 
 
 def show_message(message='', title='Message Box', msg_type='INFO'):
@@ -71,7 +69,7 @@ def selection() -> List[bpy.types.Object]:
     if hasattr(bpy.context, "selected_objects"):
         return bpy.context.selected_objects
     else:
-        return context.get('selected_objects', [])
+        return create_context().get('selected_objects', [])
 
 
 def file_colorspace():
@@ -439,6 +437,8 @@ def create_texture(network, tex_path, udim=False, colorspace='aces', color=False
 
 
 def add_material_property_to_mesh(obj):
+    log.debug(f"Adding material property to all children of: {obj.name}")
+
     for child in get_all_children(obj):
         if child.type == "MESH":
             check_uv_maps(child.data)
@@ -455,10 +455,11 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
     if asset_dir is None:
         asset_dir = get_dcc_cfg('maya', 'plugins', 'export_geometry', 'export_root')
 
-    filepath = get_file_path()
+    source_file = get_file_path()
     selected = selection()
+    log.debug(f"Detecting working file : `{source_file}`, {bool(source_file)}")
 
-    if not filepath:
+    if not source_file:
         show_message("Please make sure you save the file first", "File not saved", "ERROR")
         return
 
@@ -470,23 +471,30 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
     if asset_name is None:
         asset_name = validate_name(selected[0].name)
 
+    log.info(f"Working on asset: `{asset_name}`")
+
     resolved_context = {
-        'relatives_to': filepath,
+        'relatives_to': source_file,
         'variables': {'$asset_name': asset_name, '$selection': asset_name}
     }
 
     export_dir = fm.resolve_path(source_path=asset_dir, **resolved_context)
-
     fm.make_dirs(export_dir)
+    log.debug(f"Set export path to: {export_dir}")
+
     export_path, version = fm.version_folder_up(export_dir)
+    log.debug(f"Version export to : {version}")
+
     fm.make_dirs(export_path)
     export_path += f"/{asset_name}"
+    log.debug(f"Final export path to: {export_path}")
 
     add_material_property_to_mesh(selected[0])
 
     # add to database
+    log.debug(f"Adding to database: `{asset_name}` with source file: {source_file}")
     db.add_asset(asset_name=asset_name)
-    db.add_geometry(asset_name=asset_name, source_file=get_file_path())
+    db.add_geometry(asset_name=asset_name, source_file=source_file)
 
     export_paths = {}
     with maintained_selection():
@@ -504,7 +512,8 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
                     export_materials=True,
                     export_material_groups=True,
                 )
-                db.add_geometry(asset_name=asset_name, obj_file=export_path + "." + ext)
+                db.add_geometry(asset_name=asset_name, obj_file=f"{export_path}.{ext}")
+                log.debug(f"Adding to database: `{asset_name}` with source file: `{export_path}.{ext}`")
 
             elif ext == "fbx":
                 bpy.ops.export_scene.fbx(
@@ -514,8 +523,8 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
                     global_scale=0.01,
 
                 )
-                db.add_geometry(asset_name=asset_name, fbx_file=export_path + "." + ext)
-
+                db.add_geometry(asset_name=asset_name, fbx_file=f"{export_path}.{ext}")
+                log.debug(f"Adding to database: `{asset_name}` with source file: `{export_path}.{ext}`")
 
             elif ext == "abc":
                 bpy.ops.wm.alembic_export(
@@ -525,8 +534,8 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
                     visible_objects_only=True,
                     export_custom_properties=True
                 )
-                db.add_geometry(asset_name=asset_name, abc_file=export_path + "." + ext)
-
+                db.add_geometry(asset_name=asset_name, abc_file=f"{export_path}.{ext}")
+                log.debug(f"Adding to database: `{asset_name}` with source file: `{export_path}.{ext}`")
 
             elif ext == "usd":
                 bpy.ops.wm.usd_export(
@@ -536,9 +545,10 @@ def export_geometry(asset_dir=None, asset_name=None, export_type=["abc"]):
                     generate_preview_surface=False,
                     export_textures=False,
                 )
-                db.add_geometry(asset_name=asset_name, usd_geo_file=export_path + "." + ext)
+                db.add_geometry(asset_name=asset_name, usd_geo_file=f"{export_path}.{ext}")
+                log.debug(f"Adding to database: `{asset_name}` with source file: `{export_path}.{ext}`")
 
-            export_paths[ext] = export_path + '.' + ext
+            export_paths[ext] = f"{export_path}.{ext}"
 
     data = db.get_geometry(asset_name=asset_name, mesh_data="")["mesh_data"]
     data.update(get_mesh_data(selected[0]))
@@ -554,8 +564,7 @@ def import_geometry(file_path: str, scale=1.0) -> List[bpy.types.Object]:
     _context = bpy.context
 
     if _context.screen is None:
-        _context = context
-
+        _context = create_context()
 
     if file_path.endswith('abc'):
         result = bpy.ops.wm.alembic_import(_context, filepath=file_path, scale=scale)
