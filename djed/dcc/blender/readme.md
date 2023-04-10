@@ -1,5 +1,7 @@
 **Initialize**
-- copy `djed/dcc/blender/hooks/djed_startup.py` to `Blender <VERSION>\<VERSION>\scripts\startup`
+- copy `djed/dcc/blender/hooks/djed_startup.py` to `Blender Foundation/Blender <VERSION>/<VERSION>/scripts/startup` 
+- or to  `%APPDATA/Blender Foundation/Blender/<VERSION>/scripts/startup`
+
 ```
 // https://blender.stackexchange.com/questions/158874/changing-startup-file-location
 SET BLENDER_USER_CONFIG=%~dp0Portable_Data\Config
