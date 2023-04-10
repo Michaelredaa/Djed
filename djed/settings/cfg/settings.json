@@ -532,6 +532,15 @@
               "tooltip": "Maya executable path",
               "placeholder": "e.g. 'C:/Program Files/Autodesk/Maya2023/bin/maya.exe'"
             },
+
+            {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
+                },
             {
               "name": "command_port",
               "label": "Command Port",
@@ -541,6 +550,41 @@
               "tooltip": "Maya command port number to communicate with another programs",
               "placeholder": "e.g. '4436'"
             },
+            {
+              "name": "colorspace",
+              "label": "Colorspace",
+              "menu_items": [
+                "sRGB",
+                "ACES"
+              ],
+              "default_value": "ACES",
+              "value": "ACES",
+              "type": "drop_menu",
+              "tooltip": "The colorspace of textures in clarisse"
+            },
+            {
+              "name": "geometry_type",
+              "label": "Geometry Type",
+              "menu_items": [
+                "Import Geometry"
+              ],
+              "default_value": "Import Geometry",
+              "value": "Import Geometry",
+              "type": "drop_menu",
+              "tooltip": "The type to geometry to create in maya"
+            },
+            {
+              "name": "use_material",
+              "label": "Use Material",
+              "menu_items": [
+                "Arnold"
+              ],
+              "default_value": "Arnold",
+              "value": "Arnold",
+              "type": "drop_menu",
+              "tooltip": "Convert material to renderer in maya"
+            },
+
             {
               "name": "export_dir",
               "label": "Export Directory",
@@ -883,6 +927,14 @@
               "placeholder": "e.g. 'C:/Program Files/Isotropix/Clarisse 5.0 SP8/Clarisse/clarisse.exe'"
             },
             {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
+                },
+            {
               "name": "command_port",
               "label": "Command Port",
               "default_value": 55000,
@@ -890,6 +942,44 @@
               "type": "input_number",
               "tooltip": "Clarisse command port number to communicate with another programs",
               "placeholder": "e.g. '55000'"
+            },
+            {
+              "name": "colorspace",
+              "label": "Colorspace",
+              "menu_items": [
+                "sRGB",
+                "ACES"
+              ],
+              "default_value": "ACES",
+              "value": "ACES",
+              "type": "drop_menu",
+              "tooltip": "The colorspace of textures in clarisse"
+            },
+            {
+              "name": "geometry_type",
+              "label": "Geometry Type",
+              "menu_items": [
+                "Alembic Reference",
+                "Alembic Bundle",
+                "USD Reference",
+                "USD Bundle"
+              ],
+              "default_value": "Alembic Bundle",
+              "value": "Alembic Bundle",
+              "type": "drop_menu",
+              "tooltip": "The type to geometry to create in clarisse is it reference or bundle"
+            },
+            {
+              "name": "use_material",
+              "label": "Use Material",
+              "menu_items": [
+                "Autodesk Standard Surface",
+                "Disney Principles"
+              ],
+              "default_value": "Autodesk Standard Surface",
+              "value": "Autodesk Standard Surface",
+              "type": "drop_menu",
+              "tooltip": "Convert material to renderer in clarisse"
             },
             {
               "name": "asset_root",
@@ -1114,6 +1204,14 @@
               "placeholder": "e.g. 'C:/Program Files/Blender Foundation/Blender 3.1/blender.exe'"
             },
             {
+                  "name": "use_latest_publish",
+                  "label": "Use Latest Publish",
+                  "default_value": false,
+                  "value": false,
+                  "type": "toggle_box",
+                  "tooltip": "Use the latest published geometry"
+                },
+            {
               "name": "command_port",
               "label": "Command Port",
               "default_value": 55200,
@@ -1122,6 +1220,18 @@
               "tooltip": "blender command port number to communicate with another programs",
               "placeholder": "e.g. '55200'"
             },
+            {
+                  "name": "colorspace",
+                  "label": "Colorspace",
+                  "menu_items": [
+                    "sRGB",
+                    "ACES"
+                  ],
+                  "default_value": "ACES",
+                  "value": "ACES",
+                  "type": "drop_menu",
+                  "tooltip": "The colorspace of textures in clarisse"
+                },
             {
               "name": "collection_name",
               "label": "Collection Name",
