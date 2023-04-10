@@ -2,6 +2,9 @@
 """
 Documentation:
 """
+
+djed_order = 10
+
 import os
 import sys
 import re
@@ -156,7 +159,7 @@ def register():
 
 def unregister():
     for _cls in classes:
-        bpy.utils.register_class(_cls)
+        bpy.utils.unregister_class(_cls)
 
 
 def main():

@@ -10,7 +10,7 @@ import bpy
 
 # ---------------------------------
 # Variables
-
+djed_order = 20
 
 # ---------------------------------
 # Start Here
@@ -60,7 +60,7 @@ def register():
 
 def unregister():
     for _cls in classes:
-        bpy.utils.register_class(_cls)
+        bpy.utils.unregister_class(_cls)
 
 
 def main():
