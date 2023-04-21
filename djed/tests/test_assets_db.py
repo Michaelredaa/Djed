@@ -19,12 +19,14 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from djed.utils.assets_db import AssetsDB, Connect
+from djed.utils.file_manager import FileManager
 
 # ---------------------------------
 # Variables
-db_file = DJED_ROOT + '/djed/tests/data/djed.db'
 
-db = AssetsDB(db_file)
+fm = FileManager()
+db = AssetsDB(fm.user_documents.joinpath("tests/database/djed.db"))
+
 
 # ---------------------------------
 # Start Here
@@ -36,12 +38,14 @@ class TestDataBase(unittest.TestCase):
             "assets",
             "asset_projects",
             "asset_tags",
+            "asset_workingfile",
             "geometry",
-            "map_type",
+            "metadata",
             "projects",
             "tags",
-            "textures",
             "thumbnail",
+            "usd",
+            "workingfile",
         ]
 
         for table_name in table_names:
@@ -50,19 +54,11 @@ class TestDataBase(unittest.TestCase):
             tables = cur.fetchall()
             self.assertTrue(tables)
 
-    # def test_get_asset_uuid(self):
-    #     with self.assertRaises(Exception) as context:
-    #         db.get_asset_uuid(asset_name="not-found")
-    #     self.assertTrue("Asset 'not-found' not found" == str(context.exception))
-
     def test_add_asset(self):
-
         # add asset
-        db.add_asset(asset_name="foo")
+        asset_uuid = db.add_asset(asset_name="asset_a", key="value")
 
         # assert UUID
-        asset_uuid = db.get_asset_uuid(asset_name="foo")
-
         uuid_pattern = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$"
         self.assertTrue(
             re.match(
@@ -75,55 +71,116 @@ class TestDataBase(unittest.TestCase):
         # asset asset name
         self.assertEqual(
             db.get_asset_name(uuid=asset_uuid),
-            "foo"
+            "asset_a"
+        )
+
+        # asset id
+        asset_ids = db.get_asset_id(asset_name="asset_a")
+        latest_id = db.get_last_id()
+        self.assertTrue(
+            latest_id in asset_ids,
+            f"Latest id `{latest_id}` not the same of the last added asset `{asset_ids}`"
         )
 
     def test_add_geometry(self):
-
-        # reset all
-        db.delete_row(
-            table_name='geometry',
-            col='asset_id',
-            value=1,
-        )
-
+        asset_uuid = db.get_last_uuid()
 
         # add data
         db.add_geometry(
-            asset_name='foo',
+            uuid=asset_uuid,
             obj_file='path/to/obj',
-            usd_geo_file='path/to/usd',
-            mesh_data={'sgs': {'mat01': {}}}
-        )
-
-        geo_data = db.get_geometry(asset_name='foo', obj_file='', usd_geo_file='', mesh_data='')
-
-        self.assertEqual(geo_data.get('obj_file'), 'path/to/obj')
-        self.assertEqual(geo_data.get('usd_geo_file'), 'path/to/usd')
-        self.assertEqual(geo_data.get('mesh_data'), {'sgs': {'mat01': {}}})
-
-        # update geometry
-        db.add_geometry(
-            asset_name='foo',
-            obj_file='path/to/obj2',
             abc_file='path/to/abc',
-            mesh_data={'sgs': {'mat02': {}}}
+            key="value"
         )
 
-        geo_data = db.get_geometry(asset_name='foo', obj_file='', abc_file='', mesh_data='')
-        self.assertEqual(geo_data.get('obj_file'), 'path/to/obj2')
-        self.assertEqual(geo_data.get('abc_file'), 'path/to/abc')
-        self.assertEqual(geo_data.get('mesh_data'), {'sgs': {'mat01': {}, 'mat02': {}}})
+        data = db.get_versions(uuid=asset_uuid, table_name='geometry')[0]
+
+        self.assertEqual(data.get('obj_file'), 'path/to/obj')
+        self.assertEqual(data.get('abc_file'), 'path/to/abc')
+        self.assertIsInstance(data.get('data'), dict)
+
+    def test_add_usd(self):
+        asset_uuid = db.get_last_uuid()
+
+        # add data
+        db.add_usd(
+            uuid=asset_uuid,
+            usd_file='path/to/usd_file',
+            geo_file='path/to/geo_file',
+            key="value"
+        )
+
+        data = db.get_versions(uuid=asset_uuid, table_name='usd')[0]
+
+        self.assertEqual(data.get('usd_file'), 'path/to/usd_file')
+        self.assertEqual(data.get('geo_file'), 'path/to/geo_file')
+        self.assertIsInstance(data.get('data'), dict)
+
+    def test_add_workingfile(self):
+        asset_uuid = db.get_last_uuid()
+
+        # add data
+        db.add_workingfile(
+            uuid=asset_uuid,
+            filepath='path/to/workingfile',
+            extension='ma',
+            dcc='maya',
+            key="value"
+        )
+
+        data = db.get_versions_tables(uuid=asset_uuid, table_name='workingfile')[0]
+        self.assertEqual(data.get('filepath'), 'path/to/workingfile')
+        self.assertEqual(data.get('extension'), 'ma')
+        self.assertEqual(data.get('dcc'), 'maya')
+        self.assertIsInstance(data.get('data'), dict)
+
+    def test_get_assets_data(self):
+        # add data
+        data = db.get_assets_data()
+        self.assertIsInstance(data, list, f"{data}")
+        for item in data:
+            self.assertIsInstance(item, dict, f"{item}")
+
+    def test_add_thumbnail(self):
+        asset_uuid = db.get_last_uuid()
+
+        # add data
+        db.add_thumbnail(
+            uuid=asset_uuid,
+            thumb_path='path/to/thumb_path1',
+        )
+
+        data1 = db.get_versions(uuid=asset_uuid, table_name='thumbnail')[0]
+
+        self.assertEqual(data1.get('thumb_path'), 'path/to/thumb_path1')
+        self.assertIsInstance(data1.get('data'), dict, f"{data1}")
+
+        # versioning
+        db.add_thumbnail(
+            uuid=asset_uuid,
+            thumb_path='path/to/thumb_path2',
+        )
+        data2 = db.get_versions(uuid=asset_uuid, table_name='thumbnail')[0]
+
+        self.assertTrue(data2['version'] > data1['version'], f"{data2['version']} > {data1['version']}")
 
     def test_add_tag(self):
-        db.add_tag(asset_name='foo', tag_name='tag1')
+        asset_uuid = db.get_last_uuid()
+        db.add_tag(uuid=asset_uuid, tag_name='tag1')
 
-        self.assertTrue('tag1' in db.get_tags(asset_name='foo'))
+        self.assertTrue('tag1' in db.get_tags(uuid=asset_uuid))
+
+        db.delete_asset_tags(uuid=asset_uuid)
+        self.assertFalse('tag1' in db.get_tags(uuid=asset_uuid))
 
     def test_add_project(self):
-        db.add_project(asset_name='foo', project_name='project1')
+        asset_uuid = db.get_last_uuid()
+        db.add_project(uuid=asset_uuid, project_name='project1')
 
-        self.assertTrue('project1' in db.get_projects(asset_name='foo'))
+        self.assertTrue('project1' in db.get_projects(uuid=asset_uuid))
+
+        db.delete_asset_projects(uuid=asset_uuid)
+        self.assertFalse('project1' in db.get_projects(uuid=asset_uuid))
 
 
 # Main Function

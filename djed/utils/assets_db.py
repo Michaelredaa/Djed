@@ -10,7 +10,6 @@ import json
 import sqlite3
 import sys
 import os
-import site
 import traceback
 from functools import wraps
 from urllib.parse import unquote
@@ -21,12 +20,10 @@ for sysPath in sysPaths:
         sys.path.append(sysPath)
 
 from djed.settings.settings import get_textures_patterns
-from djed.utils.generic import merge_dicts
+from djed.utils.file_manager import FileManager
 
 # ---------------------------------
 # Variables
-
-from djed.utils.file_manager import FileManager
 
 fm = FileManager()
 
@@ -117,11 +114,11 @@ class AssetsDB(Connect):
         query = f'''
                 CREATE TABLE IF NOT EXISTS {table_name} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                creation_date DATETIME DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')),
-                modification_date DATETIME DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')),
+                name TEXT NOT NULL,
+                gallery INTEGER DEFAULT 0,
+                current INTEGER DEFAULT 0,
                 uuid TEXT DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
-                UNIQUE(name)
+                UNIQUE(uuid)
                 );
         '''
         cur.execute(query)
@@ -138,52 +135,85 @@ class AssetsDB(Connect):
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     asset_id INTEGER NOT NULL,
                     obj_file TEXT,
-                    usd_geo_file TEXT,
                     abc_file TEXT,
-                    fbx_file TEXT,
-                    source_file TEXT,
-                    substance_file TEXT,
-                    mesh_data TEXT DEFAULT "{default_data}",
+                    data JSON DEFAULT "{{}}",
+                    version INTEGER NOT NULL,
                     FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
-                    UNIQUE(asset_id)
                     );
         '''
         cur.execute(query)
 
     @Connect.db
-    def create_map_type_table(self, conn):
-        table_name = "map_type"
+    def create_usd_table(self, conn):
+        table_name = "usd"
 
         # self.delete_table(table_name=table_name)
-        cur = conn.cursor()
-        query = f'''
-                    CREATE TABLE IF NOT EXISTS {table_name} (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT,
-                    type TEXT,
-                    UNIQUE(name)
-                    );
-        '''
-        cur.execute(query)
-
-    @Connect.db
-    def create_texture_table(self, conn):
-        table_name = "textures"
-
-        # self.delete_table(table_name=table_name)
+        default_data = {}
         cur = conn.cursor()
         query = f'''
                     CREATE TABLE IF NOT EXISTS {table_name} (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     asset_id INTEGER NOT NULL,
-                    map_id INTEGER NOT NULL,
-                    udim_num INTEGER,
-                    texture_path TEXT,
-                    material_name TEXT,
-                    res INTEGER,
+                    usd_file TEXT,
+                    geo_file TEXT,
+                    mtl_file TEXT,
+                    data JSON DEFAULT "{{}}",
+                    version INTEGER NOT NULL,
+                    FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
+                    );
+        '''
+        cur.execute(query)
 
-                    FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE,
-                    FOREIGN KEY (map_id) REFERENCES map_type (id)
+    @Connect.db
+    def create_material_table(self, conn):
+        table_name = "material"
+
+        # self.delete_table(table_name=table_name)
+        default_data = {}
+        cur = conn.cursor()
+        query = f'''
+                    CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    asset_id INTEGER NOT NULL,
+                    data JSON DEFAULT "{{}}",
+                    version INTEGER NOT NULL,
+                    FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
+                    );
+        '''
+        cur.execute(query)
+
+    @Connect.db
+    def create_workingfile_table(self, conn):
+        table_name = "workingfile"
+
+        # self.delete_table(table_name=table_name)
+        default_data = {}
+        cur = conn.cursor()
+        query = f'''
+                    CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    filepath TEXT,
+                    extension TEXT,
+                    dcc TEXT,
+                    data JSON DEFAULT "{{}}",
+                    version INTEGER NOT NULL
+                    );
+        '''
+        cur.execute(query)
+
+    @Connect.db
+    def create_asset_workingfile_table(self, conn):
+        table_name = "asset_workingfile"
+
+        # self.delete_table(table_name=table_name)
+        cur = conn.cursor()
+        query = f'''
+                    CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    asset_id INTEGER,
+                    workingfile_id INTEGER,
+                    FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
+                    FOREIGN KEY (workingfile_id) REFERENCES workingfile (id) ON DELETE CASCADE
                     );
         '''
         cur.execute(query)
@@ -200,7 +230,8 @@ class AssetsDB(Connect):
                     asset_id INTEGER NOT NULL,
                     thumb_path TEXT,
                     thumbnail BLOB,
-
+                    version INTEGER NOT NULL,
+                    data JSON DEFAULT "{{}}",
                     FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
                     );
         '''
@@ -268,44 +299,114 @@ class AssetsDB(Connect):
         '''
         cur.execute(query)
 
+    @Connect.db
+    def create_asset_metadata_table(self, conn):
+        table_name = "metadata"
+
+        # self.delete_table(table_name=table_name)
+        cur = conn.cursor()
+        query = f'''
+                    CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    asset_id INTEGER,
+                    
+                    creation_date DATETIME DEFAULT (strftime('%Y/%m/%d %H:%M:%S', 'now', 'localtime')),
+                    modification_date DATETIME DEFAULT (strftime('%Y/%m/%d %H:%M:%S', 'now', 'localtime')),
+                    
+                    data JSON DEFAULT "{{}}",
+                    FOREIGN KEY (asset_id) REFERENCES assets (id) ON DELETE CASCADE
+                    );
+        '''
+        cur.execute(query)
+
     def create_default_tables(self):
         self.create_asset_table()
-        self.create_map_type_table()
         self.create_projects_table()
         self.create_tags_table()
         self.create_asset_tags_table()
         self.create_asset_projects_table()
 
         self.create_geometry_table()
-        self.create_texture_table()
+        self.create_usd_table()
+        self.create_material_table()
+        self.create_workingfile_table()
+        self.create_asset_workingfile_table()
+        self.create_workingfile_table()
+
         self.create_thumbnail_table()
+
+        self.create_asset_metadata_table()
+
+    @Connect.db
+    def add_asset(self, conn, asset_name, gallery=0, current=0, **kwargs):
+        cur = conn.cursor()
+
+        # add asset
+        query = f'''
+                        INSERT INTO assets 
+                        (name, gallery, current)
+                        VALUES
+                        ("{asset_name}", {gallery}, {current});
+                '''
+        cur.execute(query)
+        conn.commit()
+
+        # UUID
+        cur = conn.cursor()
+        cur.execute(f'SELECT uuid FROM assets ORDER BY id DESC LIMIT 1')
+        uuid_str = cur.fetchone()[0]
+
+        # add asset data
+        query = f'''
+                        INSERT INTO metadata 
+                        (asset_id, data)
+                        VALUES
+                        ((SELECT id from assets WHERE uuid='{uuid_str}'), '{json.dumps(kwargs)}');
+                '''
+        cur.execute(query)
+
+        return uuid_str
 
     @Connect.db
     def get_last_id(self, conn):
         cur = conn.cursor()
-        cur.execute("SELECT last_insert_rowid();")
+        cur.execute(f'SELECT id FROM assets ORDER BY id DESC LIMIT 1')
         ids = cur.fetchall()
         return ids[0][0]
+
+    @Connect.db
+    def get_last_uuid(self, conn):
+        cur = conn.cursor()
+        cur.execute(f'SELECT uuid FROM assets ORDER BY id DESC LIMIT 1')
+        uuids = cur.fetchall()
+        return uuids[0][0]
 
     @Connect.db
     def get_asset_id(self, conn, asset_name):
         cur = conn.cursor()
         cur.execute(f'SELECT id from assets WHERE name="{asset_name}"')
-        ids = cur.fetchone()
+        ids = cur.fetchall()
         if ids:
-            return ids[0]
+            return [x[0] for x in ids]
         else:
-            return 0
+            return []
 
     @Connect.db
     def get_asset_uuid(self, conn, asset_name):
         cur = conn.cursor()
         cur.execute(f'SELECT uuid from assets WHERE name="{asset_name}"')
-        uuids = cur.fetchone()
+        uuids = cur.fetchall()
         if uuids:
-            return uuids[0]
+            return [x[0] for x in uuids]
         else:
             raise Exception(f"Asset '{asset_name}' not found")
+
+    @Connect.db
+    def get_id_from_uuid(self, conn, uuid):
+        cur = conn.cursor()
+        cur.execute(f'SELECT id from assets WHERE uuid="{uuid}"')
+        ids = cur.fetchone()
+        return ids[0]
 
     @Connect.db
     def get_asset_name(self, conn, uuid):
@@ -320,8 +421,10 @@ class AssetsDB(Connect):
     @Connect.db
     def get_latest_edit_asset_name(self, conn):
         cur = conn.cursor()
+
         query = f'''
                 SELECT name FROM assets 
+                LEFT JOIN metadata ON assets.id=metadata.asset_id
                 ORDER BY modification_date DESC LIMIT 1
         '''
         cur.execute(query)
@@ -330,17 +433,66 @@ class AssetsDB(Connect):
             return data[0][0]
 
     @Connect.db
-    def update_date(self, conn, asset_name):
+    def update_date(self, conn, uuid):
         now = datetime.datetime.now()
-        current_date = now.strftime("%Y-%m-%d, %H:%M:%S")
+        current_date = now.strftime("%Y/%m/%d, %H:%M:%S")
         cur = conn.cursor()
         query = f'''
-                UPDATE assets 
+                UPDATE metadata
                 SET modification_date = "{current_date}"
                 WHERE
-                name = "{asset_name}"
+                asset_id = (SELECT id FROM assets WHERE uuid="{uuid}")
         '''
         cur.execute(query)
+
+    @Connect.db
+    def get_versions(self, conn, uuid, table_name):
+        """TO get all data of table and sort them descending according to version number"""
+        cur = conn.cursor()
+
+        cur.row_factory = sqlite3.Row
+
+        query = f'''
+                SELECT * FROM {table_name}
+                WHERE
+                asset_id = (SELECT id FROM assets WHERE uuid="{uuid}")
+                ORDER BY version DESC
+        '''
+        cur.execute(query)
+        data = [dict(i) for i in cur.fetchall()]
+
+        # convert data to dict
+        for item in data:
+            item["data"] = json.loads(item["data"])
+
+        return data
+
+    @Connect.db
+    def get_versions_tables(self, conn, uuid, table_name):
+        """TO get all data of table from 2 separates tables
+        and sort them descending according to version number"""
+        cur = conn.cursor()
+
+        cur.row_factory = sqlite3.Row
+
+        query = f'''
+                SELECT * FROM asset_{table_name}
+                LEFT JOIN assets ON asset_{table_name}.asset_id=assets.id
+                LEFT JOIN {table_name} ON asset_{table_name}.{table_name}_id={table_name}.id
+                
+                WHERE 
+                uuid="{uuid}"
+                ORDER BY version DESC
+        '''
+
+        cur.execute(query)
+        data = [dict(i) for i in cur.fetchall()]
+
+        # convert data to dict
+        for item in data:
+            item["data"] = json.loads(item["data"])
+
+        return data
 
     @Connect.db
     def update_texture_maps(self, conn):
@@ -365,83 +517,146 @@ class AssetsDB(Connect):
             cur.execute(query)
 
     @Connect.db
-    def add_asset(self, conn, asset_name):
-        now = datetime.datetime.now()
-        current_date = now.strftime("%Y/%m/%d, %H:%M:%S")
+    def add_geometry(self, conn, uuid, obj_file="", abc_file="", **kwargs):
+
+        """obj_file="", abc_file="" """
+        self.update_date(uuid=uuid)
+
+        all_versions = self.get_versions(uuid=uuid, table_name="geometry")
+
+        if all_versions:
+            version = all_versions[0]["version"] + 1
+        else:
+            version = 1
+
         cur = conn.cursor()
         query = f'''
-                INSERT INTO assets 
-                (name, modification_date)
+                INSERT INTO geometry 
+                (asset_id, obj_file, abc_file, version, data)
                 VALUES
-                ("{asset_name}", "{current_date}")
-                ON CONFLICT(name) 
-                DO UPDATE
-                SET modification_date = "{current_date}";
+                (
+                    (SELECT id FROM assets WHERE uuid='{uuid}'),
+                    '{obj_file}',
+                    '{abc_file}',
+                    {version},
+                    '{json.dumps(kwargs)}'
+                );
+
         '''
+
         cur.execute(query)
 
     @Connect.db
-    def add_geometry(self, conn, asset_name, **kwargs):
+    def add_usd(self, conn, uuid, usd_file="", geo_file="", mtl_file="", **kwargs):
 
-        '''obj_file="", usd_geo_file="", abc_file="", fbx_file="", source_file="", substance_file="", mesh_data=""'''
-        self.update_date(asset_name=asset_name)
-        for col in kwargs:
-            value = kwargs.get(col)
+        self.update_date(uuid=uuid)
 
-            # get mesh data
-            if isinstance(value, dict):
-                old_data = self.get_geometry(asset_name=asset_name, mesh_data="")
-                if not old_data:
-                    old_data = {}
+        all_versions = self.get_versions(uuid=uuid, table_name="usd")
 
-                old_data = old_data.get("mesh_data", {})
-                if not old_data:
-                    old_data = {}
+        if all_versions:
+            version = all_versions[0]["version"] + 1
+        else:
+            version = 1
 
-                new_data_dict = dict(merge_dicts(old_data, kwargs.get(col)))
-                value = json.dumps(new_data_dict)
-
-
-
-            cur = conn.cursor()
-            query = f'''
-                    INSERT INTO geometry 
-                    (asset_id, {col})
-                    VALUES
-                    ((SELECT id from assets WHERE name='{asset_name}'), '{value}')
-                    ON CONFLICT(asset_id) 
-                    DO UPDATE
-                    SET {col} = '{value}';
-
-            '''
-            cur.execute(query)
-
-    @Connect.db
-    def get_geometry(self, conn, asset_name, **kwargs):
-
-        cols = ", ".join(kwargs.keys())
         cur = conn.cursor()
         query = f'''
-                SELECT {cols} FROM geometry 
-                WHERE
-                asset_id = (SELECT id from assets WHERE name="{asset_name}")
+                INSERT INTO usd 
+                (asset_id, usd_file, geo_file, mtl_file, version, data)
+                VALUES
+                (
+                    (SELECT id FROM assets WHERE uuid='{uuid}'),
+                    '{usd_file}',
+                    '{geo_file}',
+                    '{mtl_file}',
+                    {version},
+                    '{json.dumps(kwargs)}'
+                );
+
         '''
+
         cur.execute(query)
-        data = cur.fetchall()
-
-        if not data:
-            return {}
-
-        data = data[0]
-
-        returned_dict = dict(zip(kwargs.keys(), data))
-        if returned_dict.get('mesh_data'):
-            returned_dict['mesh_data'] = json.loads(returned_dict['mesh_data'])
-        return returned_dict
 
     @Connect.db
-    def add_tag(self, conn, asset_name, tag_name):
+    def add_material(self, conn, uuid, **kwargs):
+
+        self.update_date(uuid=uuid)
+
+        all_versions = self.get_versions(uuid=uuid, table_name="material")
+
+        if all_versions:
+            version = all_versions[0]["version"] + 1
+        else:
+            version = 1
+
         cur = conn.cursor()
+        query = f'''
+                INSERT INTO usd 
+                (asset_id, version, data)
+                VALUES
+                (
+                    (SELECT id FROM assets WHERE uuid='{uuid}'),
+                    {version},
+                    '{json.dumps(kwargs)}'
+                );
+
+        '''
+
+        cur.execute(query)
+
+    @Connect.db
+    def add_workingfile(self, conn, uuid, filepath="", extension="", dcc="", **kwargs):
+
+        self.update_date(uuid=uuid)
+
+        all_versions = self.get_versions_tables(uuid=uuid, table_name="workingfile")
+
+        if all_versions:
+            for v in all_versions:
+                print(v)
+                if v['dcc'] == dcc:
+                    version = v["version"] + 1
+                    break
+            else:
+                version = 1
+        else:
+            version = 1
+
+        cur = conn.cursor()
+        query = f'''
+                INSERT INTO workingfile 
+                (filepath, extension, dcc, version, data)
+                VALUES
+                (
+                    '{filepath}',
+                    '{extension}',
+                    '{dcc}',
+                    {version},
+                    '{json.dumps(kwargs)}'
+                );
+
+        '''
+
+        cur.execute(query)
+        workfile_id = cur.lastrowid
+        conn.commit()
+
+        cur = conn.cursor()
+        query = f'''
+                INSERT INTO asset_workingfile 
+                (asset_id, workingfile_id)
+                VALUES
+                (
+                    (SELECT id FROM assets WHERE uuid='{uuid}'),
+                    '{workfile_id}'
+                );
+
+        '''
+        cur.execute(query)
+
+    @Connect.db
+    def add_tag(self, conn, uuid, tag_name):
+        cur = conn.cursor()
+
         tag_id = cur.execute(f'SELECT id FROM tags WHERE name="{tag_name}";').fetchone()
         if tag_id:
             tag_id = tag_id[0]
@@ -451,7 +666,7 @@ class AssetsDB(Connect):
 
         cur.execute(f'''SELECT asset_id, tag_id FROM asset_tags
                         WHERE 
-                        asset_id = (SELECT id FROM assets WHERE name = "{asset_name}")
+                        asset_id = (SELECT id FROM assets WHERE uuid = "{uuid}")
                         AND
                         tag_id = {tag_id}''')
 
@@ -459,12 +674,12 @@ class AssetsDB(Connect):
             query = f'''
                     INSERT INTO asset_tags (asset_id, tag_id) 
                     VALUES 
-                    ((SELECT id from assets WHERE name="{asset_name}"), {tag_id});
+                    ((SELECT id from assets WHERE uuid="{uuid}"), {tag_id});
             '''
             cur.execute(query)
 
     @Connect.db
-    def add_project(self, conn, asset_name, project_name):
+    def add_project(self, conn, uuid, project_name):
         cur = conn.cursor()
         project_id = cur.execute(f'SELECT id FROM projects WHERE name="{project_name}";').fetchone()
         if project_id:
@@ -475,7 +690,7 @@ class AssetsDB(Connect):
 
         cur.execute(f'''SELECT asset_id, project_id FROM asset_projects
                         WHERE 
-                        asset_id = (SELECT id FROM assets WHERE name = "{asset_name}")
+                        asset_id = (SELECT id FROM assets WHERE uuid = "{uuid}")
                         AND
                         project_id = {project_id}''')
 
@@ -483,129 +698,48 @@ class AssetsDB(Connect):
             query = f'''
                     INSERT INTO asset_projects (asset_id, project_id) 
                     VALUES 
-                    ((SELECT id from assets WHERE name="{asset_name}"), {project_id});
+                    ((SELECT id from assets WHERE uuid="{uuid}"), {project_id});
             '''
             cur.execute(query)
-
-    @Connect.db
-    def add_textures(self, conn, asset_name, map_type_name, texture_path, udim_num, material_name="", resolution=""):
-        cur = conn.cursor()
-        result = cur.execute(f'''SELECT texture_path FROM textures
-                            WHERE
-                            asset_id = (SELECT id from assets WHERE name="{asset_name}")
-                            AND 
-                            map_id = (SELECT id from map_type WHERE name="{map_type_name}")
-                            AND
-                            material_name = "{material_name}"
-                            ''')
-
-        old_tex_path = result.fetchone()
-
-        if not old_tex_path:
-            query = f'''
-                    INSERT INTO textures (asset_id, map_id, texture_path, udim_num, material_name, res)
-                    VALUES
-                    (
-                    (SELECT id from assets WHERE name="{asset_name}"),
-                    (SELECT id from map_type WHERE name="{map_type_name}"),
-                    "{texture_path}",
-                    {udim_num},
-                    "{material_name}",
-                    "{resolution}")
-                    ;
-            '''
-        else:
-            query = f'''
-                    UPDATE textures
-                    SET
-                    texture_path = "{texture_path}",
-                    udim_num = {udim_num},
-                    res = "{resolution}"
-                    WHERE
-                    asset_id = (SELECT id from assets WHERE name="{asset_name}")
-                    AND
-                    map_id = (SELECT id from map_type WHERE name="{map_type_name}")
-                    AND
-                    material_name = "{material_name}"
-                    ;
-            '''
-
-        cur.execute(query)
-
-    @Connect.db
-    def get_textures(self, conn, uuid):
-
-        materials = {}
-
-        cur = conn.cursor()
-
-        query = f'''
-                        SELECT material_name FROM 
-                        assets 
-                        LEFT JOIN textures ON assets.id=textures.asset_id
-                        WHERE
-                        assets.uuid = '{uuid}'
-                        GROUP BY textures.material_name
-                '''
-        cur.execute(query)
-
-        for material_name in cur.fetchall():
-            if not material_name:
-                continue
-            material_name = material_name[0]
-            materials[material_name] = {}
-            query = f'''
-                            SELECT textures.texture_path, textures.udim_num, textures.res, map_type.name, map_type.type  FROM 
-                            textures 
-                            LEFT JOIN map_type ON textures.map_id=map_type.id
-                            WHERE
-                            textures.material_name = '{material_name}'
-                    '''
-            cur.execute(query)
-            textures = cur.fetchall()
-            for row in textures:
-                texture_path, udim_num, res, name, type = row
-                materials[material_name][name] = {}
-                materials[material_name][name]["type"] = type
-                materials[material_name][name]["texture_path"] = texture_path
-                materials[material_name][name]["udim_num"] = udim_num
-                materials[material_name][name]["res"] = res
-
-        return materials
 
     @Connect.db
     def get_assets_data(self, conn):
 
         cur = conn.cursor()
-        query = f'''
-                SELECT * FROM 
-                assets 
-                LEFT JOIN geometry ON assets.id=geometry.asset_id
 
+        query = f'''
+                SELECT uuid FROM assets
+                WHERE
+                gallery=1
         '''
         cur.execute(query)
-        data = cur.fetchall()
+        uuids = cur.fetchall()
+
+        data = []
+        for uuid in uuids:
+            data.append(self.get_asset(uuid[0]))
 
         return data
 
-    @Connect.db
-    def get_asset(self, conn, uuid):
+    def get_asset(self, uuid):
 
         asset = {}
         asset_name = self.get_asset_name(uuid=uuid)
-        geometries = self.get_geometry(asset_name=asset_name, obj_file='', usd_geo_file='', abc_file='', fbx_file='')
-        asset_data = json.loads(self.get_geometry(asset_name=asset_name, mesh_data='')['mesh_data'])
-        materials = self.get_textures(uuid=uuid)
+        geometry = self.get_versions(uuid=uuid, table_name='geometry')
+        usd = self.get_versions(uuid=uuid, table_name='usd')
+        material = self.get_versions(uuid=uuid, table_name='material')
+        workingfile = self.get_versions_tables(uuid=uuid, table_name='workingfile')
 
         asset["name"] = asset_name
-        asset["geo_paths"] = geometries
-        asset["asset_data"] = asset_data
-        asset["materials"] = materials
+        asset["geometry"] = geometry
+        asset["usd"] = usd
+        asset["material"] = material
+        asset["workingfile"] = workingfile
 
         return asset
 
     @Connect.db
-    def get_tags(self, conn, asset_name):
+    def get_tags(self, conn, uuid):
 
         cur = conn.cursor()
         query = f'''
@@ -615,7 +749,7 @@ class AssetsDB(Connect):
                     SELECT tag_id FROM 
                     asset_tags 
                     WHERE 
-                    asset_id = (SELECT id from assets WHERE name="{asset_name}")
+                    asset_id = (SELECT id from assets WHERE uuid="{uuid}")
                 )
 
         '''
@@ -625,7 +759,7 @@ class AssetsDB(Connect):
         return [x[0] for x in tags if x[0]]
 
     @Connect.db
-    def get_projects(self, conn, asset_name):
+    def get_projects(self, conn, uuid):
 
         cur = conn.cursor()
         query = f'''
@@ -635,7 +769,7 @@ class AssetsDB(Connect):
                     SELECT project_id FROM 
                     asset_projects 
                     WHERE 
-                    asset_id = (SELECT id from assets WHERE name="{asset_name}")
+                    asset_id = (SELECT id from assets WHERE uuid="{uuid}")
                 )
 
         '''
@@ -672,32 +806,41 @@ class AssetsDB(Connect):
 
         return [x[0] for x in projects if x[0]]
 
-    def delete_asset_projects(self, asset_name=None, asset_id=None):
-        if asset_id is None:
-            asset_id = self.get_asset_id(asset_name=asset_name)
-        self.delete_row(table_name="project_tags", col="asset_id", value=asset_id)
+    def delete_asset_projects(self, uuid):
+        self.delete_row(
+            table_name="asset_projects",
+            col="asset_id",
+            value=self.get_id_from_uuid(uuid=uuid)
+        )
 
-    def delete_asset_tags(self, asset_name=None, asset_id=None):
-        if asset_id is None:
-            asset_id = self.get_asset_id(asset_name=asset_name)
-        self.delete_row(table_name="asset_tags", col="asset_id", value=asset_id)
+    def delete_asset_tags(self, uuid):
+        self.delete_row(
+            table_name="asset_tags",
+            col="asset_id",
+            value=self.get_id_from_uuid(uuid=uuid)
+        )
 
     @Connect.db
-    def set_thumbnail(self, conn, asset_name=None, asset_id=None, thumb_path=""):
-        if asset_id is None:
-            asset_id = self.get_asset_id(asset_name=asset_name)
+    def add_thumbnail(self, conn, uuid, thumb_path="", **kwargs):
 
         if thumb_path == "":
             return
         else:
             thumb_path = unquote(thumb_path)
 
+        all_versions = self.get_versions(uuid=uuid, table_name="thumbnail")
+
+        if all_versions:
+            version = all_versions[0]["version"] + 1
+        else:
+            version = 1
+
         cur = conn.cursor()
         query = f'''
                 INSERT INTO thumbnail  
-                (asset_id, thumb_path)
+                (asset_id, thumb_path, version, data)
                 VALUES
-                ("{asset_id}", "{thumb_path}") 
+                ("{self.get_id_from_uuid(uuid=uuid)}", "{thumb_path}", {version}, '{json.dumps(kwargs)}') 
 
         '''
         cur.execute(query)
@@ -706,39 +849,22 @@ class AssetsDB(Connect):
         return data
 
     @Connect.db
-    def get_thumbnail(self, conn, asset_name, latest=True):
-
-        asset_id = self.get_asset_id(asset_name=asset_name)
+    def get_metadata(self, conn, _id):
         cur = conn.cursor()
         query = f'''
-                SELECT thumb_path FROM 
-                assets 
-                LEFT JOIN thumbnail ON assets.id=thumbnail.asset_id
-                WHERE assets.id={asset_id}
+                SELECT data FROM 
+                json_data 
+                WHERE id=1
 
         '''
         cur.execute(query)
         data = cur.fetchall()
-        if latest:
-            return data[-1][0]
-        else:
-            return [x[0] for x in data]
+        return data[0][0]
 
 
 # Main Function
 def main():
     db = AssetsDB()
-    # db.create_default_tables()
-    # db.create_geometry_table()
-    data = {'foo': 'bar'}
-    db.add_geometry(asset_name="tv_table", mesh_data=data)
-    # x = db.add_tag(asset_name="ABAGORA", tag_name="tag1")
-    # x = db.get_assets_data()
-    # print(db.get_tags(asset_name="ABAGORA"))
-
-    # print(db.get_thumbnail(asset_name="tv_table"))
-    # print(db.add_textures(asset_name="tv_table", map_type_name="_", texture_path="bar", udim_num=10, material_name="", resolution=""))
-    # db.get_asset(uuid='a990d365-62f4-43ff-81bf-63422dc5cefb')
 
 
 if __name__ == '__main__':
