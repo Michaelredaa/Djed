@@ -4,42 +4,41 @@ Documentation:
 """
 
 # ---------------------------------
-# MetaData
-_annotation = "Quick create material and assign it on selection."
-_icon = "shading.png"
-_color = (0.9, 0.9, 0.9)
-_backColor = (0.0, 0.0, 0.0, 0.0)
-_imgLabel = ""
-
-
-# ---------------------------------
-# import libraries
+# Import Libraries
 import os
-import re
 import sys
-from pathlib import Path
+import re
 
-# ---------------------------------
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-
-sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('djed').as_posix()]
-
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, ]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from dcc.maya.api.cmds import Maya
-from dcc.maya.api.renderer import arnold
+from djed.dcc.maya.api.cmds import Maya
+from djed.dcc.maya.api.renderer import arnold
 
 from maya import cmds
 
-# Main function
-def main():
+# ---------------------------------
+# Variables
+djed_order = 1.20
+djed_annotation = "Quick create material and assign it on selection."
+djed_icon = "shading.png"
+djed_color = (0.9, 0.9, 0.9)
+djed_backColor = (0.0, 0.0, 0.0, 0.0)
+djed_imgLabel = ""
+
+# ---------------------------------
+# Start Here
+
+
+def left_click():
     renderer = arnold
     ren_name = renderer.name
     ren_mtl = renderer.material_type
 
-    ma_fn = Maya(renderer)
+    ma = Maya(renderer)
 
     result = cmds.promptDialog(
         title='{} ({})'.format(ren_name.capitalize(), ren_mtl),
@@ -65,10 +64,15 @@ def main():
 
     # remove underscore
 
+    mtl, sg = ma.create_material(name=txt)
+    ma.assign_material(objects=ma.selection(), sg_name=sg)
 
-    ma_fn.create_and_assign_material(n=txt)
 
 
+def right_click():
+    pass
 
-if __name__ == '__main__':
-    main()
+
+def double_click():
+    pass
+
