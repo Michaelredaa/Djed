@@ -44,10 +44,10 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
         # ma = Maya()
         textures = list_textures(self.directory)
         sgs = get_sgName_from_textures(self.directory)
-        asset_data = {}
+        materials_data = {}
 
         for sg in sgs:
-            asset_data[sg] = {}
+            materials_data[sg] = {}
             texs_dict = {}
             for tex in textures:
                 if sg in tex:
@@ -75,7 +75,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
                             'filepath': os.path.join(self.directory, tex).replace('\\', '/')
                         }
 
-                        asset_data[sg]["displacements"] = {
+                        materials_data[sg]["displacements"] = {
                             sg+"_displacement": {
                                 'type': "displacement",
                                 "attrs": {},
@@ -84,9 +84,9 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
                         }
                         continue
 
-            asset_data[sg]["materials"] = {}
+            materials_data[sg]["materials"] = {}
             mtl_name = re.sub(r'(?i)sg', 'MTL', sg)
-            asset_data[sg]["materials"][mtl_name] = {
+            materials_data[sg]["materials"][mtl_name] = {
                 "type": "standard_surface",
                 "attrs": {},
                 "texs": texs_dict
@@ -98,7 +98,7 @@ class CreateMaterialFromTextures(pyblish.api.ContextPlugin):
             colorspace='aces',
             to_renderer='arnold',
             host="standard",
-            asset_data=asset_data
+            materials=materials_data
         )
 
         return instance
