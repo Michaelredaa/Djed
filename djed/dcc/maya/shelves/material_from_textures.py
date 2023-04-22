@@ -38,7 +38,7 @@ from djed.dcc.maya.api import renderer
 from djed.dcc.maya.plugins.load_asset import LoadAsset
 from djed.dcc.maya.plugins.create_material_from_textures import CreateMaterialFromTextures
 from djed.utils.textures import get_sgName_from_textures
-from djed.settings.settings import get_value, get_asset_root
+from djed.settings.settings import get_asset_root, get_dcc_cfg
 from djed.utils.dialogs import browse_dirs
 from djed.utils.file_manager import PathResolver
 from djed.utils.resources.style_rc import *
@@ -68,8 +68,6 @@ class MaterialTextures(Button):
         self.l_exportDir.leftClicked.connect(self.on_dir_clicked)
         self.le_dir = QLineEdit()
 
-        self.le_dir.setText(self.recent_texture_root()[0])
-
         self.set_completer(self.le_dir)
         self.pb_browse = QPushButton("")
         self.pb_browse.setIcon(QIcon(":/icons/folder.png"))
@@ -95,7 +93,7 @@ class MaterialTextures(Button):
         gbox = QGridLayout(self)
 
         # renderers
-        renderers = ["arnold", ]
+        renderers = [self.ma.get_renderer(), ]
         gbox.addWidget(QLabel("Renderer: "), 0, 0, 1, 1, Qt.AlignRight)
         self.com_rend = QComboBox()
         self.com_rend.setMinimumSize(QSize(150, 20))
@@ -121,10 +119,9 @@ class MaterialTextures(Button):
         gbox.addWidget(self.com_mtls, 3, 1, 1, 1, Qt.AlignLeft)
 
         # color space
-        gbox.addWidget(QLabel("Convert Colorspace: "), 8, 0, 1, 1, Qt.AlignRight)
+        gbox.addWidget(QLabel("Colorspace: "), 8, 0, 1, 1, Qt.AlignRight)
         hbox = QHBoxLayout()
         self.rb_aces = QRadioButton("Aces")
-        self.rb_aces.setChecked(True)
         self.rb_srgb = QRadioButton("sRGB")
         hbox.addWidget(self.rb_aces)
         hbox.addWidget(self.rb_srgb)
@@ -135,18 +132,6 @@ class MaterialTextures(Button):
 
         self.on_change_udim()
 
-    def recent_texture_root(self, root_path=None):
-        textures_root = self.fm.get_user_json('maya', 'textures_root')
-        if not textures_root:
-            textures_root = ['{asset_root}/publish/model/{version}']
-            self.fm.set_user_json(maya={'textures_root': textures_root})
-
-        if root_path:
-            textures_root.insert(0, root_path)
-
-        self.fm.set_user_json(maya={'textures_root': textures_root[:5]})
-
-        return textures_root
 
     def connect_events(self):
         self.cb_udim.toggled.connect(self.on_change_udim)
@@ -229,7 +214,7 @@ class MaterialTextures(Button):
             version = self.fm.get_latest_folder_version(
                 root,
                 prefix='v',
-                padding=int(get_value("version_padding", "general", "settings", "version_padding").get("value")),
+                padding=int(get_dcc_cfg("general", "settings", "version_padding")),
                 ret_path=False
             )
 
@@ -238,7 +223,34 @@ class MaterialTextures(Button):
         return str(path_resolver)
 
     def reset_ui(self):
-        pass
+
+        published_textures = get_dcc_cfg('general', 'path', 'publish', 'textures')
+        textures_root = os.path.dirname(published_textures)
+
+        self.le_dir.setText(textures_root)
+        self.com_rend.setCurrentText('arnold')
+        self.cb_udim.setChecked(False)
+        self.com_mtls.setCurrentText('All')
+        self.rb_aces.setChecked(True)
+
+    def save_settings(self, **kwargs):
+
+        if kwargs:
+            self.fm.set_user_json(maya={__name__: kwargs})
+            return
+
+        settings = self.fm.get_user_json('maya', __name__)
+
+        if settings:
+            self.le_dir.setText(settings.get('textures_dir'))
+            self.com_rend.setCurrentText(settings.get('renderer'))
+            self.cb_udim.setChecked(settings.get('udim'))
+            self.rb_aces.setChecked(settings.get('aces'))
+            self.rb_srgb.setChecked(not settings.get('aces'))
+        else:
+            self.reset_ui()
+
+
 
     def apply(self):
         renderer_name = self.com_rend.currentText()
@@ -248,6 +260,8 @@ class MaterialTextures(Button):
             active_renderer = renderer.arnold
         else:
             return
+
+        udim = self.cb_udim.isChecked()
 
         sgs_selection = self.com_mtls.currentText()
 
@@ -268,7 +282,8 @@ class MaterialTextures(Button):
         instance.data['execute_materials'] = sgs
         LoadAsset().process(instance)
 
-        self.recent_texture_root(root_path=tex_dir)
+        self.save_settings(textures_dir=self.le_dir.text(), renderer=renderer_name, udim=udim, aces=colorspace == 'aces')
+
 
     def help(self):
         pass
