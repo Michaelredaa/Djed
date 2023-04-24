@@ -3,7 +3,6 @@
 Documentation:
 """
 
-import importlib
 # ---------------------------------
 # import libraries
 import json
@@ -11,6 +10,8 @@ import math
 import os
 import re
 import sys
+from typing import Tuple, List, Dict, AnyStr, Any, Union
+from contextlib import contextmanager
 
 # maya
 import maya.OpenMayaUI as omui
@@ -24,54 +25,61 @@ from PySide2.QtWidgets import QMessageBox, QWidget
 
 from shiboken2 import wrapInstance
 
-
 DJED_ROOT = os.getenv("DJED_ROOT")
 
 sysPaths = [DJED_ROOT]
 for sysPath in sysPaths:
-    if not sysPath in sys.path:
+    if sysPath not in sys.path:
         sys.path.append(sysPath)
 
 from djed.dcc.maya.api.renderer import arnold
 
-from djed.utils.file_manager import FileManager
+from djed.utils.file_manager import FileManager, PathResolver
 from djed.utils.textures import list_textures, ck_udim, texture_type_from_name
-from djed.utils.dialogs import message, info
 from djed.utils.assets_db import AssetsDB
-from djed.settings.settings import get_dcc_cfg, get_material_attrs, get_textures_settings, get_colorspace_settings
+from djed.settings.settings import (
+    get_dcc_cfg,
+    get_material_attrs,
+    get_textures_settings,
+    get_colorspace_settings,
+    get_value,
+)
+from djed.utils.logger import Logger
 
 # initialize database
 db = AssetsDB()
 
 
-def maya_main_window():
+def maya_main_window() -> QWidget:
     # Return the Maya main window widget as a Python object
     main_window_ptr = omui.MQtUtil.mainWindow()
     maya_win = wrapInstance(int(main_window_ptr), QWidget)
-
     return maya_win
 
 
 # ---------------------------------
-class Maya:
+class Maya(object):
     publish_plugins = ["AbcExport.mll", "fbxmaya.mll", "AbcImport.mll", "objExport.mll", "mayaUsdPlugin.mll"]
 
     def __init__(self, renderer=None):
+
+        self.log = Logger(
+            name='maya-cmds',
+            use_file=get_value("enable_logger", "general", "settings", "enable_logger").get("value")
+        )
 
         self.renderer = renderer
         if renderer is None:
             self.renderer = arnold
 
-        self.main_window = maya_main_window()
-
         self.fm = FileManager()
-        self.root = os.getenv("DJED_ROOT")
 
         self.startup()
 
     def startup(self):
         # self.renameDuplicates()
         self.load_all_plugins()
+        self.load_plugin(self.renderer.plugin_name)
 
     def load_plugin(self, plugin_name="AbcExport.mll"):
         if not cmds.pluginInfo(plugin_name, q=True, loaded=True):
@@ -84,43 +92,69 @@ class Maya:
             except:
                 pass
 
-    def convert_path(self, path):
-        file_path = self.get_file_path()
-        if not file_path:
-            return
-        export_dir = path
-        if path.startswith(".."):
-            export_dir = file_path
+    def get_dimensions(self, node_name) -> Tuple[float, float, float]:
 
-            for i in range(path.count("../")):
-                export_dir = os.path.dirname(export_dir)
+        bb = cmds.xform(node_name, q=True, boundingBox=True)
 
-            if "../" in path:
-                export_dir = os.path.join(export_dir, path.rsplit("../", 1)[-1])
+        x = bb[3] - bb[0]
+        y = bb[4] - bb[1]
+        z = bb[5] - bb[2]
 
-        selection = self.selection()
-        if selection:
-            selection = selection[0]
-            if not cmds.nodeType(selection) == "transform":
-                message(None, "Waring", "You should select at least one valid object")
+        return x, y, z
 
-        selection = self.selection()
-        export_dir = export_dir.replace("$selection", self.selection()[0])
-        return export_dir.replace("\\", "/")
+    def get_unit(self) -> str:
+        return cmds.currentUnit(q=True, linear=True)
 
-    def get_export_path(self):
-        export_root = get_dcc_cfg('maya', 'plugins', 'export_geometry', 'export_root')
-        return self.convert_path(export_root)
+    def get_polycount(self, node_path) -> Dict:
+        """To return polycount of asset"""
 
-    def get_project_name(self):
+        # # Result: {'vertex': 8, 'edge': 12, 'face': 6, 'uvcoord': 14, 'triangle': 12, 'shell': 1, 'uvShell': 0,
+        # 'vertexComponent': 0, 'edgeComponent': 0, 'faceComponent': 0, 'uvComponent': 0, 'triangleComponent': 0}
+        data = {}
+
+        shapes = self.list_all_dag_meshes(node_path, shape=True, fullPath=True, type=om.MFn.kMesh)
+        for shape in shapes:
+            counts = cmds.polyEvaluate(shape)
+            if not counts:
+                continue
+
+            if not data:
+                data = counts
+                continue
+
+            data = {
+                k: data[k] + counts[k] for k in data
+            }
+
+        return data
+
+    @contextmanager
+    def maintained_selection(self):
+        """Maintain selection during context"""
+
+        current_selection = cmds.ls(sl=1)
+        try:
+            yield
+        finally:
+            cmds.select(current_selection, r=1)
+
+    def is_group(self, node_name) -> bool:
+        """To check if the node is group or not"""
+        return not cmds.listRelatives(node_name, s=1)
+
+    def is_root_node(self, node_name) -> bool:
+        """To check if the node in the root of outliner"""
+        return node_name in cmds.ls(sl=1, assemblies=1)
+
+    def get_project_name(self) -> AnyStr:
         project_dir = self.get_project_dir()
         if os.path.isdir(project_dir):
             return project_dir.split("/")[-2]
 
-    def get_project_dir(self):
+    def get_project_dir(self) -> AnyStr:
         return cmds.workspace(q=1, rd=1)
 
-    def get_file_path(self):
+    def get_file_path(self) -> AnyStr:
         file_path = cmds.file(q=1, sn=1)
         if file_path:
             return file_path
@@ -128,16 +162,20 @@ class Maya:
             ''
             # message(None, "Error", "You must save the file first.")
 
-    def get_file_dir(self):
+    def get_file_dir(self) -> AnyStr:
         if self.get_file_path():
             return os.path.dirname(self.get_file_path())
 
-    def get_file_name(self):
+    def get_file_name(self) -> AnyStr:
         if self.get_file_path():
             return os.path.basename(self.get_file_path())
 
-    def selection(self):
+    def selection(self, fullpath=0) -> List:
         selection = cmds.ls(sl=1)
+
+        if fullpath:
+            selection = cmds.ls(sl=1, l=1)
+
         if selection:
             return selection
         else:
@@ -148,15 +186,16 @@ class Maya:
     def select(self, *args):
         cmds.select(args, r=1)
 
-    def current_frame(self):
+    def current_frame(self) -> float:
         return cmds.currentTime(q=True)
 
-    def materials(self):
+    def all_materials(self) -> List[AnyStr]:
+        """TO get all materials in file"""
         self.validate_renderer()
         material_type = self.renderer.material_type
         return cmds.ls(sl=1, type=material_type)
 
-    def get_renderer(self):
+    def get_renderer(self) -> AnyStr:
         """
         To get the renderer name
         :return:
@@ -182,58 +221,20 @@ class Maya:
         if not self.renderer.name == self.get_renderer():
             raise (f"Set the current renderer to {self.renderer.name} frist")
 
-    def create_material(self, name="materialMTL#", sg=None):
-        """
-        To creates material with given type
-        :param name: (str) the name of material
-        :return:(list(str)) material name
-        """
-        self.validate_renderer()
-        material_type = self.renderer.material_type
-        name = re.sub(r"(?i)sg$", "MTL", name)
-        mat = cmds.shadingNode(material_type, name=name, asShader=True)
-
-        if sg:
-            if not cmds.objExists(sg):
-                sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=sg)
-        else:
-            sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=re.sub(r"(?i)mtl$", "SG", name))
-
-        cmds.connectAttr(mat + ".outColor", sg + ".surfaceShader", f=1)
-
-        return mat, sg
-
     def connect_attr(self, src, dist, force=True):
         cmds.connectAttr(src, dist, f=force)
 
-    def create_util_node(self, _type, name):
+    def create_util_node(self, _type, name) -> AnyStr:
         return cmds.shadingNode(_type, asUtility=True, n=name)
 
-    def import_texture(self, tex_path, udim=None, colorspace='aces', color=False, tex_name=None):
+    def import_texture(self, tex_path, udim=None, colorspace='Raw', tex_name=None) -> AnyStr:
         """
         To import the texture inside maya
         """
-        hdr = get_textures_settings('hdr_extension')
-        extension = tex_path.rsplit('.', 1)[-1]
-        if colorspace == 'aces':
-            if color:
-                if extension in hdr:
-                    cs_config = 'aces_color_hdr'
-                else:
-                    cs_config = 'aces_color_ldr'
-            else:
-                cs_config = 'aces_raw'
-        else:
-            if color:
-                cs_config = 'srgb'
-            else:
-                cs_config = 'raw'
-
-        colorspace_value = get_colorspace_settings(cs_config)
 
         if not os.path.isfile(tex_path):
             cmds.warning("System Error: Can not import {} file. It not located.")
-            return False
+            return ""
 
         if not tex_name:
             tex_name = os.path.basename(tex_path).split(".")[0]
@@ -254,41 +255,11 @@ class Maya:
             cmds.setAttr(file_node + ".uvTilingMode", 3)
 
         # colorspace
-        cmds.setAttr(file_node + ".colorSpace", colorspace_value, type="string")
-
-        # texture preview
-        if color:
-            mel.eval(f'generateUvTilePreview {file_node};')
+        cmds.setAttr(file_node + ".colorSpace", colorspace, type="string")
 
         return tex_name
 
-    def get_mesh_data(self, node):
-        """
-        To gather mesh data like sgs and paths
-        :param node: Transform node of asset
-        :return:
-        """
-        data = {}
-        # Get all selection shapes
-        shapes = self.list_all_dag_meshes(node, shape=True, fullPath=True, type=om.MFn.kMesh)
-        for shapeNode in shapes:
-            # Get each shape shadingEngine
-            sgs = cmds.listConnections(shapeNode, s=0, d=1, type="shadingEngine")
-            if not sgs:
-                continue
-            for sg in sgs:
-                if (sg in data) or (sg == 'initialShadingGroup'):
-                    continue
-
-                data[sg] = {
-                    "meshes": {}
-                }
-                # list of meshes
-                meshes = self.list_all_DG_nodes(sg, om.MFn.kMesh, om.MItDependencyGraph.kUpstream)
-                data[sg]["meshes"]["shape"] = meshes
-        return data
-
-    def get_asset_data(self, node):
+    def get_asset_materials_data(self, node) -> Dict:
         """
         To gather all selection data meshes, attributes, materials, textures,
         :param node: Transform node of asset
@@ -354,72 +325,37 @@ class Maya:
 
         return data
 
-    def export_selection(self, asset_dir=None, asset_name=None, export_type=["abc"], _message=True):
+    def export_geo(self, node_name, geo_path, **kwargs):
+        """To export the geometry"""
 
-        """
-        To export the selection
-        :param asset_name: the asset name if None it will get the name of selection
-        :param asset_dir: the base directory to export asset
-        :param _message: popup message
-        :param export_type: list(str): list of export types
-        :return:
-        """
+        with self.maintained_selection():
+            self.select(node_name)
 
-        # get asset name
-        if asset_name is None:
-            selection = self.selection()
-            if not selection:
-                message(None, "waring", "you should select at last one object")
-                return
-            if not (cmds.nodeType(selection[0]) == "transform"):
-                return
-            asset_name = selection[0]
+            if geo_path.endswith("obj"):
+                cmds.file(
+                    geo_path,
+                    es=1,
+                    f=1,
+                    typ="OBJexport",
+                    options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1"
+                )
 
-        if asset_dir is None:
-            export_dir = self.get_export_path()
-        else:
-            export_dir = self.convert_path(asset_dir)
-
-        if not export_dir:
-            return
-        self.fm.make_dirs(export_dir)
-        export_path, version = self.fm.version_folder_up(export_dir)
-        self.fm.make_dirs(export_path)
-
-        export_path += f"/{asset_name}"
-
-        # add mtl attribute
-        attr_name = "materialBinding"
-        self.add_attr_to_shapes([asset_name], attr_name)
-
-        db.add_asset(asset_name=asset_name)
-        db.add_geometry(asset_name=asset_name, source_file=self.get_file_path())
-
-        export_paths = {}
-        for ext in export_type:
-            if ext == "obj":
-                db.add_geometry(asset_name=asset_name, obj_file=export_path + "." + ext)
-                cmds.file(export_path, es=1, f=1, typ="OBJexport",
+            elif geo_path.endswith("fbx"):
+                cmds.file(geo_path, es=1, f=1, typ="FBX export",
                           options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1")
-                export_paths[ext] = export_path + "." + ext
 
-            elif ext == "fbx":
-                db.add_geometry(asset_name=asset_name, fbx_file=export_path + "." + ext)
-                cmds.file(export_path, es=1, f=1, typ="FBX export",
-                          options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1")
-                export_paths[ext] = export_path + "." + ext
+            elif geo_path.endswith("abc"):
+                abc_options = f'-frameRange {self.current_frame()} {self.current_frame()}'
+                abc_options += ''.join([f' -attr {attr}' for attr in kwargs.get('attrs', [])])
+                abc_options += ' -uvWrite -writeFaceSets -worldSpace -writeVisibility -writeUVSets -dataFormat ogawa'
+                abc_options += f' -root {node_name}'
+                abc_options += f' -file "{geo_path}"'
 
-            elif ext == "abc":
-                db.add_geometry(asset_name=asset_name, abc_file=export_path + "." + ext)
-                frameRange = (self.current_frame(), self.current_frame())
-                abcOptions = f" -attr {attr_name} -uvWrite -writeFaceSets -worldSpace -writeVisibility -writeUVSets -dataFormat ogawa"
-                root = " -root " + " -root ".join([asset_name])
-                command = "-frameRange " + str(frameRange[0]) + " " + str(
-                    frameRange[1]) + abcOptions + root + " -file " + export_path + ".abc"
-                cmds.AbcExport(j=command, verbose=1)
-                export_paths[ext] = export_path + "." + ext
+                cmds.AbcExport(j=abc_options, verbose=1)
 
-            elif ext == "usd":
+            elif geo_path.rsplit('.', 1)[-1] in ['usd', 'usdc']:
+                self.log.debug("Export USD")
+
                 options = ";"
                 options += "exportUVs=1;"
                 options += "exportSkels=none;"
@@ -431,8 +367,8 @@ class Maya:
                 options += "animation=0;"
                 options += "eulerFilter=0;"
                 options += "staticSingleSample=0;"
-                options += "startTime={};".format(self.current_frame())
-                options += "endTime={};".format(self.current_frame())
+                options += f"startTime={self.current_frame()};"
+                options += f"endTime={self.current_frame()};"
                 options += "frameStride=1;"
                 options += "frameSample=0.0"
                 options += "parentScope=;"
@@ -443,50 +379,42 @@ class Maya:
                 options += "mergeTransformAndShape=1;"
                 options += "stripNamespaces=0"
 
-                db.add_geometry(asset_name=asset_name, usd_geo_file=export_path + "." + ext)
-                cmds.file(export_path, es=1, f=1, typ="USD Export", options=options)
-                export_paths[ext] = export_path + "." + ext
+                cmds.file(geo_path, es=1, f=1, typ="USD Export", options=options)
 
+            self.log.debug(f"Export: `{geo_path}`")
 
-            else:
-                return
-
-            print("[Geometry Exported]: ", export_path + "." + ext)
-
-        mesh_data = self.get_mesh_data(asset_name)
-        db.add_geometry(asset_name=asset_name, mesh_data=mesh_data)
-
-        if _message:
-            info(None, "'{}' exported successfully with formats '{}'".format(asset_name, export_type))
-
-        return export_paths
-
-    def import_geo(self, geo_path):
-        '''
+    def import_geo(self, geo_path, **kwargs) -> List[AnyStr]:
+        """
         To import geometry into maya scene
         :param geo_path: the geo path with different geo extensions
-        :return: the imported root nodes
-        '''
-        before = cmds.ls(assemblies=1)
-        if geo_path.endswith(".abc"):
-            cmds.AbcImport(geo_path)
-        else:
-            cmds.file(geo_path, i=1)
-        after = cmds.ls(assemblies=1)
-        imported_nodes = list(set(after) - set(before))
+        :return: the imported nodes with filter type
+        """
+
+        new_nodes = cmds.file(geo_path, i=1, rnn=1)
+        imported_nodes = [x for x in new_nodes if cmds.nodeType(x) in kwargs.get('filter', ['mesh'])]
+
+        self.log.debug(f"Import: `{geo_path}` - with nodes {imported_nodes}")
         return imported_nodes
 
-    def add_attribute(self, geo, attr_name):
+    def get_attribute(self, node_name, attr_name) -> AnyStr:
+        return cmds.getAttr(node_name + "." + attr_name)
+
+    def set_str_attribute(self, node_name, attr_name, value):
+        cmds.setAttr(f'{node_name}.{attr_name}', value, type='string')
+
+    def add_str_attribute(self, node_name: str, attr_name: str) -> Union[str, bool]:
+        """Add attribute to node and return True, If the attribute already exist will return its value"""
         try:
-            cmds.getAttr(geo + "." + attr_name)
-        except:
-            cmds.addAttr(geo, longName=attr_name, dataType='string', keyable=1)
+            return cmds.getAttr(node_name + "." + attr_name)
+        except ValueError:
+            cmds.addAttr(node_name, longName=attr_name, dataType='string', keyable=1)
+            return True
 
     def add_attr_to_shapes(self, objects, attr_name):
-        for object in objects:
-            for shape in self.list_all_dag_meshes(object, om.MFn.kMesh):
+        for obj in objects:
+            for shape in self.list_all_dag_meshes(obj, om.MFn.kMesh):
                 sgs = self.list_all_DG_nodes(shape, om.MFn.kShadingEngine)
-                self.add_attribute(shape, attr_name)
+                self.add_str_attribute(shape, attr_name)
                 cmds.setAttr(shape + "." + attr_name, ";".join(sgs), type="string")
 
     def list_all_DG_nodes(self, inNode, node_type=om.MFn.kShadingEngine, direction=om.MItDependencyGraph.kDownstream):
@@ -616,7 +544,7 @@ class Maya:
 
         return mtls
 
-    def get_attrs(self, node_name, default_values=False, connected=False):
+    def get_attrs(self, node_name, default_values=False, connected=False) -> Dict:
         """
         To get the attributes that have default values or not have default values base on default_attr value
         :param node_name: (str) the node name
@@ -958,22 +886,6 @@ class Maya:
         cmds.colorManagementPrefs(e=True, refresh=True)
         cmds.SavePreferences()
 
-    def create_and_assign_material(self, n="newMtl#", objects=None, new=True):
-        """
-        TO assign material to objects or selections
-        @param n: (str) name of created material
-        @param objects: (list) the objects to assign
-        @return:
-        """
-
-        if not objects:
-            objects = cmds.ls(sl=1)
-
-        mat = cmds.shadingNode(self.renderer.material_type, name=n, asShader=True)
-        sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=n.replace("MTL", "SG"))
-        cmds.connectAttr(mat + ".outColor", sg + ".surfaceShader")
-        cmds.sets(objects, e=True, forceElement=sg)
-
     def assign_material(self, objects, mtl_name=None, sg_name=None):
         """
         TO assign materials to objects by given material name or shading group name
@@ -992,11 +904,24 @@ class Maya:
 
             return True
 
+    def create_material(self, name="materialMTL#", sg=None) -> Tuple[AnyStr, AnyStr]:
+        """
+        To creates material with given type
+        :param sg:
+        :param name: (str) the name of material
+        :return:(list(str)) material name
+        """
+        self.validate_renderer()
+        material_type = self.renderer.material_type
+        name = re.sub(r"(?i)sg$", "MTL", name)
+        mat = cmds.shadingNode(material_type, name=name, asShader=True)
 
-# Main function
-def main():
-    pass
+        if sg:
+            if not cmds.objExists(sg):
+                sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=sg)
+        else:
+            sg = cmds.sets(empty=1, renderable=1, noSurfaceShader=1, n=re.sub(r"(?i)mtl$", "SG", name))
 
+        cmds.connectAttr(mat + ".outColor", sg + ".surfaceShader", f=1)
 
-if __name__ == '__main__':
-    main()
+        return mat, sg

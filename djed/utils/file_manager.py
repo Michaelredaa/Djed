@@ -12,6 +12,8 @@ import re
 import json
 from pathlib import Path
 
+
+
 DJED_ROOT = os.getenv('DJED_ROOT')
 utils_path = os.path.join(DJED_ROOT, 'djed')
 
@@ -21,7 +23,27 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+
+
 # ---------------------------------
+
+class PathResolver(object):
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return self.string
+
+    def __add__(self, text):
+        return str(self.string) + text
+
+    def format(self, **kwargs):
+        for key, value in kwargs.items():
+            key = f'{{{key}}}'
+            if key not in self.string:
+                continue
+            self.string = self.string.replace(key, value)
+        return self.string
 
 class FileManager:
 
@@ -77,7 +99,6 @@ class FileManager:
             data[key] = kwargs[key]
 
         self.write_json(json_path, data)
-
 
     def read_json(self, json_path):
         """

@@ -1,34 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Documentation:
+Documentation: 
 """
-# ---------------------------------
-# MetaData
-_annotation = "Validate mesh "
-_icon = "updateSubstance.png"
-_color = (0.9, 0.9, 0.9)
-_backColor = (0.0, 0.0, 0.0, 0.0)
-_imgLabel = ""
 
 # ---------------------------------
-# import libraries
-
+# Import Libraries
 import os
 import sys
-from pathlib import Path
 
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-
-sysPaths = [
-    DJED_ROOT.as_posix(),
-    DJED_ROOT.joinpath('djed').as_posix(),
-    DJED_ROOT.joinpath('venv/python/Lib/site-packages').as_posix()
-]
-
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, ]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+# ---------------------------------
+# Variables
+djed_order = 1.10
+djed_annotation = "To validate the selected asset"
+djed_icon = "pyblish.png"
+djed_color = (0.9, 0.9, 0.9)
+djed_backColor = (0.0, 0.0, 0.0, 0.0)
+djed_imgLabel = ""
+
+# ---------------------------------
+# Start Here
 import pyblish.api, pyblish_lite, pyblish_maya
 
 from dcc.maya.plugins import (
@@ -47,7 +43,7 @@ from dcc.maya.plugins import (
 
 
 def process(**kwargs):
-    plugin_path = os.getenv('DJED_ROOT') + r"djed/dcc/maya/plugins"
+    plugin_path = DJED_ROOT + r"djed/dcc/maya/plugins"
 
     pyblish.util.plugin.deregister_all_plugins()
     # pyblish.api.deregister_plugin_path(plugin_path)
@@ -87,5 +83,14 @@ def process(**kwargs):
     pyblish_maya.show()
 
 
-if __name__ == '__main__':
+def left_click():
     process()
+
+
+def right_click():
+    pass
+
+
+def double_click():
+    pass
+

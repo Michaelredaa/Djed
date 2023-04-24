@@ -4,6 +4,7 @@ Documentation:
 """
 import sys
 import os
+from datetime import datetime
 from pathlib import Path
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
@@ -20,6 +21,8 @@ from djed.utils.resources.style_rc import *
 from djed.version import version
 
 def message(parent=None):
+    year = datetime.now().year
+
     about = QMessageBox(parent)
     about.setWindowTitle("Djed Tools")
     about.setWindowIcon(QIcon(":/icons/about.png"))
@@ -30,7 +33,7 @@ def message(parent=None):
     <p>Open-source assets pipeline that can manage the assets workflow.</p>
     <p><a href="https://github.com/Michaelredaa/Djed">https://github.com/Michaelredaa/Djed</a></p>
     <pstyle="margin-left: 40px;">Version: {version}</p>
-    <pre>2022 Djed, All rights reserved</pre>
+    <pre>{year} Djed, All rights reserved</pre>
     <p><br></p>
         ''')
     pixmap = QPixmap(":/icons/djed.ico")

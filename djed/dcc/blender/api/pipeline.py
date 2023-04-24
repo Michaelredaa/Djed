@@ -396,7 +396,7 @@ def create_texture(network, tex_path, udim=False, colorspace='aces', color=False
             if extension in hdr:
                 cs_config = 'aces_color_hdr'
             else:
-                cs_config = 'aces_color_ldr'
+                cs_config = 'aces_color_sdr'
         else:
             cs_config = 'aces_raw'
     else:

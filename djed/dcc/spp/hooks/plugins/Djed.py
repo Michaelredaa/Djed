@@ -215,7 +215,7 @@ class SubstanceIntegration():
             if not self.use_latest_textures_action.isChecked():
                 self.on_textures_export()
 
-            settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_maya')
+            settings = get_dcc_cfg("maya", "configuration")
 
             asset_data = db.get_geometry(
                 asset_name=self.asset_name,
@@ -228,17 +228,19 @@ class SubstanceIntegration():
             )
 
             import_type = settings.get('geometry_type')
+            to_render = settings.get('use_material')
+            to_render = '_'.join(to_render.lower().split(' '))
 
             data = {
                 'name': self.asset_name,
                 'host': 'spp',
-                'to_renderer': settings.get('use_material'),
+                'to_renderer': to_render,
                 'source_renderer': 'standard',
                 'colorspace': settings.get('colorspace').lower(),
                 'geometry_type': 'abc_file',
                 'import_type': import_type,
                 'geo_paths': asset_data,
-                'asset_data': json.loads(asset_data.get('mesh_data')),
+                'asset_data': asset_data.get('mesh_data'),
             }
             send_to_maya(data)
         else:
@@ -250,7 +252,7 @@ class SubstanceIntegration():
             if not self.use_latest_textures_action.isChecked():
                 self.on_textures_export()
 
-            settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
+            settings = get_dcc_cfg("clarisse", "configuration")
             to_render = settings.get('use_material')
             to_render = '_'.join(to_render.lower().split(' '))
 
@@ -286,7 +288,6 @@ class SubstanceIntegration():
         if not self.use_latest_textures_action.isChecked():
             self.on_textures_export()
 
-        # settings = get_dcc_cfg("substance_painter", "plugins", 'substance_painter_clarisse')
 
         asset_data = db.get_geometry(asset_name=self.asset_name, mesh_data="")["mesh_data"]
         geo_paths = db.get_geometry(

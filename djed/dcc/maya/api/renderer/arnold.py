@@ -8,5 +8,5 @@ Documentation:
 
 name = 'arnold'
 material_type = 'aiStandardSurface'
-
+plugin_name = 'mtoa.mll'
 

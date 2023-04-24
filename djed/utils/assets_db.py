@@ -116,7 +116,6 @@ class AssetsDB(Connect):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 gallery INTEGER DEFAULT 0,
-                current INTEGER DEFAULT 0,
                 uuid TEXT DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))),
                 UNIQUE(uuid)
                 );
@@ -338,15 +337,15 @@ class AssetsDB(Connect):
         self.create_asset_metadata_table()
 
     @Connect.db
-    def add_asset(self, conn, asset_name, gallery=0, current=0, **kwargs):
+    def add_asset(self, conn, asset_name, gallery=0, **kwargs):
         cur = conn.cursor()
 
         # add asset
         query = f'''
                         INSERT INTO assets 
-                        (name, gallery, current)
+                        (name, gallery)
                         VALUES
-                        ("{asset_name}", {gallery}, {current});
+                        ("{asset_name}", {gallery});
                 '''
         cur.execute(query)
         conn.commit()
@@ -603,16 +602,9 @@ class AssetsDB(Connect):
 
         cur.execute(query)
 
-    @Connect.db
-    def add_workingfile(self, conn, uuid, filepath="", extension="", dcc="", **kwargs):
-
-        self.update_date(uuid=uuid)
-
-        all_versions = self.get_versions_tables(uuid=uuid, table_name="workingfile")
-
+    def dcc_workfile_version(self, all_versions, dcc='maya'):
         if all_versions:
             for v in all_versions:
-                print(v)
                 if v['dcc'] == dcc:
                     version = v["version"] + 1
                     break
@@ -620,6 +612,17 @@ class AssetsDB(Connect):
                 version = 1
         else:
             version = 1
+
+        return version
+
+    @Connect.db
+    def add_workingfile(self, conn, uuid, filepath="", extension="", dcc="", **kwargs):
+
+        self.update_date(uuid=uuid)
+
+        all_versions = self.get_versions_tables(uuid=uuid, table_name="workingfile")
+
+        version = self.dcc_workfile_version(all_versions, dcc)
 
         cur = conn.cursor()
         query = f'''

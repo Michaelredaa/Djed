@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'tools_setting.ui'
+## Form generated from reading UI file 'tools_setting_ui.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -81,7 +81,7 @@ class Ui_ToolSettings(object):
         self.horizontalLayout.addWidget(self.pb_save)
 
         self.pb_cancel = QPushButton(self.centralwidget)
-        self.pb_cancel.setObjectName(u"pb_cancle")
+        self.pb_cancel.setObjectName(u"pb_cancel")
         sizePolicy.setHeightForWidth(self.pb_cancel.sizePolicy().hasHeightForWidth())
         self.pb_cancel.setSizePolicy(sizePolicy)
         self.pb_cancel.setMaximumSize(QSize(100, 25))
@@ -97,20 +97,16 @@ class Ui_ToolSettings(object):
         ToolSettings.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(ToolSettings)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 607, 22))
+        self.menubar.setGeometry(QRect(0, 0, 607, 21))
         self.menuEdit = QMenu(self.menubar)
         self.menuEdit.setObjectName(u"menuEdit")
-        self.menuRecent = QMenu(self.menuEdit)
-        self.menuRecent.setObjectName(u"menuRecent")
         self.menuHelp = QMenu(self.menubar)
         self.menuHelp.setObjectName(u"menuHelp")
         ToolSettings.setMenuBar(self.menubar)
 
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
-        self.menuEdit.addAction(self.actionSave_Settings)
         self.menuEdit.addAction(self.actionReset_Settings)
-        self.menuEdit.addAction(self.menuRecent.menuAction())
         self.menuHelp.addAction(self.actionHelp_on_this_tool)
 
         self.retranslateUi(ToolSettings)
@@ -128,7 +124,6 @@ class Ui_ToolSettings(object):
         self.pb_save.setText(QCoreApplication.translate("ToolSettings", u"Save and Close", None))
         self.pb_cancel.setText(QCoreApplication.translate("ToolSettings", u"Cancel", None))
         self.menuEdit.setTitle(QCoreApplication.translate("ToolSettings", u"Edit", None))
-        self.menuRecent.setTitle(QCoreApplication.translate("ToolSettings", u"Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("ToolSettings", u"Help", None))
     # retranslateUi
 

@@ -120,7 +120,7 @@ class Maya2UnrealSettings(ToolSettingsBase):
 
             data = {
                 "geo_paths": {'obj_file': mesh_path},
-                "asset_data": ma.get_asset_data(asset_name)
+                "asset_data": ma.get_asset_materials_data(asset_name)
             }
 
         data['name'] = asset_name

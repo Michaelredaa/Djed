@@ -18,9 +18,12 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-site.addsitedir(DJED_ROOT.joinpath('venv', 'python39', 'Lib', 'site-packages').as_posix())
+site.addsitedir(DJED_ROOT.joinpath('venv', 'python', 'Lib', 'site-packages').as_posix())
 
 from djed.utils.resources.stylesheet import get_stylesheet
+
+
+
 
 
 class Message(QtWidgets.QMessageBox):
@@ -110,7 +113,11 @@ def info(parent=None, message=""):
 
 
 def browse_dirs(parent=None, title="Select a directory", base_dir=""):
-    return QtWidgets.QFileDialog.getExistingDirectory(parent, title, base_dir)
+    options = QtWidgets.QFileDialog.Options()
+    options |= QtWidgets.QFileDialog.Directory
+    options |= QtWidgets.QFileDialog.DontUseNativeDialog
+
+    return QtWidgets.QFileDialog.getExistingDirectory(parent, title, base_dir, options)
 
 
 def browse_files(parent=None, title="Select a file", base_dir="", filters=".*", use_native=True):

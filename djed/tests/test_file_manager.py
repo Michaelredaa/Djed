@@ -52,6 +52,7 @@ class TestFileManager(unittest.TestCase):
         fm.set_user_json(foo='bar')
         self.assertEqual(fm.get_user_json('foo'), 'bar')
 
+
 class TestPathResolver(unittest.TestCase):
 
     def test_resolve_path(self):
@@ -60,7 +61,6 @@ class TestPathResolver(unittest.TestCase):
         resolved_path = resolver.format(foo="/foo_value", bar="path/to/bar", name="asset", ext="abc")
 
         self.assertEqual(resolved_path, "/foo_value/to/path/to/bar/asset.abc")
-
 
 
 # Main Function

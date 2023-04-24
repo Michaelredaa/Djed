@@ -3,37 +3,38 @@
 Documentation: 
 """
 
-
 # ---------------------------------
 # import libraries
-from importlib.machinery import SourceFileLoader
-import sys, os
-from collections import OrderedDict
+import os
+import sys
+
+import importlib
+import traceback
 from pathlib import Path
+from itertools import groupby
 
 import maya.cmds as cmds
 import maya.mel as mel
 
 # ---------------------------------
 shelf_name = "Djed"
-__python__ = sys.version_info[0]
 
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-icons = DJED_ROOT.joinpath('djed', 'utils', 'resources', 'icons')
-modules = DJED_ROOT.joinpath('djed/dcc/maya/shelves')
+icons = DJED_ROOT.joinpath('djed/utils/resources/icons')
+shelves_dir = DJED_ROOT.joinpath('djed/dcc/maya/shelves')
 
-sysPaths = [DJED_ROOT.as_posix(), modules.as_posix()]
+sysPaths = [DJED_ROOT.as_posix()]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-Shelf_Items = [["exportMesh"],
-               ["send2spp", "updateSpp"],  # "updateSpp", "updateExitSpp"],
-               ["send2unreal"],
-               ["send2clarisse"],
-               ["importTexs", "createMtl"],
-               ["about"]
-               ]
+from djed.utils.logger import Logger
+from djed.settings.settings import get_value
+
+log = Logger(
+    name="Maya Shelf",
+    use_file=get_value("enable_logger", "general", "settings", "enable_logger").get("value")
+)
 
 
 def delete_self():
@@ -44,88 +45,95 @@ def delete_self():
         cmds.saveAllShelves(gShelfTopLevel)
 
 
+def get_modules():
+    """
+    TO get all buttons modules and return sorted and grouped by order
+    :return: list(list(modules))
+    """
+
+    modules = []
+    for btn_file in shelves_dir.iterdir():
+        if btn_file.name.endswith(".py") and "__" not in btn_file.name:
+            try:
+                spec = importlib.util.spec_from_file_location(btn_file.stem, btn_file)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, 'djed_order'):
+                    modules.append(module)
+            except Exception as e:
+                log.error(f"Error loading module: {btn_file}, \n{e}")
+                log.error(traceback.format_exc())
+
+    modules.sort(key=lambda x: x.djed_order)
+
+    return [list(g) for k, g in groupby(modules, lambda x: int(x.djed_order))]
+
+
 def create_self():
-    if modules.is_dir():
+    # Delete old shelves
+    try:
+        delete_self()
+    except:
+        pass
 
-        # Delete old shelves
-        try:
-            delete_self()
-        except:
-            pass
+    shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
+    shelves = cmds.tabLayout(shelftoplevel, query=True, childArray=True)
 
-        shelftoplevel = mel.eval("$gShelfTopLevel = $gShelfTopLevel;")
-        shelves = cmds.tabLayout(shelftoplevel, query=True, childArray=True)
+    # Add new shelves
+    if not (shelf_name in shelves):
+        mel.eval("addNewShelfTab {};".format(shelf_name))
 
-        # Add new shelves
-        if not (shelf_name in shelves):
-            mel.eval("addNewShelfTab {};".format(shelf_name))
+    try:
+        for btn in cmds.shelfLayout(shelf_name, q=1, ca=1):
+            cmds.deleteUI(btn)
+    except:
+        pass
 
-        try:
-            for btn in cmds.shelfLayout(shelf_name, q=1, ca=1):
-                cmds.deleteUI(btn)
-        except:
-            pass
+    log.info("Creating Buttons")
+    for shelf_buttons in get_modules():
+        for mod_btn in shelf_buttons:
+            cmd_text = "## Djed Tools ##\n\n"
+            cmd_text += f"from djed.dcc.maya.shelves import {mod_btn.__name__}\n"
+            cmd_text += f"from importlib import reload; reload({mod_btn.__name__})\n"
 
-        for shelf_btns in Shelf_Items:
-            for _btn in shelf_btns:
-                script_file = modules.joinpath(_btn + ".py")
-                if not script_file.is_file():
-                    continue
+            left_cmd = cmd_text + f"{mod_btn.__name__}.left_click()"
+            right_cmd = cmd_text + f"{mod_btn.__name__}.right_click()"
+            double_cmd = cmd_text + f"{mod_btn.__name__}.double_click()"
 
-                cmd_text = "## Djed Tools ##\n\n"
-                cmd_text += "import sys\n"
-                cmd_text += f"sys.argv = [r'{script_file.as_posix()}']\n"
-                cmd_text += f"with open(r'{script_file.as_posix()}', 'r') as f:\n"
-                cmd_text += "\texec(f.read())\n"
+            btn_info = {
+                "parent": shelf_name,
+                "label": mod_btn.__name__,
+                "annotation": mod_btn.djed_annotation,
+                "image1": icons.joinpath(mod_btn.djed_icon).as_posix(),
+                "imageOverlayLabel": mod_btn.djed_imgLabel,
+                "overlayLabelColor": mod_btn.djed_color,
+                "overlayLabelBackColor": mod_btn.djed_backColor,
+                "command": left_cmd,
+                "doubleClickCommand": double_cmd
+                # noDefaultPopup=True
+            }
 
-                dc_cmd = "## Djed Tools ##\n\n"
-                dc_cmd += "import sys\n"
-                dc_cmd += f"sys.argv = [r'{script_file.as_posix()}', 'double']\n"
-                dc_cmd += f"with open(r'{script_file.as_posix()}', 'r') as f:\n"
-                dc_cmd += "\texec(f.read())\n"
+            new_shelf_button = cmds.shelfButton(**btn_info)
 
-                mod = SourceFileLoader(_btn, script_file.as_posix()).load_module()
+        cmds.setParent(shelf_name)
+        cmds.separator(width=12, height=35, style='shelf', hr=0)
+        cmds.setParent(shelf_name)
 
-                btn_info = {
-                    "parent": shelf_name,
-                    "label": _btn,
-                    "annotation": mod._annotation,
-                    "image1": icons.joinpath(mod._icon).as_posix(),
-                    "imageOverlayLabel": mod._imgLabel,
-                    "overlayLabelColor": mod._color,
-                    "overlayLabelBackColor": mod._backColor,
-                    "command": cmd_text,
-                    "doubleClickCommand": dc_cmd
-                    # noDefaultPopup=True
-                }
+    cmds.saveAllShelves(shelftoplevel)
 
-                new_shelf_button = cmds.shelfButton(**btn_info)
-
-            cmds.setParent(shelf_name)
-            cmds.separator(width=12, height=35, style='shelf', hr=0)
-            cmds.setParent(shelf_name)
-
-        cmds.saveAllShelves(shelftoplevel)
-
-        # if popupMenus:
-        #     popup_menu = cmds.popupMenu(parent=new_shelf_button, button=n)
-        #     for pop in popupMenus:
-        #         menu_command = cmds.menuItem(label=pop["label"], sourceType=pop["sourceType"],
-        #                                      parent=popup_menu, command=pop["command"])
-
-
-    else:
-        # message
-        cmds.confirmDialog(title='Djed Shelf Error',
-                           message='Unable to start Djed Shelf.\n Please check shelves path', button=['OK'])
+    # if popupMenus:
+    #     popup_menu = cmds.popupMenu(parent=new_shelf_button, button=n)
+    #     for pop in popupMenus:
+    #         menu_command = cmds.menuItem(label=pop["label"], sourceType=pop["sourceType"],
+    #                                      parent=popup_menu, command=pop["command"])
 
 
 # Main function
 def main():
+    log.info("Initialize Djed maya shelf")
     create_self()
 
 
+
 if __name__ == '__main__':
-    
     main()
-    

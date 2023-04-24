@@ -4,35 +4,40 @@ Documentation:
 """
 
 # ---------------------------------
-# import libraries
-import sys
+# Import Libraries
 import os
-from pathlib import Path
-import maya.cmds as cmds
+import sys
 
-
-# ---------------------------------
-# MetaData
-_annotation = "About"
-_icon = "about.png"
-_color = (0.9, 0.9, 0.9)
-_backColor = (0.0, 0.0, 0.0, 0.0)
-_imgLabel = ""
-
-# ---------------------------------
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-sysPaths = [DJED_ROOT.as_posix(), DJED_ROOT.joinpath('djed').as_posix()]
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, ]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
 from djed import about
-from dcc.maya.api.cmds import maya_main_window
+from djed.dcc.maya.api.cmds import maya_main_window
 
-# Main function
-def main():
+# ---------------------------------
+# Variables
+djed_order = 10.00
+djed_annotation = "About"
+djed_icon = "about.png"
+djed_color = (0.9, 0.9, 0.9)
+djed_backColor = (0.0, 0.0, 0.0, 0.0)
+djed_imgLabel = ""
+
+
+# ---------------------------------
+# Start Here
+
+
+def left_click():
     about.message(maya_main_window())
 
 
-if __name__ == '__main__':
-    main()
+def right_click():
+    pass
+
+
+def double_click():
+    pass

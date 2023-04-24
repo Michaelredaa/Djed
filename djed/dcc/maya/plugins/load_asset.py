@@ -35,6 +35,8 @@ from djed.settings.settings import (
     shading_nodes_conversion,
     get_material_attrs,
     get_shading_nodes,
+    texture_colorspace,
+    get_dcc_cfg,
 )
 
 from djed.utils.file_manager import FileManager
@@ -58,7 +60,7 @@ class LoadAsset(pyblish.api.InstancePlugin):
     def __init__(self):
         self.log = Logger(
             name=self.hosts[0] + self.__class__.__name__,
-            use_file=True
+            use_file=get_dcc_cfg('general', 'settings', 'enable_logger')
         )
 
     def process(self, instance):
@@ -78,9 +80,20 @@ class LoadAsset(pyblish.api.InstancePlugin):
         geo_path = geo_paths.get(geo_type)
         self.log.debug(f"geometry_type:  `{geo_type}` ->> import_type:  `{import_type}` ->> geo_paths:  `{geo_paths}`")
         self.log.debug(f"Use geo path:  {geo_path}")
+
+        imported_geo_nodes = {}
         if geo_path:
             if import_type == 'Import Geometry':
-                ma.import_geo(geo_path)
+                imported_nodes = ma.import_geo(geo_path, filter=["mesh"])
+                for node in imported_nodes:
+                    try:
+                        mtl_name = cmds.getAttr(node + ".materialBinding")
+                        mtl_name = re.sub(r'(?i)mtl', 'SG', mtl_name)
+                        if mtl_name not in imported_geo_nodes:
+                            imported_geo_nodes[mtl_name] = []
+                        imported_geo_nodes[mtl_name].append(node)
+                    except:
+                        pass
 
         # host
         source_host = data.get('host', 'standard')
@@ -107,10 +120,18 @@ class LoadAsset(pyblish.api.InstancePlugin):
         self.log.debug(f"plugs_conversion: {plugs_conversion}")
         self.log.debug(f"nodes_conversion: {nodes_conversion}")
 
-        asset_data = data.get('asset_data')
+        asset_data = data.get('materials')
         self.log.debug(f"Processing: {asset_data}")
+
         for sg in asset_data:
+
+            if data.get('execute_materials'):
+                if sg not in data.get('execute_materials'):
+                    continue
+
             self.log.debug(f"__sg: {sg}")
+            sg_name = re.sub(r'(?i)mtl', 'SG', sg)
+            self.log.debug(f"__sg new name: `{sg_name}`")
 
             # materials
             materials = asset_data.get(sg, {}).get('materials', {})
@@ -120,18 +141,22 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     mtl_name += 'MTL'
                 self.log.debug(f"__mtl: {mtl} -> __material name {mtl_name}")
 
-                if not cmds.objExists(sg):
+                if not cmds.objExists(sg_name):
                     self.log.debug(f"__Creating new shading group")
-                    mtl_name, sg = ma.create_material(name=mtl_name, sg=sg)
+                    mtl_name, sg_name = ma.create_material(name=mtl_name, sg=sg_name)
                 else:
                     self.log.debug(f"__Use existence shading group")
-                    exist_materials = ma.get_materials_from_sg(sg, 'material')
+                    exist_materials = ma.get_materials_from_sg(sg_name, 'material')
                     if exist_materials and mtl_name in exist_materials:
                         self.log.debug(f"__Use existence material")
                         mtl_name = exist_materials[0]
                     else:
                         self.log.debug(f"__Creating new material")
-                        mtl_name, sg = ma.create_material(name=mtl, sg=sg)
+                        mtl_name, sg_name = ma.create_material(name=mtl, sg=sg_name)
+
+                # assign_materials
+                self.log.debug(f"__Assign Materials")
+                ma.assign_material(imported_geo_nodes.get(sg_name, []), sg_name=sg_name)
 
                 # attributes
                 attrs = materials[mtl].get('attrs', {})
@@ -167,13 +192,18 @@ class LoadAsset(pyblish.api.InstancePlugin):
 
                     # create texture
                     self.log.debug(f"__Creating: {tex_name} -> {colorspace} -> udim {tex_dict.get('udim')}")
-                    tex_node = ma.import_texture(
-                        tex_dict.get('filepath'),
-                        tex_dict.get('udim'),
-                        colorspace,
-                        plug_type == 'color',
-                        tex_name
 
+                    tex_colorspace = texture_colorspace(
+                            tex_path=tex_dict.get('filepath'),
+                            colorspace=colorspace,
+                            color=plug_type == 'color'
+                        )
+
+                    tex_node = ma.import_texture(
+                        tex_path=tex_dict.get('filepath'),
+                        udim=tex_dict.get('udim'),
+                        colorspace=tex_colorspace,
+                        tex_name=tex_name,
                     )
 
                     if plug_type == 'float':
@@ -220,29 +250,36 @@ class LoadAsset(pyblish.api.InstancePlugin):
                     # create texture
                     if colorspace is None:
                         colorspace = tex_dict.get('colorspace', 'aces')
-                    tex_node = ma.import_texture(
-                        tex_dict.get('filepath'),
-                        tex_dict.get('udim'),
-                        colorspace,
-                        False,
-                        tex_name
+
+                    tex_colorspace = texture_colorspace(
+                        tex_path=tex_dict.get('filepath'),
+                        colorspace=colorspace,
+                        color=False
                     )
+
+                    tex_node = ma.import_texture(
+                        tex_path=tex_dict.get('filepath'),
+                        udim=tex_dict.get('udim'),
+                        colorspace=tex_colorspace,
+                        tex_name=tex_name,
+                    )
+
                     if not tex_node:
                         continue
                     cmds.connectAttr(f'{tex_node}.outColor.outColorR', displacement_node + '.displacement', f=1)
-                    cmds.connectAttr(displacement_node + '.displacement', f'{sg}.displacementShader', f=1)
+                    cmds.connectAttr(displacement_node + '.displacement', f'{sg_name}.displacementShader', f=1)
 
-            # assign materials
-            if not geo_path:
-                continue
-            meshes = asset_data.get(sg, {}).get('meshes', {}).get('shape', {})
-            self.log.debug(f"__Assigning materials: {sg} -> {meshes}")
-            for mesh_path in meshes:
-                try:
-                    mesh_path = '*' + mesh_path.split('|', 2)[-1]
-                    ma.assign_material(cmds.ls(mesh_path), sg_name=sg)
-                except:
-                    pass
+            # # assign materials
+            # if not geo_path:
+            #     continue
+            # meshes = asset_data.get(sg, {}).get('meshes', {}).get('shape', {})
+            # self.log.debug(f"__Assigning materials: {sg} -> {meshes}")
+            # for mesh_path in meshes:
+            #     try:
+            #         mesh_path = '*' + mesh_path.split('|', 2)[-1]
+            #         ma.assign_material(cmds.ls(mesh_path), sg_name=sg)
+            #     except:
+            #         pass
 
         # ma.arrangeHypershade()
 

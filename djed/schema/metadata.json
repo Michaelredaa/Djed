@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+
+    "title": "djed:asset_metadata",
+    "description": "Metadata of asset",
+
+    "type": "object",
+
+
+    "properties": {
+        "auther": {
+            "description": "Name of auther",
+            "type": "string",
+            "example": "Michael"
+        },
+        "software": {
+            "description": "Names of software used in creation",
+            "type": "array",
+            "example": "[maya, ]"
+        },
+        "dimensions": {
+            "description": "Dimensions of asset",
+            "type": "array",
+            "example": "[20, 120, 22]"
+        },
+        "unit": {
+            "description": "Unites used to asset",
+            "type": "string",
+            "example": "meter"
+        },
+        "polycount": {
+            "description": "Poly-count of asset",
+            "type": "integer",
+            "example": 2000
+        },
+        "rig": {
+            "description": "Has rig",
+            "type": "boolean",
+            "example": false
+        },
+        "animation": {
+            "description": "Has animation",
+            "type": "boolean",
+            "example": false
+        },
+        "camera": {
+            "description": "Has camera",
+            "type": "boolean",
+            "example": false
+        },
+        "lights": {
+            "description": "Has lights",
+            "type": "boolean",
+            "example": false
+        },
+        "client_name": {
+            "description": "Name of client",
+            "type": "string",
+            "example": "Michael"
+        },
+        "description": {
+            "description": "description of asset",
+            "type": "string",
+            "example": "Michael"
+        }
+    },
+
+    "definitions": {}
+}

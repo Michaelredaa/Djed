@@ -10,6 +10,8 @@ from pathlib import Path
 
 from PySide2.QtWidgets import QMessageBox
 
+
+
 DJED_ROOT = Path(os.getenv("DJED_ROOT"))
 sysPaths = [DJED_ROOT]
 for sysPath in sysPaths:
@@ -19,6 +21,8 @@ for sysPath in sysPaths:
 from djed.utils.dialogs import message
 from djed.utils.file_manager import FileManager
 from djed.utils.textures import texture_type_from_name
+from djed.utils.logger import Logger
+from djed.settings.settings import get_dcc_cfg
 
 
 import substance_painter
@@ -51,7 +55,10 @@ Default_Project_settings = {
 }
 
 fm = FileManager()
-
+log = Logger(
+    name='spp-pipeline',
+    use_file=get_dcc_cfg('general', 'settings', 'enable_logger')
+)
 
 def info(msg):
     substance_painter.logging.log(substance_painter.logging.INFO, "Djed", msg)
@@ -156,13 +163,13 @@ def create_project(mesh_file, project_path=None, cfg=None):
 
     substance_painter.project.create(mesh_file_path=mesh_file, settings=substance_painter.project.Settings(**settings))
     if substance_painter.project.is_open():
-        print("The project was successfully created.")
+        log.info("The project was successfully created.")
 
     # save project
     if project_path:
         substance_painter.project.save_as(project_path)
         if not substance_painter.project.needs_saving():
-            print("As expected, there is nothing to save since this was just done.")
+            log.info("As expected, there is nothing to save since this was just done.")
 
 
 def reload_mesh(mesh_path):

@@ -153,7 +153,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pb_cancle">
+         <widget class="QPushButton" name="pb_cancel">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>100</horstretch>
@@ -167,7 +167,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Cancle</string>
+           <string>Cancel</string>
           </property>
          </widget>
         </item>
@@ -183,21 +183,14 @@
      <x>0</x>
      <y>0</y>
      <width>607</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
-    <widget class="QMenu" name="menuRecent">
-     <property name="title">
-      <string>Recent</string>
-     </property>
-    </widget>
-    <addaction name="actionSave_Settings"/>
     <addaction name="actionReset_Settings"/>
-    <addaction name="menuRecent"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">

@@ -4,80 +4,66 @@ Documentation:
 """
 
 # ---------------------------------
-# MetaData
-
-_annotation = "Send selection to clarisse"
-_icon = "sendClarisse.png"
-_color = (0.9, 0.9, 0.9)
-_backColor = (0.0, 0.0, 0.0, 0.0)
-_imgLabel = ""
-
-# ---------------------------------
-# import libraries
-
+# Import Libraries
 import os
 import sys
-from pathlib import Path
 import subprocess
 
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-# ---------------------------------
-DJED_ROOT = Path(os.getenv("DJED_ROOT"))
-
-sysPaths = [DJED_ROOT.as_posix()]
-
+DJED_ROOT = os.getenv("DJED_ROOT")
+sysPaths = [DJED_ROOT, ]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
+# ---------------------------------
+# Variables
+djed_order = 3.00
+djed_annotation = "Send selection to clarisse"
+djed_icon = "sendClarisse.png"
+djed_color = (0.9, 0.9, 0.9)
+djed_backColor = (0.0, 0.0, 0.0, 0.0)
+djed_imgLabel = ""
+
+
+# ---------------------------------
+# Start Here
+
+from djed.dcc.maya.shelves.ui.template import Button
 from djed.settings.settings import get_dcc_cfg
 from djed.utils.dialogs import message
 from djed.utils.generic import wait_until
 from djed.utils.sys_process import is_process_running
-from djed.utils.assets_db import AssetsDB
-from djed.utils.resources.style_rc import *
 from djed.dcc.linker.to_clarisse import send_to_clarisse
 from djed.dcc.clarisse.api.remote_connect import connect
-from djed.dcc.maya.api.renderer import arnold
 from djed.dcc.maya.plugins.create_asset import CreateAsset
-from djed.dcc.maya.api.cmds import maya_main_window, Maya
+from djed.utils.resources.style_rc import *
+
 
 import pyblish.api
 import pyblish.util
+class MayaClarisse(Button):
+    title = "Send Selection to Clarisse Settings"
+    icon = "sendClarisse.png"
 
-from djed.dcc.maya.shelves.tool_settings import (
-    ToolSettingsBase,
-    ScreenWidth,
-)
+    asset_name = ""
 
-db = AssetsDB()
-ma = Maya()
-
-
-class Maya2ClsSettings(ToolSettingsBase):
-    def __init__(self, parent=None):
-        super(Maya2ClsSettings, self).__init__(parent, preset_name="maya_clarisse")
-        self.setupUi(self)
-
-        self.set_title("Send Selection to Clarisse Settings")
-        self.set_icon("sendClarisse.png")
+    def generate_ui(self):
 
         self.setMouseTracking(True)
         self.installEventFilter(self)
 
-        self._init_ui()
-        # self._connectEvents()
-        self._startup()
-
-    def _init_ui(self):
         # add ui
         # self.vl_space.addWidget(QLabel())
 
         gbox = QGridLayout(self)
-        gbox.addItem(QSpacerItem(ScreenWidth * 0.05, 20, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
+        gbox.addItem(QSpacerItem(
+            int(self.width() * 0.05), 20,
+            QSizePolicy.MinimumExpanding,
+            QSizePolicy.MinimumExpanding))
 
         # connection
         self.pb_connect = QPushButton()
@@ -156,24 +142,19 @@ class Maya2ClsSettings(ToolSettingsBase):
         self.vl_space.addLayout(gbox)
         self.vl_space.addItem(QSpacerItem(40, 20, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding))
 
-    def connectEvents(self):
-        self.pb_cls.clicked.connect(self.onClarisseOpen)
-        self.pb_connect.clicked.connect(self.onConnect)
+    def connect_events(self):
+        self.pb_cls.clicked.connect(self.on_clarisse_open)
+        self.pb_connect.clicked.connect(self.on_connect)
 
-    def startup(self):
-        self.port_connected = False
 
-        self.onConnect()
-
-    def onClarisseOpen(self):
+    def on_clarisse_open(self):
         cls_exe = get_dcc_cfg('clarisse', 'configuration', 'executable')
 
         subprocess.Popen(f'"{cls_exe}" -flavor ifx')
 
         if wait_until(connect, 60):
             self.onConnect()
-
-    def onConnect(self):
+    def on_connect(self):
         if is_process_running("clarisse"):
             if not self.port_connected:
                 port = connect()
@@ -188,33 +169,9 @@ class Maya2ClsSettings(ToolSettingsBase):
             self.connection.setStyleSheet("border-radius: 5px; background: red;")
             self.port_connected = False
 
-    def get_presets(self):
-        preset = {}
-        preset["command_port"] = int(self.le_port_num.text())
-        preset["geometry_type"] = self.com_geo.currentText()
-        preset["mtls_from"] = self.com_mat_from.currentText()
-        preset["mtls_to"] = self.com_mat_to.currentText()
-        preset["use_latest_publish"] = self.cb_latest_published.isChecked()
-        if self.rb_aces.isChecked():
-            preset["colorspace"] = "ACES"
-        else:
-            preset["colorspace"] = "sRGB"
-
-        return preset
-
-    def set_presets(self, preset):
-        self.le_port_num.setText(str(preset["command_port"]))
-        self.com_geo.setCurrentText(preset["geometry_type"])
-        self.com_mat_from.setCurrentText(preset["mtls_from"])
-        self.com_mat_to.setCurrentText(preset["mtls_to"])
-        self.cb_latest_published.setChecked(preset["use_latest_publish"])
-
-        if preset["colorspace"].lower() == "aces":
-            self.rb_aces.setChecked(True)
-        else:
-            self.rb_srgb.setChecked(True)
-
-    def onApply(self):
+    def reset_ui(self):
+        pass
+    def apply(self):
         geo_types = {
             "Alembic Reference": 'Alembic Reference',
             "USD Reference": 'USD Reference',
@@ -247,17 +204,17 @@ class Maya2ClsSettings(ToolSettingsBase):
 
         # publishing
         if self.cb_latest_published.isChecked():
-            asset_name = ma.selection()[0]
-            geo_paths = db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
+            asset_name = self.ma.selection()[0]
+            geo_paths = self.db.get_geometry(asset_name=asset_name, obj_file="", usd_geo_file="", abc_file="", fbx_file="",
                                         source_file="")
             data = {
                 "name": asset_name,
                 "family": "asset",
-                "file_color_space": ma.get_file_colorspace(),
-                "renderer": ma.get_renderer(),
+                "file_color_space": self.ma.get_file_colorspace(),
+                "renderer": self.ma.get_renderer(),
                 "host": "maya",
                 "geo_paths": geo_paths,
-                "asset_data": ma.get_asset_materials_data(asset_name)
+                "asset_data": self.ma.get_asset_materials_data(asset_name)
             }
 
         else:
@@ -274,21 +231,26 @@ class Maya2ClsSettings(ToolSettingsBase):
         send_to_clarisse(data, port_num)
 
     def enterEvent(self, QEvent):
-        self.onConnect()
+        self.on_connect()
 
     def leaveEvent(self, QEvent):
         # here teh code for mouse leave
         pass
 
-
-# Main function
-def main():
-    m2c = Maya2ClsSettings(maya_main_window())
-    if len(sys.argv) > 1:
-        m2c.show()
-    else:
-        m2c.onApply()
+    def help(self):
+        pass
 
 
-if __name__ == '__main__':
-    main()
+def left_click():
+    btn = MayaClarisse()
+    btn.apply()
+
+
+def right_click():
+    pass
+
+
+def double_click():
+    btn = MayaClarisse()
+    btn.show()
+

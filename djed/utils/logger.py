@@ -9,8 +9,15 @@ import sys
 import traceback
 
 DJED_ROOT = os.getenv('DJED_ROOT')
+sysPaths = [DJED_ROOT]
 
+for sysPath in sysPaths:
+    if sysPath not in sys.path:
+        sys.path.append(sysPath)
 
+from djed.utils.file_manager import FileManager
+
+fm = FileManager()
 
 
 class Logger(object):
@@ -22,7 +29,7 @@ class Logger(object):
         if name:
             self.log = logging.getLogger(name)
 
-        log_file_path = DJED_ROOT + '/test/logs/log.log'
+        log_file_path = fm.user_documents.joinpath("log/djed.log").as_posix()
         if filepath:
             log_file_path = filepath
 
@@ -31,12 +38,6 @@ class Logger(object):
 
         if not len(self.log.handlers):  # To stop the duplicates of logs
             self.log.setLevel(logging.INFO)
-
-            # console
-            stream_handler = logging.StreamHandler()
-            formatter = logging.Formatter('[Djed] %(message)s')
-            stream_handler.setFormatter(formatter)
-            self.log.addHandler(stream_handler)
 
             if use_file:
                 # file
@@ -48,8 +49,12 @@ class Logger(object):
                                               "%Y-%m-%d %H:%M:%S")
                 file_handler.setFormatter(formatter)
                 self.log.addHandler(file_handler)
-
-
+            else:
+                # console
+                stream_handler = logging.StreamHandler()
+                formatter = logging.Formatter('[Djed] %(name)s - %(message)s')
+                stream_handler.setFormatter(formatter)
+                self.log.addHandler(stream_handler)
 
     def handel_exception(self, exc_type, exc_value, exc_traceback):
         tb = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -72,5 +77,5 @@ class Logger(object):
 if __name__ == '__main__':
     log = Logger(use_file=True)
     log.debug('foo')
-    1/0
+    1 / 0
     print(__name__)

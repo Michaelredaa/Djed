@@ -18,7 +18,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
+site.addsitedir(DJED_ROOT.joinpath('venv/python/Lib/site-packages').as_posix())
 
 import pyblish.api
 import pyblish.util

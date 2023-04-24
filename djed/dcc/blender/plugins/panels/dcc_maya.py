@@ -23,7 +23,7 @@ for sysPath in sysPaths:
 from djed.dcc.blender.api.pipeline import selection, export_geometry
 from djed.dcc.linker.to_maya import send_to_maya, is_maya_connected
 from djed.utils.assets_db import AssetsDB
-from utils.generic import validate_name
+from djed.utils.generic import validate_name
 from djed.settings import settings
 
 # ---------------------------------

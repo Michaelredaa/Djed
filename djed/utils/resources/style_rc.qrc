@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/">
     <file>icons/about.png</file>
+    <file>icons/add.png</file>
     <file>icons/blender.png</file>
     <file>icons/unreal.png</file>
     <file>icons/integration.png</file>

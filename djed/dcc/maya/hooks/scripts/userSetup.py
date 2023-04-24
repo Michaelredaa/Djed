@@ -5,7 +5,7 @@
 import maya.cmds as cmds
 
 
-def open_commandPort():
+def open_djed_commandPort():
     if not cmds.commandPort(":4436", query=True):
         cmds.commandPort(name=":4436", sourceType="python")
 
@@ -19,19 +19,17 @@ def init_djed():
 
     DJED_ROOT = Path(os.getenv('DJED_ROOT'))
 
-    print('Djed: ', DJED_ROOT.as_posix())
+    print('[Djed] Root: ', DJED_ROOT.as_posix())
     try:
-        site.addsitedir(DJED_ROOT.joinpath('venv/python39/Lib/site-packages').as_posix())
-        sys.path.append(DJED_ROOT.joinpath('djed').as_posix())
-        sys.path.append(DJED_ROOT.joinpath('djed/dcc/maya/hooks').as_posix())
+        sys.path.insert(0, DJED_ROOT.as_posix())
+        site.addsitedir(DJED_ROOT.joinpath('venv/python/Lib/site-packages').as_posix())
 
-        print('start DJED')
-        from dcc.maya import shelves
-        shelves.main()
-        open_commandPort()
+        from djed.dcc.maya import shelves as djed_shelves
+        djed_shelves.main()
+        open_djed_commandPort()
 
-        from dcc.maya.api.lib import set_project_event
-        set_project_event()
+        # from dcc.maya.api.lib import set_project_event
+        # set_project_event()
 
     except:
         print(traceback.format_exc())

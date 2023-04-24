@@ -237,7 +237,7 @@ class Clarisse:
                 if extension in hdr:
                     cs_config = 'aces_color_hdr'
                 else:
-                    cs_config = 'aces_color_ldr'
+                    cs_config = 'aces_color_sdr'
             else:
                 cs_config = 'aces_raw'
         else:

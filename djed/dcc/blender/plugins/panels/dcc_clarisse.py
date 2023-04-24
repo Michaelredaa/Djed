@@ -23,7 +23,7 @@ for sysPath in sysPaths:
 from djed.dcc.blender.api.pipeline import selection, export_geometry
 from djed.dcc.linker.to_clarisse import send_to_clarisse, is_clarisse_connected
 from djed.utils.assets_db import AssetsDB
-from utils.generic import validate_name
+from djed.utils.generic import validate_name
 from djed.settings import settings
 
 # ---------------------------------

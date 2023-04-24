@@ -8,15 +8,13 @@ import sys
 from pathlib import Path
 import ast
 
-
-
 DJED_ROOT = os.getenv("DJED_ROOT")
 sysPaths = [DJED_ROOT]
 for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-from djed.utils.file_manager import FileManager
+from djed.utils.file_manager import FileManager, PathResolver
 
 fm = FileManager()
 
@@ -207,6 +205,7 @@ def get_dcc_cfg(*args):
     else:
         return value_dict.get('value', '')
 
+
 def material_attrs_conversion(from_host, from_renderer, to_host, to_renderer, node='standard_surface'):
     """
     To get the conversion between 2 nodes attributes
@@ -223,6 +222,7 @@ def material_attrs_conversion(from_host, from_renderer, to_host, to_renderer, no
     plugs = {from_plugs[i]['name']: to_plugs[j] for i, j in zip(from_plugs, to_plugs)}
     return plugs
 
+
 def get_material_type_names(host):
     """
     To get the available materials names
@@ -232,6 +232,7 @@ def get_material_type_names(host):
     """
     renderers = get_dcc_cfg(host, 'renderers')
     return list(renderers)
+
 
 def get_material_attrs(host, renderer, node='standard_surface'):
     """
@@ -274,8 +275,44 @@ def shading_nodes_conversion(from_host, from_renderer, to_host, to_renderer):
     return nodes
 
 
+def get_asset_root(asset_name):
+    asset_root = get_dcc_cfg('general', 'path', 'root', 'asset_root')
+    asset_root = PathResolver(asset_root)
+    asset_root.format(
+        work_root=get_dcc_cfg('general', 'path', 'root', 'work_root'),
+        asset_name=asset_name,
+    )
+
+    asset_root = fm.make_dirs(str(asset_root))
+    return asset_root
+
+
+def texture_colorspace(tex_path, colorspace='aces', color=True):
+    """To get the texture colorspace"""
+
+    hdr = get_textures_settings('hdr_extension')
+    extension = tex_path.rsplit('.', 1)[-1]
+    if colorspace == 'aces':
+        if color:
+            if extension in hdr:
+                cs_config = 'aces_color_hdr'
+            else:
+                cs_config = 'aces_color_sdr'
+        else:
+            cs_config = 'aces_raw'
+    else:
+        if color:
+            cs_config = 'srgb'
+        else:
+            cs_config = 'raw'
+
+    colorspace_value = get_colorspace_settings(cs_config)
+    return colorspace_value
+
+
 if __name__ == '__main__':
     from PySide2.QtWidgets import QApplication
+
     if not QApplication.instance():
         app = QApplication(sys.argv)
     else:

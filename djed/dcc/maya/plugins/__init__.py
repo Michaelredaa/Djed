@@ -4,6 +4,7 @@ Documentation:
 """
 
 from .create_asset import CreateAsset
+from .collect_asset_data import CollectAssetData
 from .create_material_from_textures import CreateMaterialFromTextures
 from .load_asset import LoadAsset
 from .collect_model import CollectMesh
@@ -15,6 +16,7 @@ from .extract_model import ExtractModel
 
 __all__ = [
     'CreateAsset',
+    'CollectAssetData',
     'CreateMaterialFromTextures',
     'LoadAsset',
 

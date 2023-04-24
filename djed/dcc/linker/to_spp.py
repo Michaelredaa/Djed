@@ -18,10 +18,14 @@ from dcc.linker.instance import create_instance
 from dcc.spp.plugins.load_asset import LoadAsset
 from dcc.spp.plugins.update_asset import UpdateAsset
 
+import pyblish.api
 
-def send_to_spp(data):
-    instance = create_instance(data)
-    LoadAsset().process(instance)
+pyblish.api.register_host("spp")
+def send_to_spp(instance):
+    # instance = create_instance(data)
+    # LoadAsset().process(instance)
+    pyblish.api.register_plugin(LoadAsset)
+    pyblish.util.publish()
 
 def update_spp(data):
     instance = create_instance(data)

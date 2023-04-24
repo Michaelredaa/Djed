@@ -21,7 +21,7 @@ for sysPath in sysPaths:
     if sysPath not in sys.path:
         sys.path.append(sysPath)
 
-site.addsitedir(os.path.join(DJED_ROOT, 'venv', 'python39', 'Lib', 'site-packages'))
+site.addsitedir(os.path.join(DJED_ROOT, 'venv', 'python', 'Lib', 'site-packages'))
 
 from djed.utils.logger import Logger
 
